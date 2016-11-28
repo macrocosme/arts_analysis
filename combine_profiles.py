@@ -18,7 +18,7 @@ def combine_in_time_(filepath, band, date,
 		os.system("(nice psradd -P %s -o %s.ar; psredit -m -c bw=18.75 %s.ar) &" 
 		 		% (filepath, outfile, outfile))
 
-def combine_subints(sband=1, eband=16):
+def combine_subints(sband=1, eband=16, outfile='time_averaged'):
 
 	# Take subints to be the outerloop 
 	for xx in range(3):
@@ -45,11 +45,13 @@ def combine_subints(sband=1, eband=16):
 		print "collecting %s" % band
 		band = "%02d"%band
 		subintfiles = './*band%s.ar' % band
-		outfile = 'time_averaged_%s_%s' % (date, band)
+		outfile = '%s_%s_%s' % (outfile, date, band)
 
 		combine_in_time_(subintfiles, band, date, outfile=outfile)
 
-     
+def combine_freq(fnames, outfile='all.ar'):
+	os.system('nice psradd -P -m phase -R %s*.ar -o %s' % (fnames, outfile))
+
 
 def combine_in_time(sband=1, eband=16):
 
@@ -83,6 +85,7 @@ if __name__=='__main__':
 	date, folder = args.date, args.folder
 	sband, eband, outnamee = args.sband, args.eband, args.o 
 	combine_subints(sband, eband)
+	combine_freq(fnames='time_averaged')
 #combine_in_time(sband, eband)
 
 #fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
