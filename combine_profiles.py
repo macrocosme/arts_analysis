@@ -54,8 +54,8 @@ def combine_allbands(sband=1, eband=16):
 				   '16', '17', '18', '19']:
 			print xx
 			combine_in_time_(band, date, folder, subint=xx, outfile=xx + 'band')
-			print xx
-#	    combine_in_time_(band, date, folder)
+
+	    combine_in_time_(band, date, folder)
         print "Done %s" % band
 
 combine_allbands(sband, eband)
