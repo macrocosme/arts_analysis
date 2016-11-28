@@ -8,18 +8,25 @@ import argparse
 import psrchive
 
 
-def combine_in_time_(filepath, band, date, subint='', outfile='band'):
+def combine_in_time_(filepath, band, date, 
+					subint='', outfile='band', background=False):
 
-	os.system("(nice psradd -P %s -o %s.ar; psredit -m -c bw=18.75 %s.ar) &" 
+	if background is False:
+		os.system("(nice psradd -P %s -o %s.ar; psredit -m -c bw=18.75 %s.ar)" 
+		 		% (filepath, outfile + band, outfile + band))
+	else:
+		os.system("(nice psradd -P %s -o %s.ar; psredit -m -c bw=18.75 %s.ar) &" 
 		 		% (filepath, outfile + band, outfile + band))
 
 def combine_allbands(sband=1, eband=16):
 
-	for band in range(sband, eband+1):
-		band = "%02d"%band
 
-		for xx in range(5):
-			xx = str(xx)
+
+	for xx in range(5):
+		xx = str(xx)
+
+		for band in range(sband, eband+1):
+			band = "%02d"%band
 			fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
 			filepath = '%s/*%s*.ar' % (fullpath, '_1'+xx)
 			combine_in_time_(filepath, band, date, subint='_'+xx, outfile=xx + 'band')
