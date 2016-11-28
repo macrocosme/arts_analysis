@@ -15,10 +15,8 @@ parser.add_argument("-eband", help="end band number", default="16", type=int)
 parser.add_argument("-o", help="name of output file name", default="all.ar")
 args = parser.parse_args()
 
-date, folder, sband, eband, outnamee = args.date, args.folder, args.sband, args.eband, args.o 
-# Demand that band number is two digits
-# sband = "%02d"%args.sband
-# eband = "%02d"%args.eband
+date, folder = args.date, args.folder
+sband, eband, outnamee = args.sband, args.eband, args.o 
 
 def combine_in_time(sband=1, eband=16):
 
@@ -44,10 +42,11 @@ def combine_in_time_shell(sband=1, eband=16):
                 band = "%02d"%band
 		fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
 
-		os.system("(nice psradd -P %s/*.ar -o band%s.ar; psredit -m -c bw=18.75 band%s.ar) &" 
+		os.system("(nice psradd -P %s/*_2*.ar \
+					-o band%s.ar; psredit -m -c bw=18.75 band%s.ar) &" 
 		 			% (fullpath, band, band))
 
-                print "Done %s" % band
+        print "Done %s" % band
 
 combine_in_time_shell(sband, eband)
 
