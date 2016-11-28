@@ -18,7 +18,7 @@ def combine_in_time_(filepath, band, date,
 		os.system("(nice psradd -P %s -o %s.ar; psredit -m -c bw=18.75 %s.ar) &" 
 		 		% (filepath, outfile + band, outfile + band))
 
-def combine_allbands(sband=1, eband=16):
+def combine_subints(sband=1, eband=16):
 
 	# Take subints to be the outerloop 
 	for xx in range(10):
@@ -30,7 +30,7 @@ def combine_allbands(sband=1, eband=16):
 			fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
 			filepath = '%s/*%s*.ar' % (fullpath, '_0'+xx)
 			combine_in_time_(filepath, band, date, 
-				subint='_'+xx, outfile=xx+'band', background=True)
+				subint='_'+xx, outfile=xx, background=True)
 
 	# Wait for the remaining processes to finish
 	while True:
@@ -82,7 +82,7 @@ if __name__=='__main__':
 
 	date, folder = args.date, args.folder
 	sband, eband, outnamee = args.sband, args.eband, args.o 
-	combine_allbands(sband, eband)
+	combine_subints(sband, eband)
 #combine_in_time(sband, eband)
 
 #fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
