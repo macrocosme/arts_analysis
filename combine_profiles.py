@@ -40,7 +40,7 @@ def combine_in_time_(band, date, folder, subint='', outfile='band'):
 	fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
 
 	os.system("(nice psradd -P %s/*_%s*.ar \
-				-o %s.ar; psredit -m -c bw=18.75 %s.ar) &" 
+				-o %s.ar; psredit -m -c bw=18.75 %s.ar)" 
 		 		% (fullpath, subint, outfile + band, outfile + band))
 
 def combine_allbands(sband=1, eband=16):
@@ -48,10 +48,10 @@ def combine_allbands(sband=1, eband=16):
 	for band in range(sband, eband+1):
 		band = "%02d"%band
 
-		for xx in ['12', '15', '19', '23']:
+		for xx in ['10', '11', '12', '13', '14', '15']:
 			print xx
 	        combine_in_time_(band, date, folder, subint=xx, outfile=xx + 'band')
-
+#	    combine_in_time_(band, date, folder)
         print "Done %s" % band
 
 combine_allbands(sband, eband)
