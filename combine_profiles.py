@@ -46,7 +46,7 @@ def combine_in_time_(band, date, folder, subint=''):
 def combine_allbands(sband=1, eband=16):
 
 	for band in range(sband, eband+1):
-        band = "%02d"%band
+		band = "%02d"%band
 
         combine_in_time_(band, date, folder)
 
