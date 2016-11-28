@@ -34,10 +34,11 @@ def combine_allbands(sband=1, eband=16):
 
 	while True:
 		if os.system('ps -e | grep psradd') == 0:
-			break
-		else:
 			print "Waiting for psradd to finish"
 			time.sleep(10)
+		else:
+			break
+
 
 	for band in range(sband, eband+1):
 		print "collecting %s" % band
