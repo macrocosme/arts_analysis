@@ -19,6 +19,7 @@ def combine_allbands(sband=1, eband=16):
 
 		for xx in range(5):
 			xx = str(xx)
+			os.system('jobs -r | wc -l')
 			fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
 			filepath = '%s/*%s*.ar' % (fullpath, '_1'+xx)
 			combine_in_time_(filepath, band, date, subint='_'+xx, outfile=xx + 'band')
