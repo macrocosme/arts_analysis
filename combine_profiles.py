@@ -41,6 +41,7 @@ def combine_in_time_(band, date, folder, subint='', outfile='band'):
 
 
 	print outfile + band
+	print '%s/*_%s*.ar' % (fullpath, subint)
 	os.system("(nice psradd -P %s/*_%s*.ar \
 				-o %s.ar; psredit -m -c bw=18.75 %s.ar)" 
 		 		% (fullpath, subint, outfile + band, outfile + band))
