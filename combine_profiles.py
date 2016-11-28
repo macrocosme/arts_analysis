@@ -13,10 +13,10 @@ def combine_in_time_(filepath, band, date,
 
 	if background is False:
 		os.system("(nice psradd -P %s -o %s.ar; psredit -m -c bw=18.75 %s.ar)" 
-		 		% (filepath, outfile + band, outfile))
+		 		% (filepath, outfile, outfile))
 	else:
 		os.system("(nice psradd -P %s -o %s.ar; psredit -m -c bw=18.75 %s.ar) &" 
-		 		% (filepath, outfile + band, outfile))
+		 		% (filepath, outfile, outfile))
 
 def combine_subints(sband=1, eband=16):
 
