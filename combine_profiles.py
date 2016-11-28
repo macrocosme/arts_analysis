@@ -13,10 +13,10 @@ def combine_in_time_(filepath, band, date,
 
 	if background is False:
 		os.system("(nice psradd -P %s -o %s.ar; psredit -m -c bw=18.75 %s.ar)" 
-		 		% (filepath, outfile + band, outfile + band))
+		 		% (filepath, outfile + band, outfile))
 	else:
 		os.system("(nice psradd -P %s -o %s.ar; psredit -m -c bw=18.75 %s.ar) &" 
-		 		% (filepath, outfile + band, outfile + band))
+		 		% (filepath, outfile + band, outfile))
 
 def combine_subints(sband=1, eband=16):
 
@@ -30,7 +30,7 @@ def combine_subints(sband=1, eband=16):
 			fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
 			filepath = '%s/*%s*.ar' % (fullpath, '_0'+xx)
 			combine_in_time_(filepath, band, date, 
-				subint='_'+xx, outfile=xx, background=True)
+				subint='_'+xx, outfile=xx+band, background=True)
 
 	# Wait for the remaining processes to finish
 	while True:
