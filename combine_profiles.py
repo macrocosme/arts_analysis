@@ -33,6 +33,7 @@ def combine_allbands(sband=1, eband=16):
 				subint='_'+xx, outfile=xx+'band', background=True)
 
 	for band in range(sband, eband+1):
+		print "collecting %s" % band
 		band = "%02d"%band
 		subintfiles = './*band%s.ar' % band
 		outfile = 'time_averaged_%s_%s' % (date, band)
