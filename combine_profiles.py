@@ -20,8 +20,6 @@ def combine_in_time_(filepath, band, date,
 
 def combine_allbands(sband=1, eband=16):
 
-
-
 	for xx in range(5):
 		xx = str(xx)
 
@@ -29,7 +27,8 @@ def combine_allbands(sband=1, eband=16):
 			band = "%02d"%band
 			fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
 			filepath = '%s/*%s*.ar' % (fullpath, '_1'+xx)
-			combine_in_time_(filepath, band, date, subint='_'+xx, outfile=xx + 'band')
+			combine_in_time_(filepath, band, date, 
+				subint='_'+xx, outfile=xx+'band', background=True)
 			os.system('jobs -r | wc -l')
 			time.sleep(1)
 
