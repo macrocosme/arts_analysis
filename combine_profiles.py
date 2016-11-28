@@ -48,7 +48,8 @@ def combine_allbands(sband=1, eband=16):
 	for band in range(sband, eband+1):
 		band = "%02d"%band
 
-		for xx in ['10', '11', '12', '13', '14', '15']:
+		for xx in ['10', '11', '12', '13', '14', '15',
+				   '16', '17', '18', '19']:
 			print xx
 	        combine_in_time_(band, date, folder, subint=xx, outfile=xx + 'band')
 #	    combine_in_time_(band, date, folder)
