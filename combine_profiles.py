@@ -49,8 +49,7 @@ def combine_allbands(sband=1, eband=16):
 	for band in range(sband, eband+1):
 		band = "%02d"%band
 
-		for xx in ['10', '11', '12', '13', '14', '15',
-				   '16', '17', '18', '19']:
+		for xx in ['1']:
 			
 			fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
 			filepath = '%s/*%s*.ar' % (fullpath, '_'+xx)
