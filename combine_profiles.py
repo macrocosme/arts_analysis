@@ -39,6 +39,8 @@ def combine_in_time(sband=1, eband=16):
 def combine_in_time_(band, date, folder, subint='', outfile='band'):
 	fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
 
+
+	print outfile + band
 	os.system("(nice psradd -P %s/*_%s*.ar \
 				-o %s.ar; psredit -m -c bw=18.75 %s.ar)" 
 		 		% (fullpath, subint, outfile + band, outfile + band))
