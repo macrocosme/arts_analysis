@@ -50,7 +50,7 @@ def combine_allbands(sband=1, eband=16):
 
 		for xx in ['12', '15', '19', '23']:
 			print xx
-	        combine_in_time_(band, date, folder, subint=xx)
+	        combine_in_time_(band, date, folder, subint=xx, outfile=xx + 'band')
 
         print "Done %s" % band
 
