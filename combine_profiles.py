@@ -23,7 +23,7 @@ def combine_subints(sband=1, eband=16):
 	# Take subints to be the outerloop 
 	for xx in range(10):
 		xx = str(xx)
-
+		xx='' 
 		for band in range(sband, eband+1):
 			band = "%02d"%band
 			print "subint %s and band %s" % (xx, band)
