@@ -1,4 +1,5 @@
 import os
+import time
 
 import numpy as np
 import glob
@@ -24,7 +25,7 @@ def combine_allbands(sband=1, eband=16):
 			combine_in_time_(filepath, band, date, subint='_'+xx, outfile=xx + 'band')
 			os.system('jobs -r | wc -l')
 			time.sleep(1)
-			
+
 		subintfiles = './*band%s.ar' % band
 		outfile = 'time_averaged_%s_%s' % (date, band)
 		print subintfiles, outfile
