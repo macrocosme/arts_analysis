@@ -32,6 +32,13 @@ def combine_allbands(sband=1, eband=16):
 			combine_in_time_(filepath, band, date, 
 				subint='_'+xx, outfile=xx+'band', background=True)
 
+	while True:
+		if os.system('ps -e | grep psradd') == 0:
+			break
+		else:
+			print "Waiting for psradd to finish"
+			time.sleep(10)
+
 	for band in range(sband, eband+1):
 		print "collecting %s" % band
 		band = "%02d"%band
