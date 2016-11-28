@@ -28,10 +28,11 @@ def combine_allbands(sband=1, eband=16):
 			band = "%02d"%band
 			print "subint %s and band %s" % (xx, band)
 			fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
-			filepath = '%s/*%s*.ar' % (fullpath, '_1'+xx)
+			filepath = '%s/*%s*.ar' % (fullpath, '_0'+xx)
 			combine_in_time_(filepath, band, date, 
 				subint='_'+xx, outfile=xx+'band', background=True)
 
+	# Wait for the remaining processes to finish
 	while True:
 		if os.system('ps -e | grep psradd') == 0:
 			print "Waiting for psradd to finish"
