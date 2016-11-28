@@ -29,15 +29,13 @@ def combine_allbands(sband=1, eband=16):
 			filepath = '%s/*%s*.ar' % (fullpath, '_1'+xx)
 			combine_in_time_(filepath, band, date, 
 				subint='_'+xx, outfile=xx+'band', background=True)
-			os.system('jobs -r | wc -l')
-			time.sleep(1)
 
-		subintfiles = './*band%s.ar' % band
-		outfile = 'time_averaged_%s_%s' % (date, band)
-		print subintfiles, outfile
-		combine_in_time_(subintfiles, band, date, outfile=outfile)
+	subintfiles = './*band%s.ar' % band
+	outfile = 'time_averaged_%s_%s' % (date, band)
 
-        print "Done %s" % band
+	combine_in_time_(subintfiles, band, date, outfile=outfile)
+
+     
 
 def combine_in_time(sband=1, eband=16):
 
