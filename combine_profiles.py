@@ -26,6 +26,7 @@ def combine_allbands(sband=1, eband=16):
 
 		for band in range(sband, eband+1):
 			band = "%02d"%band
+			print "subint %s and band %s" % (xx, band)
 			fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
 			filepath = '%s/*%s*.ar' % (fullpath, '_1'+xx)
 			combine_in_time_(filepath, band, date, 
