@@ -28,7 +28,7 @@ def combine_subints(sband=1, eband=16):
 			band = "%02d"%band
 			print "subint %s and band %s" % (xx, band)
 			fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
-			filepath = '%s/*%s*.ar' % (fullpath, '_'+xx)
+			filepath = '%s/*%s*.ar' % (fullpath, '_0'+xx)
 			combine_in_time_(filepath, band, date, 
 				subint='_'+xx, outfile=xx, background=True)
 
