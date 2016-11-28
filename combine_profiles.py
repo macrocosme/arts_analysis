@@ -25,7 +25,7 @@ def combine_in_time(sband=1, eband=16):
 		fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
 		print "Processing %s" % band
 
-		file_list = glob.glob(fullpath + "/*.ar")
+		file_list = glob.glob(fullpath + "/*_1*.ar")
 
 		data_time_average = []
 
@@ -48,7 +48,8 @@ def combine_in_time_shell(sband=1, eband=16):
 
         print "Done %s" % band
 
-combine_in_time_shell(sband, eband)
+#combine_in_time_shell(sband, eband)
+combine_in_time(sband, eband)
 
 
 
