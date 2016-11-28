@@ -51,7 +51,7 @@ def combine_allbands(sband=1, eband=16):
 
         print "Done %s" % band
 
-combine_in_time_(sband, eband)
+combine_allbands(sband, eband)
 #combine_in_time(sband, eband)
 
 #fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
