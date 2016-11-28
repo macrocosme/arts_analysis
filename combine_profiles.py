@@ -42,7 +42,7 @@ def combine_in_time_shell(sband=1, eband=16):
                 band = "%02d"%band
 		fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
 
-		os.system("(nice psradd -P %s/*_2*.ar \
+		os.system("(nice psradd -P %s/*_1*.ar \
 					-o band%s.ar; psredit -m -c bw=18.75 band%s.ar) &" 
 		 			% (fullpath, band, band))
 
