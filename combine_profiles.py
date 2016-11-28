@@ -36,12 +36,11 @@ def combine_in_time(sband=1, eband=16):
 
 		data_time_average = np.concatenate(data_time_average, axis=0).sum(axis=0)
 
-def combine_in_time_(band, date, folder, subint='', outfile='band'):
-	fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
+def combine_in_time_(band, date, fullpath, subint='', outfile='band'):
 
-	print outfile + band
 	files = '%s/*%s*.ar' % (fullpath, subint)
 
+	print files
 	os.system("(nice psradd -P %s \
 				-o %s.ar; psredit -m -c bw=18.75 %s.ar)" 
 		 		% (files, outfile + band, outfile + band))
@@ -54,7 +53,10 @@ def combine_allbands(sband=1, eband=16):
 		for xx in ['10', '11', '12', '13', '14', '15',
 				   '16', '17', '18', '19']:
 			
-			combine_in_time_(band, date, folder, subint='_'+xx, outfile=xx + 'band')
+			fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
+
+			combine_in_time_(band, date, fullpath, subint='_'+xx, outfile=xx + 'band')
+
 		combine_in_time_(band, date, './')
         print "Done %s" % band
 
