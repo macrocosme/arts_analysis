@@ -40,16 +40,16 @@ def combine_subints(sband=1, eband=16, outfile='time_averaged'):
 		else:
 			break
 
-
 	for band in range(sband, eband+1):
 		print "collecting %s" % band
 		band = "%02d"%band
 		subintfiles = './*band%s.ar' % band
-		outfile = '%s_%s_%s' % (outfile, date, band)
+		outfile_full = '%s_%s_%s' % (outfile, date, band)
 
-		combine_in_time_(subintfiles, band, date, outfile=outfile)
+		combine_in_time_(subintfiles, band, date, outfile=outfile_full)
 
 def combine_freq(fnames, outfile='all.ar'):
+	print "Combining in frequency"
 	os.system('nice psradd -P -m phase -R %s*.ar -o %s' % (fnames, outfile))
 
 
