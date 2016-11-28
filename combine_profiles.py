@@ -54,8 +54,9 @@ def combine_allbands(sband=1, eband=16):
 			combine_in_time_(filepath, band, date, subint='_'+xx, outfile=xx + 'band')
 
 		subintfiles = './*band%s.ar' % band
+		outfile = 'time_averaged_%s_%s' % (date, band)
+		combine_in_time_(subintfiles, band, date, outfile=outfile)
 
-		combine_in_time_(subintfiles, band, date, outfile='time_averaged')
         print "Done %s" % band
 
 combine_allbands(sband, eband)
