@@ -34,6 +34,7 @@ def combine_subints(sband=1, eband=16, outfile='time_averaged'):
 
 	for band in range(sband, eband+1):
 		band = "%02d"%band
+		xx=''
 		print "subint %s and band %s" % (xx, band)
 		fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
 		filepath = '%s/*%s*.ar' % (fullpath, '_')
