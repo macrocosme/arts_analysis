@@ -21,32 +21,32 @@ def combine_in_time_(filepath, band, date,
 def combine_subints(sband=1, eband=16, outfile='time_averaged'):
 
 	# # Take subints to be the outerloop 
-	# for xx in range(3):
-	# 	xx = str(xx)
+	for xx in range(4):
+		xx = str(xx)
 
-	# 	for band in range(sband, eband+1):
-	# 		band = "%02d"%band
-	# 		print "subint %s and band %s" % (xx, band)
-	# 		fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
-	# 		filepath = '%s/*%s*.ar' % (fullpath, '_0'+xx)
-	# 		combine_in_time_(filepath, band, date, 
-	# 			subint='_'+xx, outfile=xx+'band'+band, background=True)
+		for band in range(sband, eband+1):
+			band = "%02d"%band
+			print "subint %s and band %s" % (xx, band)
+			fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
+			filepath = '%s/*%s*.ar' % (fullpath, '_0'+xx)
+			combine_in_time_(filepath, band, date, 
+				subint='_'+xx, outfile=xx+'band'+band, background=True)
 
-	for band in range(sband, eband+1):
-		band = "%02d"%band
-		xx=''
-		print "subint %s and band %s" % (xx, band)
-		fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
-		filepath = '%s/*%s*.ar' % (fullpath, '_')
-		combine_in_time_(filepath, band, date, 
-			subint='_'+xx, outfile=xx+'band'+band, background=True)
+	# for band in range(sband, eband+1):
+	# 	band = "%02d"%band
+	# 	xx=''
+	# 	print "subint %s and band %s" % (xx, band)
+	# 	fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
+	# 	filepath = '%s/*%s*.ar' % (fullpath, '_')
+	# 	combine_in_time_(filepath, band, date, 
+	# 		subint='_'+xx, outfile=xx+'band'+band, background=True)
 
 
 	# Wait for the remaining processes to finish
 	while True:
 		if os.system('ps -e | grep psradd') == 0:
 			print "Waiting for psradd to finish"
-			time.sleep(10)
+			time.sleep(2)
 		else:
 			break
 
