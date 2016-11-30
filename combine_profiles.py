@@ -87,8 +87,8 @@ if __name__=='__main__':
 	date, folder = args.date, args.folder
 	sband, eband, outname, subints = args.sband, args.eband, args.o, args.subints
 
-	combine_subints(sband, eband, subints=subints)
-	combine_freq(fnames='time_averaged', outfile=outname)
+	combine_subints(sband, eband, subints=subints, outfile='time_averaged'+folder)
+	combine_freq(fnames='time_averaged'+folder, outfile=outname)
 
 
 #fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
