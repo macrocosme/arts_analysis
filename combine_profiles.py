@@ -43,7 +43,7 @@ def combine_subints(sband=1, eband=16,
 		print "Processing total of %d files\n" % len(flist)
 
 		combine_in_time(filepath,
-			subint='_'+subints, outfile=subints+'band'+band, background=True)
+			subint='_'+subints, outfile=outfile+subints+'band'+band, background=True)
 
 	# Wait for the remaining processes to finish
 	while True:
