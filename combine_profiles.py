@@ -80,7 +80,7 @@ if __name__=='__main__':
 	       help="only process subints starting with parameter. e.g. 012\
 	       would analyze only *_012*.ar files", 
 	       default="")
-	parser.add_argument("-o", help="name of output file name", default="all.ar")
+	parser.add_argument("-o", help="name of output file name", default="all")
 	args = parser.parse_args()
 
 	# Unpack arguments
@@ -88,7 +88,7 @@ if __name__=='__main__':
 	sband, eband, outname, subints = args.sband, args.eband, args.o, args.subints
 
 	combine_subints(sband, eband, subints=subints, outfile='time_averaged'+folder)
-	combine_freq(fnames='time_averaged'+folder, outfile=outname)
+	combine_freq(fnames='time_averaged'+folder, outfile=outname+folder+'.ar')
 
 
 #fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
