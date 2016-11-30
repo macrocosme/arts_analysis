@@ -14,8 +14,7 @@ def combine_in_time(filepath, subint='', outfile='band', background=False):
 		os.system("(nice psradd -P %s -o %s.ar; psredit -m -c bw=18.75 %s.ar)" 
 		 		% (filepath, outfile, outfile))
 	else:
-		print "(nice psradd -P %s -o %s.ar; psredit -m -c bw=18.75 %s.ar) &" 
-		 		% (filepath, outfile, outfile)
+		print "(nice psradd -P %s -o %s.ar; psredit -m -c bw=18.75 %s.ar) &" % (filepath, outfile, outfile)
 		os.system("(nice psradd -P %s -o %s.ar; psredit -m -c bw=18.75 %s.ar) &" 
 		 		% (filepath, outfile, outfile))
 
