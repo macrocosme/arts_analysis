@@ -8,13 +8,14 @@ import argparse
 import psrchive
 
 
-def combine_in_time_(filepath, band, date, 
-					subint='', outfile='band', background=False):
+def combine_in_time(filepath, subint='', outfile='band', background=False):
 
 	if background is False:
 		os.system("(nice psradd -P %s -o %s.ar; psredit -m -c bw=18.75 %s.ar)" 
 		 		% (filepath, outfile, outfile))
 	else:
+		print "(nice psradd -P %s -o %s.ar; psredit -m -c bw=18.75 %s.ar) &" 
+		 		% (filepath, outfile, outfile)
 		os.system("(nice psradd -P %s -o %s.ar; psredit -m -c bw=18.75 %s.ar) &" 
 		 		% (filepath, outfile, outfile))
 
@@ -42,7 +43,7 @@ def combine_subints(sband=1, eband=16,
 		flist = glob.glob(filepath)
 		print "Processing total of %d files\n" % len(flist)
 
-		combine_in_time_(filepath, band, date, 
+		combine_in_time(filepath,
 			subint='_'+subints, outfile=subints+'band'+band, background=True)
 
 
