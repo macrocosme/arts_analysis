@@ -45,9 +45,6 @@ def combine_subints(sband=1, eband=16,
 		combine_in_time(filepath,
 			subint='_'+subints, outfile=subints+'band'+band, background=True)
 
-	if loop_subints is False:
-		return
-
 	# Wait for the remaining processes to finish
 	while True:
 		if os.system('ps -e | grep psradd') == 0:
@@ -55,6 +52,9 @@ def combine_subints(sband=1, eband=16,
 			time.sleep(2)
 		else:
 			break
+
+	if loop_subints is False:
+		return
 
 	for band in range(sband, eband+1):
 		print "collecting %s" % band
