@@ -78,7 +78,7 @@ if __name__=='__main__':
 
 	# Unpack arguments
 	date, folder = args.date, args.folder
-	sband, eband, outname, subint = args.sband, args.eband, args.o, args.subints
+	sband, eband, outname, subints = args.sband, args.eband, args.o, args.subints
 
 	combine_subints(sband, eband, subints=subints)
 	combine_freq(fnames='time_averaged', outfile=outname)
