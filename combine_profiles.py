@@ -18,28 +18,28 @@ def combine_in_time_(filepath, band, date,
 		os.system("(nice psradd -P %s -o %s.ar; psredit -m -c bw=18.75 %s.ar) &" 
 		 		% (filepath, outfile, outfile))
 
-def combine_subints(sband=1, eband=16, outfile='time_averaged'):
+def combine_subints(sband=1, eband=16, 
+				outfile='time_averaged', subint=''):
 
 	# # Take subints to be the outerloop 
-	for xx in range(4):
-		xx = str(xx)
+	# for xx in range(4):
+	# 	xx = str(xx)
 
-		for band in range(sband, eband+1):
-			band = "%02d"%band
-			print "subint %s and band %s" % (xx, band)
-			fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
-			filepath = '%s/*%s*.ar' % (fullpath, '_0'+xx)
-			combine_in_time_(filepath, band, date, 
-				subint='_'+xx, outfile=xx+'band'+band, background=True)
+		# for band in range(sband, eband+1):
+		# 	band = "%02d"%band
+		# 	print "subint %s and band %s" % (xx, band)
+		# 	fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
+		# 	filepath = '%s/*%s*.ar' % (fullpath, '_0'+xx)
+		# 	combine_in_time_(filepath, band, date, 
+		# 		subint='_'+xx, outfile=xx+'band'+band, background=True)
 
-	# for band in range(sband, eband+1):
-	# 	band = "%02d"%band
-	# 	xx=''
-	# 	print "subint %s and band %s" % (xx, band)
-	# 	fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
-	# 	filepath = '%s/*%s*.ar' % (fullpath, '_')
-	# 	combine_in_time_(filepath, band, date, 
-	# 		subint='_'+xx, outfile=xx+'band'+band, background=True)
+	for band in range(sband, eband+1):
+		band = "%02d"%band
+		print "subint %s and band %s" % (subint, band)
+		fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
+		filepath = '%s/*%s*.ar' % (fullpath, '_')
+		combine_in_time_(filepath, band, date, 
+			subint='_'+subint, outfile=subint+'band'+band, background=True)
 
 
 	# Wait for the remaining processes to finish
@@ -89,13 +89,17 @@ if __name__=='__main__':
 										that contains folded profiles")											
 	parser.add_argument("-sband", help="start band number", default="1", type=int)	
 	parser.add_argument("-eband", help="end band number", default="16", type=int)
+	parser.add_argument("-subints", 
+	       help="only process subints starting with parameter. e.g. 012\
+	       would analyze only *_012*.ar files", 
+	       default="")
 	parser.add_argument("-o", help="name of output file name", default="all.ar")
 	args = parser.parse_args()
 
 	date, folder = args.date, args.folder
-	sband, eband, outnamee = args.sband, args.eband, args.o 
+	sband, eband, outname = args.sband, args.eband, args.o 
 	combine_subints(sband, eband)
-	combine_freq(fnames='time_averaged')
+	combine_freq(fnames='time_averaged', outfile=outname)
 #combine_in_time(sband, eband)
 
 #fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
