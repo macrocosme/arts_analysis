@@ -19,7 +19,7 @@ def combine_in_time(filepath, subint='', outfile='band', background=False):
 		 		% (filepath, outfile, outfile))
 
 def combine_subints(sband=1, eband=16, 
-				outfile='time_averaged', subints=''):
+				outfile='time_averaged', subints='', loop_subints=False):
 
 	# # Take subints to be the outerloop 
 	# for xx in range(4):
@@ -45,6 +45,8 @@ def combine_subints(sband=1, eband=16,
 		combine_in_time(filepath,
 			subint='_'+subints, outfile=subints+'band'+band, background=True)
 
+	if loop_subints is False:
+		return
 
 	# Wait for the remaining processes to finish
 	while True:
@@ -57,10 +59,11 @@ def combine_subints(sband=1, eband=16,
 	for band in range(sband, eband+1):
 		print "collecting %s" % band
 		band = "%02d"%band
+
 		subintfiles = './*band%s.ar' % band
 		outfile_full = '%s_%s_%s' % (outfile, date, band)
 
-		combine_in_time(subintfiles, outfile=outfile_full)
+		combine_in_time(subintfiles, outfile=outfile_full, background=True)
 
 def combine_freq(fnames, outfile='all.ar'):
 	print "Combining in frequency"
