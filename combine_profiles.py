@@ -19,7 +19,7 @@ def combine_in_time_(filepath, band, date,
 		 		% (filepath, outfile, outfile))
 
 def combine_subints(sband=1, eband=16, 
-				outfile='time_averaged', subint=''):
+				outfile='time_averaged', subints=''):
 
 	# # Take subints to be the outerloop 
 	# for xx in range(4):
@@ -35,11 +35,11 @@ def combine_subints(sband=1, eband=16,
 
 	for band in range(sband, eband+1):
 		band = "%02d"%band
-		print "subint %s and band %s" % (subint, band)
+		print "subint %s and band %s" % (subints, band)
 		fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
 		filepath = '%s/*%s*.ar' % (fullpath, '_')
 		combine_in_time_(filepath, band, date, 
-			subint='_'+subint, outfile=subint+'band'+band, background=True)
+			subint='_'+subints, outfile=subints+'band'+band, background=True)
 
 
 	# Wait for the remaining processes to finish
@@ -62,26 +62,6 @@ def combine_freq(fnames, outfile='all.ar'):
 	print "Combining in frequency"
 	os.system('nice psradd -P -m phase -R %s*.ar -o %s' % (fnames, outfile))
 
-
-def combine_in_time(sband=1, eband=16):
-
-	for band in range(sband, eband+1):
-                band = "%02d"%band
-		fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
-		print "Processing %s" % band
-
-		file_list = glob.glob(fullpath + "/*_1*.ar")
-
-		data_time_average = []
-
-		for fn in file_list:
-			arch = psrchive.Archive_load(fn)
-			data = arch.get_data()
-			data_time_average.append(data)
-
-		data_time_average = np.concatenate(data_time_average, axis=0).sum(axis=0)
-
-
 if __name__=='__main__':
 	parser = argparse.ArgumentParser()
 	parser.add_argument("date", help="date of observation in yyyymmdd format")
@@ -96,11 +76,13 @@ if __name__=='__main__':
 	parser.add_argument("-o", help="name of output file name", default="all.ar")
 	args = parser.parse_args()
 
+	# Unpack arguments
 	date, folder = args.date, args.folder
-	sband, eband, outname = args.sband, args.eband, args.o 
-	combine_subints(sband, eband)
+	sband, eband, outname, subint = args.sband, args.eband, args.o, args.subints
+
+	combine_subints(sband, eband, subints=subints)
 	combine_freq(fnames='time_averaged', outfile=outname)
-#combine_in_time(sband, eband)
+
 
 #fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
 
