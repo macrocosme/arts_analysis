@@ -60,7 +60,7 @@ def combine_subints(sband=1, eband=16,
 		subintfiles = './*band%s.ar' % band
 		outfile_full = '%s_%s_%s' % (outfile, date, band)
 
-		combine_in_time(subintfiles, band, date, outfile=outfile_full)
+		combine_in_time(subintfiles, outfile=outfile_full)
 
 def combine_freq(fnames, outfile='all.ar'):
 	print "Combining in frequency"
