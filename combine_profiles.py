@@ -13,7 +13,7 @@ import psrchive
 def dedisperse_folded_spec(fname):
 	arch = psrchive.Archive_load(fname)
 	arch.dedisperse()
-	arch.unload(outfile.split('.')[:-1]+'dedispersed.ar')
+	arch.unload(fname+'dedispersed.ar')
 
 def combine_in_time(filepath, outfile='band', background=False):
 	""" 
@@ -142,7 +142,7 @@ if __name__=='__main__':
 
 	combine_subints(sband, eband, subints=subints, outfile='time_averaged'+folder)
 	combine_freq(fnames='time_averaged'+folder, outfile=outname+folder+'.ar')
-	dedisperse_folded_spec(outfile)
+	dedisperse_folded_spec(outname+folder)
 
 
 
