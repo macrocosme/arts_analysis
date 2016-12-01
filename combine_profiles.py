@@ -1,12 +1,5 @@
-# 
-#
-#
-#
-#
-#
-#
-#
-#
+# Liam Connor 28 November 2016 
+# Code to combine data using psrchiv 
 
 import os
 import time
@@ -17,19 +10,59 @@ import argparse
 
 import psrchive
 
+def dedisperse_folded_spec(fname):
+	arch = psrchive.Archive_load(fname)
+	arch.dedisperse()
+	arch.unload(outfile.split('.')[:-1]+'dedispersed.ar')
 
-def combine_in_time(filepath, subint='', outfile='band', background=False):
+def combine_in_time(filepath, outfile='band', background=False):
+	""" 
 
+	Parameters
+	----------
+	filepath   : str
+		Path to .ar files, should include *
+
+	outfile    : str 
+		Name of file to write to, not including '.ar'
+
+	background : bool
+		Determines if process is run in the background with '&'
+
+	Returns
+	-------
+
+	"""
 	if background is False:
 		os.system("(nice psradd -P %s -o %s.ar; psredit -m -c bw=18.75 %s.ar)" 
 		 		% (filepath, outfile, outfile))
 	else:
-		os.system("(nice psradd -P %s -o %s.ar; psredit -m -c bw=18000.75 %s.ar) &" 
+		os.system("(nice psradd -P %s -o %s.ar; psredit -m -c bw=18.75 %s.ar) &" 
 		 		% (filepath, outfile, outfile))
 
 def combine_subints(sband=1, eband=16, 
 				outfile='time_averaged', subints='', loop_subints=False):
+	"""
 
+	Parameters
+	----------
+	sband : int 
+		start band
+
+	eband : int 
+		end band
+
+	outfile : str
+		file to write to
+
+	subints : str 
+		prefix of file numbers to use, e.g. '01' would use only 
+		files '/01*.ar'
+
+	loop_subints : bool
+		if True, divide up files into smaller subint chunks and 
+		loop over them
+	"""
 	# # Take subints to be the outerloop 
 	# for xx in range(4):
 	# 	xx = str(xx)
@@ -51,8 +84,7 @@ def combine_subints(sband=1, eband=16,
 		flist = glob.glob(filepath)
 		print "Processing total of %d files\n" % len(flist)
 
-		combine_in_time(filepath,
-			subint='_'+subints, outfile=outfile+subints+'band'+band, background=True)
+		combine_in_time(filepath, outfile=outfile+subints+'band'+band, background=True)
 
 	# Wait for the remaining processes to finish
 	while True:
@@ -75,7 +107,19 @@ def combine_subints(sband=1, eband=16,
 		combine_in_time(subintfiles, outfile=outfile_full, background=True)
 
 def combine_freq(fnames, outfile='all.ar'):
+	"""
+	Parameters
+	----------
+	fnames : str 
+		filenames to use (will actually use fnames+'*.ar')
+
+	outfile : str 
+		outfile name
+	"""
 	print "Combining in frequency"
+
+#	if os.path.exists(outname+folder+'.ar'):
+
 	os.system('nice psradd -P -m phase -R %s*.ar -o %s' % (fnames, outfile))
 
 if __name__=='__main__':
@@ -98,7 +142,7 @@ if __name__=='__main__':
 
 	combine_subints(sband, eband, subints=subints, outfile='time_averaged'+folder)
 	combine_freq(fnames='time_averaged'+folder, outfile=outname+folder+'.ar')
-
+	dedisperse_folded_spec(outfile)
 
 
 
