@@ -11,7 +11,7 @@ import argparse
 import psrchive
 
 def dedisperse_folded_spec(fname):
-	arch = psrchive.Archive_load(fname)
+	arch = psrchive.Archive_load(fname+'.ar')
 	arch.dedisperse()
 	arch.unload(fname+'dedispersed.ar')
 
