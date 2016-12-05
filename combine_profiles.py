@@ -174,7 +174,7 @@ if __name__=='__main__':
 	# 	dedisperse_folded_spec('time_averaged'+folder+subints+'band'+band)
 
 	combine_freq(fnames='time_averaged'+folder, outfile=outname+folder+'.ar')
-	dedisperse_folded_spec(outname+folder)
+#	dedisperse_folded_spec(outname+folder)
 
 
 
