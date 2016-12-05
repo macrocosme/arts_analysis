@@ -12,8 +12,8 @@ import psrchive
 
 def dedisperse_folded_spec(fname):
 	arch = psrchive.Archive_load(fname+'.ar')
-	arch.set_bandwidth(500000.0)
-	arch.set_centre_frequency(500000.0)
+#	arch.set_bandwidth(500000.0)
+#	arch.set_centre_frequency(500000.0)
 	arch.set_dispersion_measure(10000.0)
 	arch.dedisperse()
 	arch.unload(fname+'dedispersed.ar')
