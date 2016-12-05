@@ -162,8 +162,9 @@ if __name__=='__main__':
 	sband, eband, outname, subints = args.sband, args.eband, args.o, args.subints
 
 	combine_subints(sband, eband, subints=subints, outfile='time_averaged'+folder)
+	dedisperse_folded_spec('time_averaged'+folder)
 	combine_freq(fnames='time_averaged'+folder, outfile=outname+folder+'.ar')
-	dedisperse_folded_spec(outname+folder)
+#	dedisperse_folded_spec(outname+folder)
 
 
 
