@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 # Liam Connor 28 November 2016 
 # Code to combine data using psrchiv 
 
