@@ -108,7 +108,7 @@ def combine_subints(sband=1, eband=16,
 	while True:
 		if os.system('ps -e | grep psradd') == 0:
 			print "Waiting for psradd to finish"
-			time.sleep(2)
+			time.sleep(5)
 		else:
 			break
 
