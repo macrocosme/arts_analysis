@@ -27,7 +27,7 @@ def dedisperse_manually(fname, dm):
 
 	dm_del = 4.148808e3 * dm * (freq**(-2) - freq_ref**(-2))
 
-	for ii, ff in enumerate(freq)
+	for ii, ff in enumerate(freq):
 		dmd = int(round(dm_del[ii] / dt))
 		data[:, :, ii] = np.roll(data[:, :, ii], -dmd, axis=-1)
 
