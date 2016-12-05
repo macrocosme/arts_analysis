@@ -15,13 +15,13 @@ def dedisperse_folded_spec(fname):
 	arch.dedisperse()
 	arch.unload(fname+'dedispersed.ar')
 
-def dedisperse_manually(fname, dm):
+def dedisperse_manually(fname, dm, p0):
 	arch = psrchive.Archive_load(fname+'.ar')
 	data = arch.get_data()
 	freq_ref = 1390.62 # MHz
 	bw = 131.25 # MHz
 	nchan = data.shape[-2]
-	print data.shape
+	dt = p0 / data.shape[-1]
 
 	freq = np.linspace(freq_ref - bw/2., freq_ref + bw/2., nchan)
 
