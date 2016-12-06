@@ -26,7 +26,7 @@ def dedisperse_manually(fname, dm, p0):
 	arch = psrchive.Archive_load(fname+'.ar')
 	data = arch.get_data()
 	freq_ref = 1390.62 # MHz
-	bw = 131.25 # MHz
+	bw = 2*131.25 # MHz
 	nchan = data.shape[-2]
 	dt = p0 / data.shape[-1]
 
@@ -174,7 +174,7 @@ if __name__=='__main__':
 	       help="only process subints starting with parameter. e.g. 012\
 	       would analyze only *_012*.ar files", 
 	       default="")
-	parser.add_argument("-dm", help="dm for manual dedispersion", type=int, default=0)
+	parser.add_argument("-dm", help="dm for manual dedispersion", type=float, default=0)
 	parser.add_argument("-o", help="name of output file name", default="all")
 	args = parser.parse_args()
 
