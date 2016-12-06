@@ -40,6 +40,16 @@ def dedisperse_manually(fname, dm, p0):
 
 	return data
 
+def plot_me_up(data):
+	import matplotlib.pylab as plt 
+
+	data -= np.median(data, axis=-1)[..., None]
+
+	plt.imshow(data, aspect='auto', interpolation='nearest')
+	plt.colorbar()
+	plt.show()
+
+
 def combine_in_time(filepath, outfile='band', background=False):
 	""" 
 
@@ -158,6 +168,7 @@ if __name__=='__main__':
 	       help="only process subints starting with parameter. e.g. 012\
 	       would analyze only *_012*.ar files", 
 	       default="")
+	parser.add_argument("-dm", help="dm for manual dedispersion", type=int, default=0)
 	parser.add_argument("-o", help="name of output file name", default="all")
 	args = parser.parse_args()
 
@@ -174,9 +185,11 @@ if __name__=='__main__':
 	# 	dedisperse_folded_spec('time_averaged'+folder+subints+'band'+band)
 
 	combine_freq(fnames='time_averaged'+folder, outfile=outname+folder+'.ar')
-#	dedisperse_folded_spec(outname+folder)
-
-
+	#dedisperse_folded_spec(outname+folder)
+	p0 = 2.787565229026**-1
+	dm = args.dm
+	data = dedisperse_manually(outname+folder+'.ar', dm, p0)
+	plot_me_up(data.mean(1).mean(1))
 
 
 
