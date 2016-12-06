@@ -195,7 +195,7 @@ if __name__=='__main__':
 	combine_freq(fnames='time_averaged'+folder, outfile=outname+folder+'.ar')
 	#dedisperse_folded_spec(outname+folder)
 	p0 = 2.787565229026**-1
-	p0 = 1.3995389820836543**-1
+#	p0 = 1.3995389820836543**-1
 	dm = args.dm
 	data = dedisperse_manually(outname+folder, dm, p0)
 	print data.shape
