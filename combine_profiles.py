@@ -26,7 +26,7 @@ def dedisperse_manually(fname, dm, p0):
 	arch = psrchive.Archive_load(fname+'.ar')
 	data = arch.get_data()
 	freq_ref = 1390.62 # MHz
-	bw = 131.25 # MHz
+	bw = 2 * 131.25 # MHz
 	nchan = data.shape[-2]
 	dt = p0 / data.shape[-1]
 
