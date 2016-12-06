@@ -189,6 +189,7 @@ if __name__=='__main__':
 	p0 = 2.787565229026**-1
 	dm = args.dm
 	data = dedisperse_manually(outname+folder, dm, p0)
+	print data.shape
 	plot_me_up(data.mean(1).mean(1))
 
 
