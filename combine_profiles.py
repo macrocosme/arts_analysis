@@ -46,11 +46,11 @@ def plot_me_up(data):
 	fig = plt.figure()
 	data -= np.median(data, axis=-1)[..., None]
 
-	fig.add_subplot(121)
+	fig.add_subplot(211)
 	plt.imshow(data, aspect='auto', interpolation='nearest')
 	plt.colorbar()
 
-	fig.add_subplot(122)
+	fig.add_subplot(212)
 	plt.plot(data.mean(0))
 
 	plt.show()
