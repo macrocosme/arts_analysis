@@ -190,7 +190,9 @@ if __name__=='__main__':
 	dm = args.dm
 	data = dedisperse_manually(outname+folder, dm, p0)
 	print data.shape
-	plot_me_up(data.mean(0).mean(0))
+	data = data.mean(0).mean(0)
+	data = data[:len(data)//4*4].reshape(len(data)//4*4, 4, -1)
+	plot_me_up(data.mean(1))
 
 
 
