@@ -26,7 +26,7 @@ def dedisperse_manually(fname, dm, p0):
 	arch = psrchive.Archive_load(fname+'.ar')
 	data = arch.get_data()
 	freq_ref = 1390.62 # MHz
-	bw = 2 * 131.25 # MHz
+	bw = 131.25 # MHz
 	nchan = data.shape[-2]
 	dt = p0 / data.shape[-1]
 
@@ -47,7 +47,8 @@ def plot_me_up(data):
 	data -= np.median(data, axis=-1)[..., None]
 
 	fig.add_subplot(211)
-	plt.imshow(data, aspect='auto', interpolation='nearest')
+	plt.imshow(data, aspect='auto', interpolation='nearest', 
+			extent=[0, 2.787565229026**-1, 0, 1])
 	plt.colorbar()
 
 	fig.add_subplot(212)
