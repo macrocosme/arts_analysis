@@ -188,7 +188,7 @@ if __name__=='__main__':
 	#dedisperse_folded_spec(outname+folder)
 	p0 = 2.787565229026**-1
 	dm = args.dm
-	data = dedisperse_manually(outname+folder+'.ar', dm, p0)
+	data = dedisperse_manually(outname+folder, dm, p0)
 	plot_me_up(data.mean(1).mean(1))
 
 
