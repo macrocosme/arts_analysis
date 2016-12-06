@@ -43,10 +43,16 @@ def dedisperse_manually(fname, dm, p0):
 def plot_me_up(data):
 	import matplotlib.pylab as plt 
 
+	fig = plt.figure()
 	data -= np.median(data, axis=-1)[..., None]
 
+	fig.add_subplot(121)
 	plt.imshow(data, aspect='auto', interpolation='nearest')
 	plt.colorbar()
+
+	fig.add_subplot(122)
+	plt.plot(data.mean(0))
+
 	plt.show()
 
 
@@ -191,8 +197,10 @@ if __name__=='__main__':
 	data = dedisperse_manually(outname+folder, dm, p0)
 	print data.shape
 	data = data.mean(0).mean(0)
-	data = data[:len(data)//4*4].reshape(len(data)//4, 4, -1)
-	plot_me_up(data.mean(1))
+	data = data[:len(data)//4*4].reshape(len(data)//4, 4, -1).mean(1)
+	nph = data.shape[-1]
+	data = data.reshape(-1, nph/4, 4).mean(-1)
+	plot_me_up(data)
 
 
 
