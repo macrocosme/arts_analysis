@@ -2,6 +2,13 @@
 
 # Liam Connor 28 November 2016 
 # Code to combine data using psrchiv 
+#
+# Example usage: 
+# To combine only files *01*ar in directory 2016.11.16-18:35:55.B0329+54
+# python combine_profiles.py 20161116 2016.11.16-18:35:55.B0329+54 -sband 5 -eband 12 -subints 01 
+#
+# To manually dedisperse 1933 with twice its dm, do
+# python combine_profiles.py 20161116 2016.11.16-12:25:13.B1933+16 -sband 5 -eband 11 -manual_dd 1 -dm 316.0 -F0 2.787565229026
 
 import os
 import time
@@ -12,7 +19,7 @@ import argparse
 
 import psrchive
 
-def dedisperse_folded_spec(fname):
+def dedisperse_psrchive(fname):
 	""" Dedisperse data using psrchive tools
 	"""
 	arch = psrchive.Archive_load(fname+'.ar')
@@ -178,7 +185,6 @@ if __name__=='__main__':
 	combine_subints(sband, eband, subints=subints, outfile='time_averaged'+folder)
 
 	combine_freq(fnames='time_averaged'+folder, outfile=outname+folder+'.ar')
-	dedisperse_folded_spec(outname+folder)
 
 	if args.manual_dd == 1:
 		p0 = args.F0**-1
@@ -190,6 +196,9 @@ if __name__=='__main__':
 		nph = data.shape[-1]
 		data = data.reshape(-1, nph/4, 4).mean(-1)
 		plot_spectra(data)
+	else:
+		dedisperse_psrchive(outname+folder)
+
 
 
 
