@@ -254,11 +254,17 @@ if __name__=='__main__':
 		ax4 = fig.add_subplot(414)
 		ph = np.linspace(0, p0, len(prof_2dm))
 		plt.plot(ph, prof_0dm, color='steelblue')
-		plt.plot(ph, prof_dm, color='lightslategrey')
-		plt.plot(ph, prof_2dm, color='cornflowerblue')
-		plt.legend(["DM=0", "DM=expected", "DM=2*expected"])
+		plt.plot(ph, prof_dm, color='grey')
+		plt.plot(ph, prof_2dm, color='salmon')
+		plt.legend(["DM=0", 
+					"DM=expected", 
+					"DM=2*expected",
+					location=4,
+					fontsize=12])
 		plt.xlim(0, p0)
 		plt.xlabel('pulse phase [s]')
+
+		plt.text(0, 0, 'HERE')
 
 		plt.show()
 
