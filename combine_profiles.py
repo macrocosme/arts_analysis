@@ -264,7 +264,7 @@ if __name__=='__main__':
 		plt.xlim(0, p0)
 		plt.xlabel('pulse phase [s]')
 
-		plt.text(0.1, .75, 'DM=0', fontsize=14, color='')
+		plt.text(0.1, .75, 'DM=0', fontsize=14, color='red')
 		#plt.text(0.1, .75, 'DM=0', fontsize=14, color='')
 		#plt.text(0.1, .75, 'DM=0', fontsize=14, color='')
 
