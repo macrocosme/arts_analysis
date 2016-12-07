@@ -206,9 +206,11 @@ if __name__=='__main__':
 		import matplotlib.pylab as plt
 		fig = plt.figure()
 
+		frq_rb = 2
+
 		data_dm0 = dedisperse_manually(outname+folder, 0.0, p0)
 		data = data_dm0.mean(0).mean(0)
-		data = data[:len(data)//4*4].reshape(len(data)//4, 4, -1).mean(1)
+		data = data[:len(data)//frq_rb*frq_rb].reshape(len(data)//frq_rb, frq_rb, -1).mean(1)
 		nph = data.shape[-1]
 		data = data.reshape(-1, nph/4, 4).mean(-1)
 		data -= np.median(data, axis=-1)[..., None]
@@ -216,11 +218,11 @@ if __name__=='__main__':
 		ax1=fig.add_subplot(311)
 		plt.imshow(data, aspect='auto', interpolation='nearest', 
 			extent=[0, p0, 0, 1], cmap='Greys')
-		ax1.text(1, 1, 'DM=0')	
+#		ax1.text(1, 1, 'DM=0')	
 
 		data_dm = dedisperse_manually(outname+folder, dm, p0)
 		data = data_dm.mean(0).mean(0)
-		data = data[:len(data)//4*4].reshape(len(data)//4, 4, -1).mean(1)
+		data = data[:len(data)//frq_rb*frq_rb].reshape(len(data)//frq_rb, frq_rb, -1).mean(1)
 		nph = data.shape[-1]
 		data = data.reshape(-1, nph/4, 4).mean(-1)
 		data -= np.median(data, axis=-1)[..., None]
@@ -228,11 +230,11 @@ if __name__=='__main__':
 		ax2=fig.add_subplot(312)
 		plt.imshow(data, aspect='auto', interpolation='nearest', 
 			extent=[0, p0, 0, 1], cmap='Greys')
-		ax2.text(1, 1, 'DM=expected')
+		#title('DM=expected')
 
 		data_2dm = dedisperse_manually(outname+folder, 2*dm, p0)
 		data = data_2dm.mean(0).mean(0)
-		data = data[:len(data)//4*4].reshape(len(data)//4, 4, -1).mean(1)
+		data = data[:len(data)//frq_rb*frq_rb].reshape(len(data)//frq_rb, frq_rb, -1).mean(1)
 		nph = data.shape[-1]
 		data = data.reshape(-1, nph/4, 4).mean(-1)
 		data -= np.median(data, axis=-1)[..., None]
@@ -240,7 +242,8 @@ if __name__=='__main__':
 		ax3 = fig.add_subplot(313)
 		plt.imshow(data, aspect='auto', interpolation='nearest', 
 			extent=[0, p0, 0, 1], cmap='Greys')
-		ax3.text(5, 6, 'DM=2*expected', fontsize=16)
+#		ax3.title(5, 6, 'DM=2*expected', fontsize=16)
+
 		plt.xlabel('pulse phase [s]')
 
 		plt.show()
