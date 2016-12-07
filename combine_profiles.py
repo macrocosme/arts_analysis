@@ -237,6 +237,7 @@ if __name__=='__main__':
 		plt.imshow(data, aspect='auto', interpolation='nearest', 
 			extent=[0, p0, ftop, fbot], cmap='Greys')
 		plt.ylabel('freq [MHz]')
+		plt.text(0.1, .75, 'DM=0', fontsize=14, color='red')
 
 		data_2dm = dedisperse_manually(outname+folder, 2*dm, p0)
 		data = data_2dm.mean(0).mean(0)
@@ -250,12 +251,14 @@ if __name__=='__main__':
 		plt.imshow(data, aspect='auto', interpolation='nearest', 
 			extent=[0, p0, ftop, fbot], cmap='Greys')
 		plt.ylabel('freq [MHz]')
+		plt.text(0.1, .75, 'DM=0', fontsize=14, color='red')
+
 
 		ax4 = fig.add_subplot(414)
 		ph = np.linspace(0, p0, len(prof_2dm))
-		plt.plot(ph, prof_0dm, color='steelblue')
-		plt.plot(ph, prof_dm, color='grey')
-		plt.plot(ph, prof_2dm, color='salmon')
+		plt.plot(ph, prof_0dm, color='steelblue', linewidth=3)
+		plt.plot(ph, prof_dm, color='grey', linewidth=3)
+		plt.plot(ph, prof_2dm, color='salmon', linewidth=3)
 		plt.legend(["DM=0", 
 					"DM=expected", 
 					"DM=2*expected"],
