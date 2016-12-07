@@ -214,7 +214,7 @@ if __name__=='__main__':
 		data -= np.median(data, axis=-1)[..., None]
 		fig.add_subplot(311)
 		plt.imshow(data, aspect='auto', interpolation='nearest', 
-			extent=[0, 1, 0, 1])
+			extent=[0, p0, 0, 1], cmap='Greys')
 
 		data_dm = dedisperse_manually(outname+folder, dm, p0)
 		data = data_dm.mean(0).mean(0)
@@ -225,7 +225,7 @@ if __name__=='__main__':
 		
 		fig.add_subplot(312)
 		plt.imshow(data, aspect='auto', interpolation='nearest', 
-			extent=[0, 1, 0, 1])
+			extent=[0, p0, 0, 1], cmap='Greys')
 
 		data_2dm = dedisperse_manually(outname+folder, 2*dm, p0)
 		data = data_2dm.mean(0).mean(0)
@@ -236,7 +236,9 @@ if __name__=='__main__':
 
 		fig.add_subplot(313)
 		plt.imshow(data, aspect='auto', interpolation='nearest', 
-			extent=[0, 1, 0, 1])
+			extent=[0, p0, 0, 1], cmap='Greys')
+		plt.add_legend(['2*DM'])
+		plt.xlabel('pulse phase [s]')
 
 		plt.show()
 
