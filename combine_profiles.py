@@ -258,9 +258,9 @@ if __name__=='__main__':
 		plt.plot(ph, prof_2dm, color='salmon')
 		plt.legend(["DM=0", 
 					"DM=expected", 
-					"DM=2*expected",
+					"DM=2*expected"],
 					loc=4,
-					fontsize=12])
+					fontsize=12)
 		plt.xlim(0, p0)
 		plt.xlabel('pulse phase [s]')
 
