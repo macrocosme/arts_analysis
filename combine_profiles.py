@@ -64,9 +64,6 @@ def plot_spectra(data):
 
 	plt.show()
 
-def plot_multi():
-
-
 
 def combine_in_time(filepath, outfile='band', background=False):
 	""" 
@@ -206,6 +203,9 @@ if __name__=='__main__':
 	trickery==True
 
 	if trickery:
+		import matplotlib.pylab as plt
+		fig = plt.figure()
+
 		data_dm0 = dedisperse_manually(outname+folder, 0.0, p0)
 		data = data_dm0.mean(0).mean(0)
 		data = data[:len(data)//4*4].reshape(len(data)//4, 4, -1).mean(1)
@@ -224,7 +224,6 @@ if __name__=='__main__':
 		fig.add_subplot(312)
 		plt.imshow(data, aspect='auto', interpolation='nearest', 
 			extent=[0, 1, 0, 1])
-
 
 		data_2dm = dedisperse_manually(outname+folder, 2*dm, p0)
 		data = data_2dm.mean(0).mean(0)
