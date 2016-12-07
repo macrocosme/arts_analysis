@@ -211,6 +211,7 @@ if __name__=='__main__':
 		data = data[:len(data)//4*4].reshape(len(data)//4, 4, -1).mean(1)
 		nph = data.shape[-1]
 		data = data.reshape(-1, nph/4, 4).mean(-1)
+		data -= np.median(data, axis=-1)[..., None]
 		fig.add_subplot(311)
 		plt.imshow(data, aspect='auto', interpolation='nearest', 
 			extent=[0, 1, 0, 1])
@@ -220,7 +221,8 @@ if __name__=='__main__':
 		data = data[:len(data)//4*4].reshape(len(data)//4, 4, -1).mean(1)
 		nph = data.shape[-1]
 		data = data.reshape(-1, nph/4, 4).mean(-1)
-
+		data -= np.median(data, axis=-1)[..., None]
+		
 		fig.add_subplot(312)
 		plt.imshow(data, aspect='auto', interpolation='nearest', 
 			extent=[0, 1, 0, 1])
@@ -229,7 +231,8 @@ if __name__=='__main__':
 		data = data_2dm.mean(0).mean(0)
 		data = data[:len(data)//4*4].reshape(len(data)//4, 4, -1).mean(1)
 		nph = data.shape[-1]
-		data = data.reshape(-1, nph/4, 4).mean(-1)
+		data = data.reshape(-1, nph/4, 4).mean(-1)\
+		data -= np.median(data, axis=-1)[..., None]
 
 		fig.add_subplot(313)
 		plt.imshow(data, aspect='auto', interpolation='nearest', 
