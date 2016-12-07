@@ -235,5 +235,6 @@ if __name__=='__main__':
 		plt.imshow(data, aspect='auto', interpolation='nearest', 
 			extent=[0, 1, 0, 1])
 
+		plt.show()
 
 
