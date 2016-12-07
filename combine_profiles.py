@@ -13,16 +13,17 @@ import argparse
 import psrchive
 
 def dedisperse_folded_spec(fname):
+	""" Dedisperse data using psrchive tools
+	"""
 	arch = psrchive.Archive_load(fname+'.ar')
-#	arch.set_bandwidth(500000.0)
-#	arch.set_centre_frequency(500000.0)
-#	arch.set_dispersion_measure(10000.0)
 	arch.dedisperse()
-#	arch.unload(fname+'dedispersed.ar')
-	arch.unload(fname+'.ar')
+	arch.unload(fname+'dedispersed.ar')
 
 
 def dedisperse_manually(fname, dm, p0):
+	""" Dedisperse data manually, assuming 
+	bw and central frequency.
+	"""
 	arch = psrchive.Archive_load(fname+'.ar')
 	data = arch.get_data()
 	freq_ref = 1390.62 # MHz
@@ -40,7 +41,7 @@ def dedisperse_manually(fname, dm, p0):
 
 	return data
 
-def plot_me_up(data):
+def plot_spectra(data):
 	import matplotlib.pylab as plt 
 
 	fig = plt.figure()
@@ -79,8 +80,6 @@ def combine_in_time(filepath, outfile='band', background=False):
 		os.system("(nice psradd -P %s -o %s.ar; psredit -m -c bw=18.75 %s.ar)" 
 		 		% (filepath, outfile, outfile))
 	else:
-		#os.system("(nice psradd -P %s -o %s.ar) &" 
-		# 		% (filepath, outfile))
 		os.system("(nice psradd -P %s -o %s.ar; psredit -m -c bw=18.75 %s.ar) &" 
 		 		% (filepath, outfile, outfile))
 
@@ -107,17 +106,6 @@ def combine_subints(sband=1, eband=16,
 		if True, divide up files into smaller subint chunks and 
 		loop over them
 	"""
-	# # Take subints to be the outerloop 
-	# for xx in range(4):
-	# 	xx = str(xx)
-
-		# for band in range(sband, eband+1):
-		# 	band = "%02d"%band
-		# 	print "subint %s and band %s" % (xx, band)
-		# 	fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
-		# 	filepath = '%s/*%s*.ar' % (fullpath, '_0'+xx)
-		# 	combine_in_time_(filepath, band, date, 
-		# 		subint='_'+xx, outfile=xx+'band'+band, background=True)
 
 	for band in range(sband, eband+1):
 		band = "%02d"%band
@@ -177,7 +165,9 @@ if __name__=='__main__':
 	       help="only process subints starting with parameter. e.g. 012\
 	       would analyze only *_012*.ar files", 
 	       default="")
+	parser.add_argument("-manual_dd", help="dedisperse manually", type=int, default=0)
 	parser.add_argument("-dm", help="dm for manual dedispersion", type=float, default=0)
+	parser.add_argument("-F0", help="pulsar rotation frequency in Hz", type=float, default=1)
 	parser.add_argument("-o", help="name of output file name", default="all")
 	args = parser.parse_args()
 
@@ -187,24 +177,19 @@ if __name__=='__main__':
 
 	combine_subints(sband, eband, subints=subints, outfile='time_averaged'+folder)
 
-	# for band in range(sband, eband+1):
-	# 	print "collecting %s" % band
-
-	# 	band = "%02d"%band
-	# 	dedisperse_folded_spec('time_averaged'+folder+subints+'band'+band)
-
 	combine_freq(fnames='time_averaged'+folder, outfile=outname+folder+'.ar')
-	#dedisperse_folded_spec(outname+folder)
-	p0 = 2.787565229026**-1
-	p0 = 1.3995389820836543**-1
-	dm = args.dm
-	data = dedisperse_manually(outname+folder, dm, p0)
-	print data.shape
-	data = data.mean(0).mean(0)
-	data = data[:len(data)//4*4].reshape(len(data)//4, 4, -1).mean(1)
-	nph = data.shape[-1]
-	data = data.reshape(-1, nph/4, 4).mean(-1)
-	plot_me_up(data)
+	dedisperse_folded_spec(outname+folder)
+
+	if args.manual_dd == 1:
+		p0 = args.F0**-1
+		dm = args.dm
+
+		data = dedisperse_manually(outname+folder, dm, p0)
+		data = data.mean(0).mean(0)
+		data = data[:len(data)//4*4].reshape(len(data)//4, 4, -1).mean(1)
+		nph = data.shape[-1]
+		data = data.reshape(-1, nph/4, 4).mean(-1)
+		plot_spectra(data)
 
 
 
