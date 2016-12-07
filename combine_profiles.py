@@ -203,6 +203,10 @@ if __name__=='__main__':
 	trickery=True
 
 	if trickery:
+		freq_ref = 1390.62 # MHz
+		bw = 131.25 # MHz
+		ftop = freq_ref + bw/2.
+		fbot = freq_ref - bw/2.
 		import matplotlib.pylab as plt
 		fig = plt.figure()
 
@@ -217,7 +221,7 @@ if __name__=='__main__':
 
 		ax1=fig.add_subplot(311)
 		plt.imshow(data, aspect='auto', interpolation='nearest', 
-			extent=[0, p0, 0, 1], cmap='Greys')
+			extent=[0, p0, ftop, fbot], cmap='Greys')
 #		ax1.text(1, 1, 'DM=0')	
 
 		data_dm = dedisperse_manually(outname+folder, dm, p0)
@@ -229,7 +233,7 @@ if __name__=='__main__':
 		
 		ax2=fig.add_subplot(312)
 		plt.imshow(data, aspect='auto', interpolation='nearest', 
-			extent=[0, p0, 0, 1], cmap='Greys')
+			extent=[0, p0, ftop, fbot], cmap='Greys')
 		#title('DM=expected')
 
 		data_2dm = dedisperse_manually(outname+folder, 2*dm, p0)
@@ -241,7 +245,7 @@ if __name__=='__main__':
 
 		ax3 = fig.add_subplot(313)
 		plt.imshow(data, aspect='auto', interpolation='nearest', 
-			extent=[0, p0, 0, 1], cmap='Greys')
+			extent=[0, p0, ftop, fbot], cmap='Greys')
 #		ax3.title(5, 6, 'DM=2*expected', fontsize=16)
 
 		plt.xlabel('pulse phase [s]')
