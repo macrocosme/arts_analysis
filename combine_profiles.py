@@ -57,12 +57,15 @@ def plot_spectra(data):
 	fig.add_subplot(211)
 	plt.imshow(data, aspect='auto', interpolation='nearest', 
 			extent=[0, p0, 0, 1])
-	plt.colorbar()
+	#plt.colorbar()
 
 	fig.add_subplot(212)
 	plt.plot(data.mean(0))
 
 	plt.show()
+
+def plot_multi():
+
 
 
 def combine_in_time(filepath, outfile='band', background=False):
@@ -196,12 +199,42 @@ if __name__=='__main__':
 		nph = data.shape[-1]
 		data = data.reshape(-1, nph/4, 4).mean(-1)
 		plot_spectra(data)
+
 	else:
 		dedisperse_psrchive(outname+folder)
 
+	trickery==True
+
+	if trickery:
+		data_dm0 = dedisperse_manually(outname+folder, 0.0, p0)
+		data = data_dm0.mean(0).mean(0)
+		data = data[:len(data)//4*4].reshape(len(data)//4, 4, -1).mean(1)
+		nph = data.shape[-1]
+		data = data.reshape(-1, nph/4, 4).mean(-1)
+		fig.add_subplot(311)
+		plt.imshow(data, aspect='auto', interpolation='nearest', 
+			extent=[0, 1, 0, 1])
+
+		data_dm = dedisperse_manually(outname+folder, dm, p0)
+		data = data_dm.mean(0).mean(0)
+		data = data[:len(data)//4*4].reshape(len(data)//4, 4, -1).mean(1)
+		nph = data.shape[-1]
+		data = data.reshape(-1, nph/4, 4).mean(-1)
+
+		fig.add_subplot(312)
+		plt.imshow(data, aspect='auto', interpolation='nearest', 
+			extent=[0, 1, 0, 1])
 
 
+		data_2dm = dedisperse_manually(outname+folder, 2*dm, p0)
+		data = data_2dm.mean(0).mean(0)
+		data = data[:len(data)//4*4].reshape(len(data)//4, 4, -1).mean(1)
+		nph = data.shape[-1]
+		data = data.reshape(-1, nph/4, 4).mean(-1)
 
+		fig.add_subplot(313)
+		plt.imshow(data, aspect='auto', interpolation='nearest', 
+			extent=[0, 1, 0, 1])
 
 
 
