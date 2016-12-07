@@ -190,12 +190,12 @@ if __name__=='__main__':
 		p0 = args.F0**-1
 		dm = args.dm
 
-		data = dedisperse_manually(outname+folder, dm, p0)
-		data = data.mean(0).mean(0)
-		data = data[:len(data)//4*4].reshape(len(data)//4, 4, -1).mean(1)
-		nph = data.shape[-1]
-		data = data.reshape(-1, nph/4, 4).mean(-1)
-		plot_spectra(data)
+		# data = dedisperse_manually(outname+folder, dm, p0)
+		# data = data.mean(0).mean(0)
+		# data = data[:len(data)//4*4].reshape(len(data)//4, 4, -1).mean(1)
+		# nph = data.shape[-1]
+		# data = data.reshape(-1, nph/4, 4).mean(-1)
+		# plot_spectra(data)
 
 	else:
 		dedisperse_psrchive(outname+folder)
@@ -218,11 +218,12 @@ if __name__=='__main__':
 		nph = data.shape[-1]
 		data = data.reshape(-1, nph/4, 4).mean(-1)
 		data -= np.median(data, axis=-1)[..., None]
+		prof_0dm = data.mean(0)
 
-		ax1=fig.add_subplot(311)
+		ax1=fig.add_subplot(411)
 		plt.imshow(data, aspect='auto', interpolation='nearest', 
 			extent=[0, p0, ftop, fbot], cmap='Greys')
-#		ax1.text(1, 1, 'DM=0')	
+		plt.ylabel('freq [MHz]')
 
 		data_dm = dedisperse_manually(outname+folder, dm, p0)
 		data = data_dm.mean(0).mean(0)
@@ -230,11 +231,12 @@ if __name__=='__main__':
 		nph = data.shape[-1]
 		data = data.reshape(-1, nph/4, 4).mean(-1)
 		data -= np.median(data, axis=-1)[..., None]
-		
-		ax2=fig.add_subplot(312)
+		prof_dm = data.mean(0)
+
+		ax2=fig.add_subplot(412)
 		plt.imshow(data, aspect='auto', interpolation='nearest', 
 			extent=[0, p0, ftop, fbot], cmap='Greys')
-		#title('DM=expected')
+		plt.ylabel('freq [MHz]')
 
 		data_2dm = dedisperse_manually(outname+folder, 2*dm, p0)
 		data = data_2dm.mean(0).mean(0)
@@ -242,11 +244,18 @@ if __name__=='__main__':
 		nph = data.shape[-1]
 		data = data.reshape(-1, nph/4, 4).mean(-1)
 		data -= np.median(data, axis=-1)[..., None]
+		prof_2dm = data.mean(0)
 
-		ax3 = fig.add_subplot(313)
+		ax3 = fig.add_subplot(413)
 		plt.imshow(data, aspect='auto', interpolation='nearest', 
 			extent=[0, p0, ftop, fbot], cmap='Greys')
-#		ax3.title(5, 6, 'DM=2*expected', fontsize=16)
+		plt.ylabel('freq [MHz]')
+
+		ax4 = fig.add_subplot(414)
+		ph = np.linspace(0, p0, len(prof_2dm))
+		plt.plot(ph, prof_0dm)
+		plt.plot(ph, prof_dm)
+		plt.plot(ph, prof_2dm)
 
 		plt.xlabel('pulse phase [s]')
 
