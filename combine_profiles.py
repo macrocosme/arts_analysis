@@ -64,7 +64,6 @@ def plot_spectra(data):
 
 	plt.show()
 
-
 def combine_in_time(filepath, outfile='band', background=False):
 	""" 
 
@@ -87,7 +86,9 @@ def combine_in_time(filepath, outfile='band', background=False):
 		os.system("(nice psradd -P %s -o %s.ar; psredit -m -c bw=18.75 %s.ar)" 
 		 		% (filepath, outfile, outfile))
 	else:
-		os.system("(nice psradd -P %s -o %s.ar; psredit -m -c bw=18.75 %s.ar) &" 
+#		os.system("(nice psradd -P %s -o %s.ar; psredit -m -c bw=18.75 %s.ar) &"
+#		 		% (filepath, outfile, outfile))
+		os.system("(nice psradd %s -o %s.ar; psredit -m -c bw=18.75 %s.ar) &" 
 		 		% (filepath, outfile, outfile))
 
 def combine_subints(sband=1, eband=16, 
@@ -252,7 +253,6 @@ if __name__=='__main__':
 			extent=[0, p0, ftop, fbot], cmap='Greys')
 		plt.ylabel('freq [MHz]')
 		plt.text(0.1, .75, 'DM=0', fontsize=14, color='red')
-
 
 		ax4 = fig.add_subplot(414)
 		ph = np.linspace(0, p0, len(prof_2dm))
