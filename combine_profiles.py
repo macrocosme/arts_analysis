@@ -240,7 +240,7 @@ if __name__=='__main__':
 		ax3 = fig.add_subplot(313)
 		plt.imshow(data, aspect='auto', interpolation='nearest', 
 			extent=[0, p0, 0, 1], cmap='Greys')
-		ax3.text(1, 1, 'DM=2*expected')
+		ax3.text(5, 6, 'DM=2*expected', fontsize=16)
 		plt.xlabel('pulse phase [s]')
 
 		plt.show()
