@@ -200,7 +200,7 @@ if __name__=='__main__':
 	else:
 		dedisperse_psrchive(outname+folder)
 
-	trickery==True
+	trickery=True
 
 	if trickery:
 		import matplotlib.pylab as plt
