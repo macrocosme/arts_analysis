@@ -259,7 +259,7 @@ if __name__=='__main__':
 		plt.legend(["DM=0", 
 					"DM=expected", 
 					"DM=2*expected",
-					location=4,
+					loc=4,
 					fontsize=12])
 		plt.xlim(0, p0)
 		plt.xlabel('pulse phase [s]')
