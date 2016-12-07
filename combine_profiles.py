@@ -259,12 +259,14 @@ if __name__=='__main__':
 		plt.legend(["DM=0", 
 					"DM=expected", 
 					"DM=2*expected"],
-					loc=4,
+					loc=2,
 					fontsize=12)
 		plt.xlim(0, p0)
 		plt.xlabel('pulse phase [s]')
 
-		plt.text(0, 0, 'HERE')
+		plt.text(0.1, .75, 'DM=0', fontsize=14, color='')
+		#plt.text(0.1, .75, 'DM=0', fontsize=14, color='')
+		#plt.text(0.1, .75, 'DM=0', fontsize=14, color='')
 
 		plt.show()
 
