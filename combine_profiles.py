@@ -184,97 +184,21 @@ if __name__=='__main__':
 	sband, eband, outname, subints = args.sband, args.eband, args.o, args.subints
 
 	combine_subints(sband, eband, subints=subints, outfile='time_averaged'+folder)
-
 	combine_freq(fnames='time_averaged'+folder, outfile=outname+folder+'.ar')
 
 	if args.manual_dd == 1:
 		p0 = args.F0**-1
 		dm = args.dm
 
-		# data = dedisperse_manually(outname+folder, dm, p0)
-		# data = data.mean(0).mean(0)
-		# data = data[:len(data)//4*4].reshape(len(data)//4, 4, -1).mean(1)
-		# nph = data.shape[-1]
-		# data = data.reshape(-1, nph/4, 4).mean(-1)
-		# plot_spectra(data)
+		data = dedisperse_manually(outname+folder, dm, p0)
+		data = data.mean(0).mean(0)
+		data = data[:len(data)//4*4].reshape(len(data)//4, 4, -1).mean(1)
+		nph = data.shape[-1]
+		data = data.reshape(-1, nph/4, 4).mean(-1)
+		plot_spectra(data)
 
 	else:
 		dedisperse_psrchive(outname+folder)
 
-	trickery=True
-
-
-
-	if trickery:
-		import plotting_tools 
-		plotting_tools.compare_dms(outname+folder, dm, p0)
-		freq_ref = 1390.62 # MHz
-		bw = 131.25 # MHz
-		ftop = freq_ref + bw/2.
-		fbot = freq_ref - bw/2.
-		import matplotlib.pylab as plt
-		fig = plt.figure()
-
-		frq_rb = 2
-
-		data_dm0 = dedisperse_manually(outname+folder, 0.0, p0)
-		data = data_dm0.mean(0).mean(0)
-		data = data[:len(data)//frq_rb*frq_rb].reshape(len(data)//frq_rb, frq_rb, -1).mean(1)
-		nph = data.shape[-1]
-		data = data.reshape(-1, nph/4, 4).mean(-1)
-		data -= np.median(data, axis=-1)[..., None]
-		prof_0dm = data.mean(0)
-
-		ax1=fig.add_subplot(411)
-		plt.imshow(data, aspect='auto', interpolation='nearest', 
-			extent=[0, p0, ftop, fbot], cmap='Greys')
-		plt.ylabel('freq [MHz]')
-
-		data_dm = dedisperse_manually(outname+folder, dm, p0)
-		data = data_dm.mean(0).mean(0)
-		data = data[:len(data)//frq_rb*frq_rb].reshape(len(data)//frq_rb, frq_rb, -1).mean(1)
-		nph = data.shape[-1]
-		data = data.reshape(-1, nph/4, 4).mean(-1)
-		data -= np.median(data, axis=-1)[..., None]
-		prof_dm = data.mean(0)
-
-		ax2=fig.add_subplot(412)
-		plt.imshow(data, aspect='auto', interpolation='nearest', 
-			extent=[0, p0, ftop, fbot], cmap='Greys')
-		plt.ylabel('freq [MHz]')
-		plt.text(0.1, .75, 'DM=0', fontsize=14, color='red')
-
-		data_2dm = dedisperse_manually(outname+folder, 2*dm, p0)
-		data = data_2dm.mean(0).mean(0)
-		data = data[:len(data)//frq_rb*frq_rb].reshape(len(data)//frq_rb, frq_rb, -1).mean(1)
-		nph = data.shape[-1]
-		data = data.reshape(-1, nph/4, 4).mean(-1)
-		data -= np.median(data, axis=-1)[..., None]
-		prof_2dm = data.mean(0)
-
-		ax3 = fig.add_subplot(413)
-		plt.imshow(data, aspect='auto', interpolation='nearest', 
-			extent=[0, p0, ftop, fbot], cmap='Greys')
-		plt.ylabel('freq [MHz]')
-		plt.text(0.1, .75, 'DM=0', fontsize=14, color='red')
-
-		ax4 = fig.add_subplot(414)
-		ph = np.linspace(0, p0, len(prof_2dm))
-		plt.plot(ph, prof_0dm, color='steelblue', linewidth=3)
-		plt.plot(ph, prof_dm, color='grey', linewidth=3)
-		plt.plot(ph, prof_2dm, color='salmon', linewidth=3)
-		plt.legend(["DM=0", 
-					"DM=expected", 
-					"DM=2*expected"],
-					loc=2,
-					fontsize=12)
-		plt.xlim(0, p0)
-		plt.xlabel('pulse phase [s]')
-
-		plt.text(0.1, .75, 'DM=0', fontsize=14, color='red')
-		#plt.text(0.1, .75, 'DM=0', fontsize=14, color='')
-		#plt.text(0.1, .75, 'DM=0', fontsize=14, color='')
-
-		plt.show()
 
 
