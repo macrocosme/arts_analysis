@@ -2,6 +2,21 @@ import matplotlib.pylab as plt
 
 import combine_profiles 
 
+def plot_spectra(data):
+	import matplotlib.pylab as plt 
+
+	fig = plt.figure()
+	data -= np.median(data, axis=-1)[..., None]
+
+	fig.add_subplot(211)
+	plt.imshow(data, aspect='auto', interpolation='nearest', 
+			extent=[0, p0, 0, 1])
+	#plt.colorbar()
+
+	fig.add_subplot(212)
+	plt.plot(data.mean(0))
+
+	plt.show()
 
 def compare_dms(files, dm, p0):
 	freq_ref = 1390.62 # MHz

@@ -203,7 +203,11 @@ if __name__=='__main__':
 
 	trickery=True
 
+
+
 	if trickery:
+		import plotting_tools 
+		plotting_tools.compare_dms(outname+folder, dm, p0)
 		freq_ref = 1390.62 # MHz
 		bw = 131.25 # MHz
 		ftop = freq_ref + bw/2.
