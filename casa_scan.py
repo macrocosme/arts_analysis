@@ -79,7 +79,7 @@ def allfreq(date, folder, sband=1, eband=16):
     tsys_arr = np.concatenate(tsys_arr)
     print tsys_arr.shape, 'tsys'
     tsys_arr.shape = (ntimes, nfreq)
-#        plotter(tsys_arr[:, freqind-24:freqind], str(cfreq)+'.png')
+    plotter(tsys_arr, str(cfreq)+'.png')
 
     return tsys_arr
 
@@ -115,9 +115,9 @@ def plotter(data, outfile):
 
     for i in range(12):
         fig.add_subplot(3,4,i+1)
-        data_ = data[:, i:i+2].sum(-1)
+        data_ = data[:, i:i+24].sum(-1)
         plt.plot(data_, '.', lw=3, color='black')
-#        plt.ylim(0, 1.2e2)
+        plt.ylim(0, 2e2)
 #        plt.legend([str(np.round(freq[2*i]))+'MHz'])
 #        plt.axhline(75.0, linestyle='--', color='red')
 #        plt.xlim(40, 140)
