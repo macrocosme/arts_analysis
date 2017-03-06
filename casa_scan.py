@@ -77,6 +77,7 @@ def allfreq(date, folder, sband=1, eband=16):
             tsys_arr.append(tsys)
 
     tsys_arr = np.concatenate(tsys_arr)
+    np.save('fullarr', tsys_arr)
     print tsys_arr.shape, 'tsys'
     tsys_arr.shape = (nband, ntimes, nsubband)
     tsys_arr = tsys_arr.transpose((1, 0, 2)).reshape(-1, nfreq)
@@ -128,7 +129,6 @@ def plotter(data, outfile):
 
     plt.show()
     plt.savefig(outfile)
-
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser()
