@@ -122,8 +122,8 @@ def plotter(data, outfile):
         if i % 4 == 0:
             plt.ylabel(r'$T_{sys}$', fontsize=20)
 
-        plt.show()
-        plt.savefig(outfile)
+    plt.show()
+    plt.savefig(outfile)
 
 
 if __name__=='__main__':
