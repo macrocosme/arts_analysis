@@ -152,7 +152,8 @@ if __name__=='__main__':
     print fstr
 
     tsys_arr = allfreq(date, folder, sband=3, eband=13)
-    print tsys_arr.shape
+    np.save('tsyscasa', tsys_arr)
+
     
 
 
