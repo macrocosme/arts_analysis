@@ -74,7 +74,10 @@ def allfreq(date, folder, sband=1, eband=16):
         for nu in range(nsubband):
             freq = cfreq - bw/2.
             tsys = calculate_tsys(data, freq + bw * nu / nsubband)
-            print tsys, nu
+            print nu, freq + bw * nu / nsubband
+            tsys_arr[:, nu] = tsys
+
+        return tsys_arr
 
 
 # flist = glob.glob('/data/15/Timing/20170302/2017.03.02-10:35:30.B0000+00/2017.03.02-10:35:30.B0000+00.band14_0*.ar') 
@@ -147,7 +150,8 @@ if __name__=='__main__':
     fstr = '/data/11/Timing/' + date + '/' + folder + '/*.ar'
     print fstr
 
-    allfreq(date, folder, sband=3, eband=13)
+    tsys_arr = allfreq(date, folder, sband=3, eband=13)
+    print tsys_arr.shape
     
 
 
