@@ -18,7 +18,7 @@ def casa_flux(nu_MHz):
     return 5000.0 * (nu_MHz / 340.0)**-0.804
 
 
-def combine_files_times(fstr):
+def combine_files_time(fstr):
     flist = glob.glob(fstr)
     flist.sort()
 
@@ -129,8 +129,9 @@ if __name__=='__main__':
     sband, eband, outname, subints = args.sband, args.eband, args.o, args.subints
 
     fstr = '/data/11/Timing/' + date + '/' + folder + '*.ar'
+    print fstr
 
-    combine_files_times(fstr)   
+    combine_files_time(fstr)   
 
 
 
