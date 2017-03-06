@@ -169,7 +169,7 @@ if __name__=='__main__':
     fstr = '/data/11/Timing/' + date + '/' + folder + '/*.ar'
     print fstr
 
-    tsys_arr = allfreq(date, folder, sband=1, eband=16)
+    tsys_arr = allfreq(date, folder, sband=2, eband=16)
     np.save('tsyscasa', tsys_arr)
     print tsys_arr.sum(0)[:50]
     
