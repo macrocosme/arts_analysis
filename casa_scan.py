@@ -49,17 +49,20 @@ def calculate_tsys(data_arr, freq):
 
     return Tsys
 
+def allfreq(date, folder, sband=1, eband=16):
 
+    for band in range(sband, eband+1):
+        band = "%02d"%band
 
-    # for band in range(sband, eband+1):
-    #     band = "%02d"%band
-    #     print "subint %s and band %s" % (subints, band)
-    #     fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
-    #     filepath = '%s/*%s*.ar' % (fullpath, '_'+subints)
+        print "subint %s and band %s" % (subints, band)
+
+        fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
+        filepath = '%s/*%s*.ar' % (fullpath, '_'+subints)
         
-    #     flist = glob.glob(filepath)
-    #     print "Processing total of %d files\n" % len(flist)
-    
+        print "Processing total of %d files\n" % len(flist)
+        data = combine_files_time(filepath)
+        print data.shape
+
 # flist = glob.glob('/data/15/Timing/20170302/2017.03.02-10:35:30.B0000+00/2017.03.02-10:35:30.B0000+00.band14_0*.ar') 
 # flist.sort()
 
@@ -131,8 +134,9 @@ if __name__=='__main__':
     print fstr
 
     data = combine_files_time(fstr)   
+    allfreq(date, folder, sband=3, eband=13)
     print data.shape
     a = calculate_tsys(data[..., 0], 1500.0)
-    print a.shape
+    
 
 
