@@ -54,7 +54,7 @@ def calculate_tsys(data_arr, freq):
 def allfreq(date, folder, sband=1, eband=16):
 
     tsys_arr = []
-
+    nband = int(band)-int(sband)
     for band in range(sband, eband+1):
         band = "%02d"%band
 
