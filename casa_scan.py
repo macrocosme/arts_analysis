@@ -56,7 +56,7 @@ def allfreq(date, folder, sband=1, eband=16):
     tsys_arr = []
     freq = []
     nband = int(eband)-int(sband)+1
-
+    cnames = []
     fig = plt.figure()
 
     for band in range(sband, eband+1):
@@ -69,12 +69,13 @@ def allfreq(date, folder, sband=1, eband=16):
         
         data, cfreq = combine_files_time(filepath)
 
+        cnames.append(str(cfreq))
         bw = 18.75
         nsubband = data.shape[-1]
         nfreq = nband * nsubband
         ntimes = data.shape[0]
 
-        plt.plot(data[:, 0].mean(-1))
+        plt.plot(data[:, 0].mean(-1)/data[:, 0,-30:].mean(-1))
 
         for nu in xrange(nsubband):
             bfreq = cfreq - bw/2. 
@@ -84,6 +85,7 @@ def allfreq(date, folder, sband=1, eband=16):
             tsys = calculate_tsys(data[..., nu], freqi)
             tsys_arr.append(tsys)
 
+    plt.legend(cnames)
     plt.show()
     tsys_arr = np.concatenate(tsys_arr)
     np.save('fullarr', tsys_arr)
@@ -177,7 +179,6 @@ if __name__=='__main__':
 
     tsys_arr = allfreq(date, folder, sband=2, eband=16)
     np.save('tsyscasa', tsys_arr)
-    print tsys_arr.sum(0)[:50]
     
 
 
