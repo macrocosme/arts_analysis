@@ -69,7 +69,7 @@ def allfreq(date, folder, sband=1, eband=16):
         
         data, cfreq = combine_files_time(filepath)
 
-        cnames.append(str(cfreq))
+        cnames.append(str(int(cfreq)))
         bw = 18.75
         nsubband = data.shape[-1]
         nfreq = nband * nsubband
@@ -86,6 +86,7 @@ def allfreq(date, folder, sband=1, eband=16):
             tsys_arr.append(tsys)
 
     plt.legend(cnames)
+    plt.ylim(0, 3)
     plt.show()
     tsys_arr = np.concatenate(tsys_arr)
     np.save('fullarr', tsys_arr)
