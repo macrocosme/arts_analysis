@@ -115,7 +115,7 @@ def plotter(data, outfile):
 
         plt.plot(data_, '.', lw=3, color='black')
         plt.ylim(0, 1.2e2)
-        plt.legend([str(np.round(freq[2*i]))+'MHz'])
+#        plt.legend([str(np.round(freq[2*i]))+'MHz'])
         plt.axhline(75.0, linestyle='--', color='red')
 #        plt.xlim(40, 140)
 
