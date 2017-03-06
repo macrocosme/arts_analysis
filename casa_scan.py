@@ -68,6 +68,7 @@ def allfreq(date, folder, sband=1, eband=16):
         filepath = '%s/*%s*.ar' % (fullpath, '_'+subints)
         
         data, cfreq = combine_files_time(filepath)
+        print band, cfreq
         data_full.append(data)
         bw = 18.75
         nsubband = data.shape[-1]
