@@ -79,11 +79,22 @@ def allfreq(date, folder, sband=1, eband=16):
     tsys_arr = np.concatenate(tsys_arr)
     np.save('fullarr', tsys_arr)
     print tsys_arr.shape, 'tsys'
-    tsys_arr.shape = (nband, ntimes, nsubband)
-    tsys_arr = tsys_arr.transpose((1, 0, 2)).reshape(-1, nfreq)
-    plotter(tsys_arr, str(cfreq)+'.png')
+    tsys_arr.shape = (-1, ntimes)
+
+    plot_tsys_freq(tsys_arr, freq)
+#    plotter(tsys_arr, str(cfreq)+'.png')
 
     return tsys_arr
+
+def plot_tsys_freq(tsys_arr, freq):
+    fig = plt.figure()
+
+    mpix = tsys_arr.shape[-1]//2
+    mslice = mpix-5:mpix+5
+    plt.plot(freq, tsys_arr[:, mslice])
+
+    plt.ylim(0, 500)
+    plt.show()
 
 
 # flist = glob.glob('/data/15/Timing/20170302/2017.03.02-10:35:30.B0000+00/2017.03.02-10:35:30.B0000+00.band14_0*.ar') 
@@ -119,7 +130,7 @@ def plotter(data, outfile):
         fig.add_subplot(3,4,i+1)
         data_ = data[:, 12*i:12*i+12].mean(-1)
         plt.plot(data_, '.', lw=3, color='black')
-        plt.ylim(0, 2e2)
+        plt.ylim(0, 5e2)
 #        plt.legend([str(np.round(freq[2*i]))+'MHz'])
 #        plt.axhline(75.0, linestyle='--', color='red')
 #        plt.xlim(40, 140)
