@@ -59,7 +59,6 @@ def allfreq(date, folder, sband=1, eband=16):
         fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
         filepath = '%s/*%s*.ar' % (fullpath, '_'+subints)
         
-        print "Processing total of %d files\n" % len(flist)
         data = combine_files_time(filepath)
         print data.shape
 
