@@ -60,7 +60,10 @@ def allfreq(date, folder, sband=1, eband=16):
         filepath = '%s/*%s*.ar' % (fullpath, '_'+subints)
         
         data = combine_files_time(filepath)
-        print data.shape
+        for nu in data.shape[-1]:
+            tsys = calculate_tsys(data_arr, 1500.0)
+            print tsys.shape, nu
+
 
 # flist = glob.glob('/data/15/Timing/20170302/2017.03.02-10:35:30.B0000+00/2017.03.02-10:35:30.B0000+00.band14_0*.ar') 
 # flist.sort()
