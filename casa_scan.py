@@ -75,9 +75,9 @@ def allfreq(date, folder, sband=1, eband=16):
             freqind = nsubband * (int(band)-int(sband)) + nu
             tsys = calculate_tsys(data[..., nu], freq + bw * nu / nsubband)
             tsys_arr[:, freqind] = tsys
-            print freqind, tsys.sum()
+            print freqind, tsys.sum(), tsys_arr[:, freqind].sum()
 
-#        plotter(tsys_arr[:, freqind:freqind+24], str(cfreq)+'.png')
+        plotter(tsys_arr[:, freqind-24:freqind], str(cfreq)+'.png')
 
     return tsys_arr
 
@@ -114,7 +114,6 @@ def plotter(data, outfile):
     for i in range(12):
         fig.add_subplot(3,4,i+1)
         data_ = data[:, i:i+2].sum(-1)
-        print data_.sum()
         plt.plot(data_, '.', lw=3, color='black')
         plt.ylim(0, 1.2e2)
 #        plt.legend([str(np.round(freq[2*i]))+'MHz'])
