@@ -75,7 +75,8 @@ def allfreq(date, folder, sband=1, eband=16):
             freq = cfreq - bw/2.
             tsys = calculate_tsys(data, freq + bw * nu / nsubband)
             print nu, freq + bw * nu / nsubband
-            tsys_arr[:, nsubband * (int(band)-int(sband)) + nu] = tsys
+            freqind = nsubband * (int(band)-int(sband)) + nu
+            tsys_arr[:, freqind:freqind+nsubband] = tsys
 
         return tsys_arr
 
