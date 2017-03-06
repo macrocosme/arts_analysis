@@ -1,13 +1,8 @@
 import numpy as np
 
-class APERTIFparams():
-	def __init__(self):
-		self.omega = 8.5
-		self.G = (26/100.)**2*(5./7.*2.0) # Scale gain from GBT, with 50% efficiency
-		self.B = 300.
-		self.Tsys = 70.
-		self.sm = 10.
-		self.name = 'APERTIF'
+from APERTIFparams import *
+
+APERTIFparams = APERTIFparams()
 
 def read_atnf(name):
 	""" Read in various ATNF parameters for visible 
