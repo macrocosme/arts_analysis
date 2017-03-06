@@ -115,7 +115,7 @@ def plotter(data, outfile):
 
     for i in range(12):
         fig.add_subplot(3,4,i+1)
-        data_ = data[:, i:i+24].sum(-1)
+        data_ = data[:, i:i+24].mean(-1)
         plt.plot(data_, '.', lw=3, color='black')
         plt.ylim(0, 2e2)
 #        plt.legend([str(np.round(freq[2*i]))+'MHz'])
