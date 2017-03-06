@@ -111,9 +111,9 @@ def plotter(data, outfile):
     for i in range(12):
         fig = plt.figure()
         fig.add_subplot(3,4,i+1)
-        data = data_arr[:, i:i+2].sum(-1)
+        data_ = data[:, i:i+2].sum(-1)
 
-        plt.plot(data, '.', lw=3, color='black')
+        plt.plot(data_, '.', lw=3, color='black')
         plt.ylim(0, 1.2e2)
         plt.legend([str(np.round(freq[2*i]))+'MHz'])
         plt.axhline(75.0, linestyle='--', color='red')
@@ -122,6 +122,7 @@ def plotter(data, outfile):
         if i % 4 == 0:
             plt.ylabel(r'$T_{sys}$', fontsize=20)
 
+        plt.show()
         plt.savefig(outfile)
 
 
