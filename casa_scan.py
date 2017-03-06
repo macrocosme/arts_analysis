@@ -31,9 +31,11 @@ def combine_files_time(fstr):
         data = data.sum(axis=-1) # Average over pseudo-pulse profile
         data_arr.append(data)
 
+    cfreq = arch.get_centre_frequency()
+
     data_arr = np.concatenate(data_arr, axis=0)
 
-    return data_arr
+    return data_arr, cfreq
 
 def calculate_tsys(data_arr, freq):
 
@@ -59,7 +61,13 @@ def allfreq(date, folder, sband=1, eband=16):
         fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
         filepath = '%s/*%s*.ar' % (fullpath, '_'+subints)
         
-        data = combine_files_time(filepath)
+        data, cfreq = combine_files_time(filepath)
+        print eband, cfreq
+        nfreq = (eband-sband+1) * data.shape[-1]
+        ntimes = data.shape[0]
+        print "time freq", ntimes, nfreq
+        tsys_arr = np.zeros([ntimes, nfreq])
+
         for nu in range(data.shape[-1]):
             tsys = calculate_tsys(data, 1500.0)
             print tsys.shape, nu
