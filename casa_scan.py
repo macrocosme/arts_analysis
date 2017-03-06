@@ -109,6 +109,7 @@ def allfreq(date, folder, sband=1, eband=16):
 
 def plotter(data, outfile):
     for i in range(12):
+        fig = plt.figure()
         fig.add_subplot(3,4,i+1)
         data = data_arr[:, i:i+2].sum(-1)
 
