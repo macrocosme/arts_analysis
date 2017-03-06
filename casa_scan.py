@@ -88,6 +88,11 @@ def allfreq(date, folder, sband=1, eband=16):
     plt.legend(cnames)
     plt.ylim(0, 10)
     plt.show()
+
+    fig = plt.figure()
+    plt.plot(freq, casa_flux(freq))
+    plt.show()
+
     tsys_arr = np.concatenate(tsys_arr)
     np.save('fullarr', tsys_arr)
     print tsys_arr.shape, 'tsys'
