@@ -78,7 +78,8 @@ def allfreq(date, folder, sband=1, eband=16):
 
     tsys_arr = np.concatenate(tsys_arr)
     print tsys_arr.shape, 'tsys'
-    tsys_arr.shape = (ntimes, nfreq)
+    tsys_arr.shape = (nband, ntimes, nsubband)
+    tsys_arr = tsys_arr.transpose((1, 0, 2)).reshape(-1, nfreq)
     plotter(tsys_arr, str(cfreq)+'.png')
 
     return tsys_arr
