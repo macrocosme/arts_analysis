@@ -2,7 +2,6 @@ import numpy as np
 
 from APERTIFparams import *
 
-APERTIFparams = APERTIFparams()
 
 def read_atnf(name):
 	""" Read in various ATNF parameters for visible 
