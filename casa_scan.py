@@ -49,7 +49,6 @@ def calculate_tsys(data_arr, freq):
 
     G = APERTIFparams.G 
     Tsys = G * Snu / (fractional_tsys - 1)
-    print Tsys.sum(), data.sum(), freq
     return Tsys
 
 def allfreq(date, folder, sband=1, eband=16):
@@ -76,6 +75,8 @@ def allfreq(date, folder, sband=1, eband=16):
             freqind = nsubband * (int(band)-int(sband)) + nu
             tsys = calculate_tsys(data[..., nu], freq + bw * nu / nsubband)
             tsys_arr[:, freqind] = tsys
+
+        plotter(tsys_arr[:, freqind:freqind+24], str(cfreq)+'.png')
 
     return tsys_arr
 
@@ -106,23 +107,21 @@ def allfreq(date, folder, sband=1, eband=16):
 
 # print G
 
-# for i in range(12):
-#     fig.add_subplot(3,4,i+1)
-#     data = data_arr[:, 0, i:i+2].sum(-1)
-#     data /= np.median(data[140:])
-#     Snu = casa_flux(freq[2*i])
+def plotter(data, outfile):
+    for i in range(12):
+        fig.add_subplot(3,4,i+1)
+        data = data_arr[:, i:i+2].sum(-1)
 
-#     plt.plot(G * Snu / (data - 1), '.', lw=3, color='black')
-#     plt.ylim(0, 1.2e2)
-#     plt.legend([str(np.round(freq[2*i]))+'MHz'])
-#     plt.axhline(75.0, linestyle='--', color='red')
-#     plt.xlim(40, 140)
+        plt.plot(data, '.', lw=3, color='black')
+        plt.ylim(0, 1.2e2)
+        plt.legend([str(np.round(freq[2*i]))+'MHz'])
+        plt.axhline(75.0, linestyle='--', color='red')
+#        plt.xlim(40, 140)
 
-#     if i % 4 == 0:
-#         plt.ylabel(r'$T_{sys}$', fontsize=20)
+        if i % 4 == 0:
+            plt.ylabel(r'$T_{sys}$', fontsize=20)
 
-# plt.show()
-# plt.savefig('here.png')
+        plt.savefig(outfile)
 
 
 if __name__=='__main__':
