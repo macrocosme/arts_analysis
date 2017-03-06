@@ -26,6 +26,7 @@ def combine_files_times(fstr):
     data_arr = []
 
     for ff in flist[:]:
+        print "file", ff
         arch = psrchive.Archive_load(ff)
         data = arch.get_data()
         data = data.sum(axis=-1) # Average over pseudo-pulse profile
