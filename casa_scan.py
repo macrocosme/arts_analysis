@@ -78,7 +78,7 @@ def allfreq(date, folder, sband=1, eband=16):
         for nu in xrange(nsubband):
             bfreq = cfreq - bw/2. 
             freqi = bfreq + bw * nu / nsubband
-            plt.plot(freqi, (1-data[85, 0, nu]/data[-30:, 0, nu].mean(0)) * 100, '.')
+            plt.plot(freqi, (data[85, 0, nu]/data[-30:, 0, nu].mean(0)-1), '.')
             plt.plot(freqi, casa_flux(freqi) / 170.,'.', color='black')
             freq.append(freqi)
             freqind = nsubband * (int(band)-int(sband)) + nu
@@ -87,7 +87,7 @@ def allfreq(date, folder, sband=1, eband=16):
 
     freq = np.array(freq)        
     plt.legend(cnames)
-    plt.ylim(0, 100)
+    plt.ylim(0, 500)
     plt.ylabel('Fraction increase %')
     plt.show()
 
