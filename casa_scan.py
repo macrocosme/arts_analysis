@@ -86,7 +86,7 @@ def allfreq(date, folder, sband=1, eband=16):
             tsys_arr.append(tsys)
 
     plt.legend(cnames)
-    plt.ylim(0, 3)
+    plt.ylim(0, 10)
     plt.show()
     tsys_arr = np.concatenate(tsys_arr)
     np.save('fullarr', tsys_arr)
