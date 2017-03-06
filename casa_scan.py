@@ -132,6 +132,7 @@ if __name__=='__main__':
 
     data = combine_files_time(fstr)   
     print data.shape
-    calculate_tsys(data[..., 0], 1500.0)
+    a = calculate_tsys(data[..., 0], 1500.0)
+    print a
 
 
