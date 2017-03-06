@@ -75,7 +75,7 @@ def allfreq(date, folder, sband=1, eband=16):
         nfreq = nband * nsubband
         ntimes = data.shape[0]
 
-        plt.plot(data[:, 0].mean(-1)/data[:, 0,-30:].mean(-1))
+        plt.plot(data[:, 0].mean(-1)/data[-30:].mean(0).mean(-1))
 
         for nu in xrange(nsubband):
             bfreq = cfreq - bw/2. 
