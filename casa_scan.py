@@ -26,7 +26,6 @@ def combine_files_time(fstr):
     data_arr = []
 
     for ff in flist[:]:
-        print "file", ff
         arch = psrchive.Archive_load(ff)
         data = arch.get_data()
         data = data.sum(axis=-1) # Average over pseudo-pulse profile
@@ -131,7 +130,8 @@ if __name__=='__main__':
     fstr = '/data/11/Timing/' + date + '/' + folder + '/*.ar'
     print fstr
 
-    combine_files_time(fstr)   
-
+    data = combine_files_time(fstr)   
+    print data.shape
+    calculate_tsys(data[..., 0], 1500.0)
 
 
