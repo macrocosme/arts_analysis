@@ -1,8 +1,10 @@
 import numpy as np
 import matplotlib.pylab as plt
 
-import psrchive
+import argparse
 import glob
+
+import psrchive
 
 from APERTIFparams import *
 APERTIFparams = APERTIFparams()
