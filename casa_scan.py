@@ -41,7 +41,7 @@ def calculate_tsys(data_arr, freq):
 
     # Use only Stokes I
     data = data_arr[:, 0]
-    print data.sum(), freq
+
     # Assume source is not in beam for last 30 samples
     fractional_tsys = data / np.median(data[-30:])
     # Get source flux at this frequency
@@ -49,7 +49,7 @@ def calculate_tsys(data_arr, freq):
 
     G = APERTIFparams.G 
     Tsys = G * Snu / (fractional_tsys - 1)
-
+    print Tsys.sum(), data.sum(), freq
     return Tsys
 
 def allfreq(date, folder, sband=1, eband=16):
@@ -63,13 +63,11 @@ def allfreq(date, folder, sband=1, eband=16):
         filepath = '%s/*%s*.ar' % (fullpath, '_'+subints)
         
         data, cfreq = combine_files_time(filepath)
-        print eband, cfreq
 
         bw = 18.75
         nsubband = data.shape[-1]
         nfreq = (eband-sband+1) * nsubband
         ntimes = data.shape[0]
-        print "time freq", ntimes, nfreq
         tsys_arr = np.zeros([ntimes, nfreq])
 
         for nu in range(nsubband):
