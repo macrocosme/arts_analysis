@@ -75,7 +75,7 @@ def allfreq(date, folder, sband=1, eband=16):
             freqind = nsubband * (int(band)-int(sband)) + nu
             tsys = calculate_tsys(data[..., nu], freq + bw * nu / nsubband)
             tsys_arr[:, freqind] = tsys
-            print tsys
+            print freqind, tsys.sum()
 
 #        plotter(tsys_arr[:, freqind:freqind+24], str(cfreq)+'.png')
 
