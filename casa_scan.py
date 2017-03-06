@@ -91,7 +91,7 @@ def plot_tsys_freq(tsys_arr, freq):
 
     mpix = tsys_arr.shape[-1]//2
     mslice = slice(mpix-5,mpix+5)
-    plt.plot(freq, tsys_arr[:, mslice])
+    plt.plot(tsys_arr[:, mslice])
 
     plt.ylim(0, 500)
     plt.show()
