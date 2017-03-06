@@ -60,7 +60,7 @@ def allfreq(date, folder, sband=1, eband=16):
         filepath = '%s/*%s*.ar' % (fullpath, '_'+subints)
         
         data = combine_files_time(filepath)
-        for nu in data.shape[-1]:
+        for nu in range(data.shape[-1]):
             tsys = calculate_tsys(data_arr, 1500.0)
             print tsys.shape, nu
 
