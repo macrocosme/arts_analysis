@@ -41,6 +41,7 @@ def calculate_tsys(data_arr, freq):
 
     # Use only Stokes I
     data = data_arr[:, 0]
+    print data.sum(), freq
     # Assume source is not in beam for last 30 samples
     fractional_tsys = data / np.median(data[-30:])
     # Get source flux at this frequency
