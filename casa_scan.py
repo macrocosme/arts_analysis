@@ -87,15 +87,11 @@ def allfreq(date, folder, sband=1, eband=16):
 
     data_full = np.concatenate(data_full)
 
-    fig = plt.figure()
-    plt.plot(freq, casa_flux(freq))
-    plt.show()
-
     tsys_arr = np.concatenate(tsys_arr)
-    np.save('fullarr', data_arr)
+    np.save('fullarr', data_full)
     tsys_arr.shape = (-1, ntimes)
 
-    plot_tsys_freq(tsys_arr, freq)
+#    plot_tsys_freq(tsys_arr, freq)
 #    plotter(tsys_arr, str(cfreq)+'.png')
 
     return tsys_arr
