@@ -127,8 +127,9 @@ if __name__=='__main__':
     date, folder = args.date, args.folder
     sband, eband, outname, subints = args.sband, args.eband, args.o, args.subints
 
+    fstr = '/data/11/Timing/' + date + '/' + folder + '*.ar'
 
-
+    combine_files_times(fstr)   
 
 
 
