@@ -63,14 +63,18 @@ def allfreq(date, folder, sband=1, eband=16):
         
         data, cfreq = combine_files_time(filepath)
         print eband, cfreq
-        nfreq = (eband-sband+1) * data.shape[-1]
+
+        bw = 18.75
+        nsubband = data.shape[-1]
+        nfreq = (eband-sband+1) * nsubband
         ntimes = data.shape[0]
         print "time freq", ntimes, nfreq
         tsys_arr = np.zeros([ntimes, nfreq])
-
-        for nu in range(data.shape[-1]):
-            tsys = calculate_tsys(data, 1500.0)
-            print tsys.shape, nu
+        
+        for nu in range(nsubband):
+            freq = cfreq - bw/2.
+            tsys = calculate_tsys(data, freq + bw * nu / data.shape[])
+            print tsys, nu
 
 
 # flist = glob.glob('/data/15/Timing/20170302/2017.03.02-10:35:30.B0000+00/2017.03.02-10:35:30.B0000+00.band14_0*.ar') 
@@ -143,10 +147,7 @@ if __name__=='__main__':
     fstr = '/data/11/Timing/' + date + '/' + folder + '/*.ar'
     print fstr
 
-    data = combine_files_time(fstr)   
     allfreq(date, folder, sband=3, eband=13)
-    print data.shape
-    a = calculate_tsys(data[..., 0], 1500.0)
     
 
 
