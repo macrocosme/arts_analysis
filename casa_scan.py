@@ -153,7 +153,7 @@ if __name__=='__main__':
 
     tsys_arr = allfreq(date, folder, sband=3, eband=13)
     np.save('tsyscasa', tsys_arr)
-    print tsys_arr.sum(0)[:200]
+    print tsys_arr.sum(0)[:50]
     
 
 
