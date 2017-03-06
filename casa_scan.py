@@ -78,7 +78,7 @@ def allfreq(date, folder, sband=1, eband=16):
         for nu in xrange(nsubband):
             bfreq = cfreq - bw/2. 
             freqi = bfreq + bw * nu / nsubband
-            plt.plot(freqi, data[85, 0, nu]/data[-30:, 0, nu].mean(0))
+            plt.plot(freqi, data[85, 0, nu]/data[-30:, 0, nu].mean(0), '.')
             freq.append(freqi)
             freqind = nsubband * (int(band)-int(sband)) + nu
             tsys = calculate_tsys(data[..., nu], freqi)
