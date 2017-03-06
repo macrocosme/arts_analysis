@@ -85,6 +85,7 @@ def allfreq(date, folder, sband=1, eband=16):
             tsys = calculate_tsys(data[..., nu], freqi)
             tsys_arr.append(tsys)
 
+    freq = np.array(freq)        
     plt.legend(cnames)
     plt.ylim(0, 10)
     plt.show()
