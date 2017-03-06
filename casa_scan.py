@@ -70,13 +70,12 @@ def allfreq(date, folder, sband=1, eband=16):
         ntimes = data.shape[0]
         print "time freq", ntimes, nfreq
         tsys_arr = np.zeros([ntimes, nfreq])
-        print int(band)-int(sband)
-        print nsubband
+
         for nu in range(nsubband):
             freq = cfreq - bw/2.
             tsys = calculate_tsys(data, freq + bw * nu / nsubband)
             print nu, freq + bw * nu / nsubband
-            tsys_arr[:, nsubband * (band-sband) + nu] = tsys
+            tsys_arr[:, nsubband * (int(band)-int(sband)) + nu] = tsys
 
         return tsys_arr
 
