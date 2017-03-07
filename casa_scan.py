@@ -73,7 +73,7 @@ def calculate_tsys_allfreq(date, folder, sband=1, eband=16):
     for band in range(sband, eband+1):
         band = "%02d"%band
 
-        print "subint %s and band %s" % (subints, band)
+        print "Reading band %s" % band
 
         fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
         filepath = '%s/*.ar' % fullpath
