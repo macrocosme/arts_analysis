@@ -19,6 +19,21 @@ import argparse
 
 import psrchive
 
+def read_psr_ar(fnstr, sband=1, eband=16):
+
+	Data=[]
+	for i in range(sband, eband+1):
+		sb = "%02d" % i
+		if os.path.exists(fn + sb + '.ar') is False:
+			continue
+		arch = psrchive.Archive_load(fn + sb + '.ar')
+		data = arch.get_data()
+		Data.append(data)
+
+	Data = np.concatenate(Data, axis=0)
+
+	return Data
+
 def dedisperse_psrchive(fname):
 	""" Dedisperse data using psrchive tools
 	"""
