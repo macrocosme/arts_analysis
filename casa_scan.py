@@ -9,13 +9,18 @@ import psrchive
 from APERTIFparams import *
 APERTIFparams = APERTIFparams()
 
-def casa_flux(nu_MHz):
+def source_flux(nu_MHz, src=None):
     """ Give a frequency in MHz, return 
         a CasA flux in Jy.
 
         Based on https://arxiv.org/pdf/1609.05940.pdf
     """
-    return 5000.0 * (nu_MHz / 340.0)**-0.804
+    if src is None:
+        return 1.0
+    elif src is 'CasA':
+        return 5000.0 * (nu_MHz / 340.0)**-0.804
+    elif src is 'TauA':
+        return 1000.0 * (nu_MHz / 600.0)**-0.2389
 
 
 def combine_files_time(fstr):
