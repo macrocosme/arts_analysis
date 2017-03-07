@@ -29,6 +29,8 @@ def combine_files_time(fstr):
     # This will be the full time-avgd data array
     data_arr = []
 
+    assert len(flist) > 0
+
     for ff in flist[:]:
         arch = psrchive.Archive_load(ff)
         data = arch.get_data()
@@ -74,7 +76,7 @@ def calculate_tsys_allfreq(date, folder, sband=1, eband=16):
         print "subint %s and band %s" % (subints, band)
 
         fullpath = "/data/%s/Timing/%s/%s" % (band, date, folder)
-        filepath = '%s/*%s*.ar' % (fullpath, '_'+subints)
+        filepath = '%s/*.ar' % fullpath
         
         data, cfreq = combine_files_time(filepath)
         data_full.append(data[:, 0]) # Stokes I only
@@ -118,8 +120,9 @@ def plot_tsys_freq(tsys_arr, freq):
 def plot_on_off():
     """ Plot Stokes I on source vs. off
     """
+    return
 
-    
+
 def plotter(data, outfile):
     fig = plt.figure()
 
