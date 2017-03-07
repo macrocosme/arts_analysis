@@ -19,6 +19,12 @@ import argparse
 
 import psrchive
 
+def read_ar(fname):
+	arch = psrchive.Archive_load(fname)
+	data = arch.get_data()
+
+	return data
+
 def read_psr_ar(fnstr, sband=1, eband=16):
 
 	Data=[]
@@ -28,8 +34,7 @@ def read_psr_ar(fnstr, sband=1, eband=16):
 		if os.path.exists(fname) is False:
 			continue
 		print "Reading %s" % fname
-		arch = psrchive.Archive_load(fname)
-		data = arch.get_data()
+		data = read_ar(fname)
 		Data.append(data)
 
 	Data = np.concatenate(Data, axis=2)
