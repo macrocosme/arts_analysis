@@ -24,13 +24,15 @@ def read_psr_ar(fnstr, sband=1, eband=16):
 	Data=[]
 	for ii in range(sband, eband+1):
 		sb = "%02d" % ii
-		if os.path.exists(fnstr + sb + '.ar') is False:
+		fname = fnstr + sb + '.ar'
+		if os.path.exists(fname) is False:
 			continue
-		arch = psrchive.Archive_load(fnstr + sb + '.ar')
+		print "Reading %s" % fname
+		arch = psrchive.Archive_load(fname)
 		data = arch.get_data()
 		Data.append(data)
 
-	Data = np.concatenate(Data, axis=0)
+	Data = np.concatenate(Data, axis=1)
 
 	return Data
 
