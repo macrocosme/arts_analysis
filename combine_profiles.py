@@ -22,11 +22,11 @@ import psrchive
 def read_psr_ar(fnstr, sband=1, eband=16):
 
 	Data=[]
-	for i in range(sband, eband+1):
-		sb = "%02d" % i
-		if os.path.exists(fn + sb + '.ar') is False:
+	for ii in range(sband, eband+1):
+		sb = "%02d" % ii
+		if os.path.exists(fnstr + sb + '.ar') is False:
 			continue
-		arch = psrchive.Archive_load(fn + sb + '.ar')
+		arch = psrchive.Archive_load(fnstr + sb + '.ar')
 		data = arch.get_data()
 		Data.append(data)
 
