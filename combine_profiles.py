@@ -32,7 +32,7 @@ def read_psr_ar(fnstr, sband=1, eband=16):
 		data = arch.get_data()
 		Data.append(data)
 
-	Data = np.concatenate(Data, axis=1)
+	Data = np.concatenate(Data, axis=2)
 
 	return Data
 
