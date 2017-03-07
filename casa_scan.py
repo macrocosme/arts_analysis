@@ -48,7 +48,7 @@ def combine_files_time(fstr):
 
     return data_arr, cfreq
 
-def calculate_tsys(data_arr, freq):
+def calculate_tsys(data_arr, freq, src='CasA'):
     """ Take ratio of on/off point source data to determine 
     system temperature of instrument. Assume some forward gain 
     and aperture efficiency.
@@ -59,13 +59,13 @@ def calculate_tsys(data_arr, freq):
     # Assume source is not in beam for last 30 samples
     fractional_tsys = data / np.median(data[-30:])
     # Get source flux at this frequency
-    Snu = casa_flux(freq)
+    Snu = source_flux(freq, src=src)
 
     G = APERTIFparams.G 
     Tsys = G * Snu / (fractional_tsys - 1)
     return Tsys
 
-def calculate_tsys_allfreq(date, folder, sband=1, eband=16):
+def calculate_tsys_allfreq(date, folder, sband=1, eband=16, src='CasA'):
     """ Loop over bands from sband to eband, combine 
     in time, then get Tsys as a function of frequency.
     """
@@ -96,7 +96,7 @@ def calculate_tsys_allfreq(date, folder, sband=1, eband=16):
             freqi = bfreq + bw * nu / nsubband
             freq.append(freqi)
             freqind = nsubband * (int(band)-int(sband)) + nu
-            tsys = calculate_tsys(data[..., nu], freqi)
+            tsys = calculate_tsys(data[..., nu], freqi, src=src)
             tsys_arr.append(tsys)
 
     data_full = np.concatenate(data_full)
@@ -161,14 +161,15 @@ if __name__=='__main__':
     parser.add_argument("-dm", help="dm for manual dedispersion", type=float, default=0)
     parser.add_argument("-F0", help="pulsar rotation frequency in Hz", type=float, default=1)
     parser.add_argument("-o", help="name of output file name", default="all")
+    parser.add_argument("src", help="source name", default="CasA")
 
     args = parser.parse_args()
 
     # Unpack arguments
     date, folder = args.date, args.folder
-    sband, eband, outname, subints = args.sband, args.eband, args.o, args.subints
+    sband, eband, outname, subints, src = args.sband, args.eband, args.o, args.subints, args.src
 
-    tsys_arr, data_full = calculate_tsys_allfreq(date, folder, sband=2, eband=16)
+    tsys_arr, data_full = calculate_tsys_allfreq(date, folder, sband=2, eband=16, src=src)
     np.save('tsyscasa', tsys_arr)
     np.save('full_data_arr', data_full)
 
