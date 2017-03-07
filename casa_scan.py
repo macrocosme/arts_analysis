@@ -19,6 +19,10 @@ def casa_flux(nu_MHz):
 
 
 def combine_files_time(fstr):
+    """ Take a path string, combine each file in 
+    path along time axis after averaging over 
+    pseudo-pulse phase
+    """
     flist = glob.glob(fstr)
     flist.sort()
 
@@ -38,7 +42,10 @@ def combine_files_time(fstr):
     return data_arr, cfreq
 
 def calculate_tsys(data_arr, freq):
-
+    """ Take ratio of on/off point source data to determine 
+    system temperature of instrument. Assume some forward gain 
+    and aperture efficiency.
+    """
     # Use only Stokes I
     data = data_arr[:, 0]
 
@@ -51,8 +58,10 @@ def calculate_tsys(data_arr, freq):
     Tsys = G * Snu / (fractional_tsys - 1)
     return Tsys
 
-def allfreq(date, folder, sband=1, eband=16):
-
+def calculate_tsys_allfreq(date, folder, sband=1, eband=16):
+    """ Loop over bands from sband to eband, combine 
+    in time, then get Tsys as a function of frequency.
+    """
     tsys_arr = []
     freq = []
     data_full = []
@@ -68,34 +77,33 @@ def allfreq(date, folder, sband=1, eband=16):
         filepath = '%s/*%s*.ar' % (fullpath, '_'+subints)
         
         data, cfreq = combine_files_time(filepath)
-        print band, cfreq
-        data_full.append(data)
+        data_full.append(data[:, 0]) # Stokes I only
         bw = 18.75
         nsubband = data.shape[-1]
         nfreq = nband * nsubband
         ntimes = data.shape[0]
 
+        # Loop over each sub-band and calculate Tsys
         for nu in xrange(nsubband):
             bfreq = cfreq - bw/2. 
             freqi = bfreq + bw * nu / nsubband
-#            plt.plot(freqi, (data[85, 0, nu]/data[-30:, 0, nu].mean(0)-1), '.')
-            plt.plot(freqi, (data[85, 0, nu]), '.')
-#            plt.plot(freqi, casa_flux(freqi) / 170.,'.', color='black')
             freq.append(freqi)
             freqind = nsubband * (int(band)-int(sband)) + nu
             tsys = calculate_tsys(data[..., nu], freqi)
             tsys_arr.append(tsys)
 
     data_full = np.concatenate(data_full)
-
     tsys_arr = np.concatenate(tsys_arr)
-    np.save('fullarr', data_full)
+
+    data_full = data_full.reshape(-1, ntimes, nsubband)
+    data_full = data_full.transpose(1, 0, 2).reshape(ntimes, -1)
+
     tsys_arr.shape = (-1, ntimes)
 
-#    plot_tsys_freq(tsys_arr, freq)
+    plot_tsys_freq(tsys_arr, freq)
 #    plotter(tsys_arr, str(cfreq)+'.png')
 
-    return tsys_arr
+    return tsys_arr, data_full
 
 def plot_tsys_freq(tsys_arr, freq):
     fig = plt.figure()
@@ -107,33 +115,11 @@ def plot_tsys_freq(tsys_arr, freq):
     plt.ylim(0, 500)
     plt.show()
 
+def plot_on_off():
+    """ Plot Stokes I on source vs. off
+    """
 
-# flist = glob.glob('/data/15/Timing/20170302/2017.03.02-10:35:30.B0000+00/2017.03.02-10:35:30.B0000+00.band14_0*.ar') 
-# flist.sort()
-
-# data_arr = []
-
-# for ff in flist[:]:
-#     arch = psrchive.Archive_load(ff)
-#     data = arch.get_data()
-#     data = data.sum(axis=-1)
-#     data_arr.append(data)
-
-# nfreq = data.shape[-1]
-# cfreq = arch.get_centre_frequency()
-# bw = 131.25
-# freq = np.linspace(cfreq, cfreq + bw, nfreq) - bw/2.
-# print freq
-
-# data_arr = np.concatenate(data_arr, axis=0)
-# print data_arr.shape
-
-# fig = plt.figure(figsize=(15, 12))
-
-# G = (26 / 64.)**2*0.7
-
-# print G
-
+    
 def plotter(data, outfile):
     fig = plt.figure()
 
@@ -174,11 +160,8 @@ if __name__=='__main__':
     date, folder = args.date, args.folder
     sband, eband, outname, subints = args.sband, args.eband, args.o, args.subints
 
-    fstr = '/data/11/Timing/' + date + '/' + folder + '/*.ar'
-    print fstr
-
-    tsys_arr = allfreq(date, folder, sband=2, eband=16)
+    tsys_arr, data_full = calculate_tsys_allfreq(date, folder, sband=2, eband=16)
     np.save('tsyscasa', tsys_arr)
-    
+    np.save('full_data_arr', data_full)
 
 
