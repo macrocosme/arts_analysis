@@ -61,7 +61,7 @@ def calculate_tsys(data_arr, freq, src='CasA'):
     # Get source flux at this frequency
     Snu = source_flux(freq, src=src)
 
-    G = APERTIFparams.G 
+    G = APERTIFparams.G * np.sqrt(2)
     Tsys = G * Snu / (fractional_tsys - 1)
     print "%s is %f Jy" % (src, Snu)
     return Tsys
