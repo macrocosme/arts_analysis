@@ -63,6 +63,7 @@ def calculate_tsys(data_arr, freq, src='CasA'):
 
     G = APERTIFparams.G 
     Tsys = G * Snu / (fractional_tsys - 1)
+    print "%s is %f Jy" % (src, Snu)
     return Tsys
 
 def calculate_tsys_allfreq(date, folder, sband=1, eband=16, src='CasA'):
