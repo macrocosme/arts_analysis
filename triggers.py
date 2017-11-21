@@ -10,6 +10,7 @@ start_bin = 10000000+75000
 chunksize = int(1.0 / dt)
 downsamp = 1
 full_arr = np.empty([100, chunksize])
+rawdatafile = filterbank.filterbank(fn)
 
 def get_triggers(fn):
     """ Get brightest trigger in each 10s chunk.
