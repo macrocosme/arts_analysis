@@ -16,7 +16,7 @@ def get_triggers(fn):
     """
     A = np.load(fn)
     dm, sig, tt, downs = A[:,0],A[:,1],A[:,2],A[:,4]
-    sig_cut, dm_cut, ttc = [],[],[]
+    sig_cut, dm_cut, tt_cut = [],[],[]
 
     for ii in xrange(10*4*3600//10):
         t0, tm = 10*ii, 10*(ii+1)                                                                 
@@ -62,7 +62,6 @@ def func(dm0, t0, ndm=50):
             data_dm_max = data.data[:, t_min:t_max].copy()
 
     return full_arr, data_dm_max
-
 
 sig_cut, dm_cut, tt_cut = get_triggers('crab4hr_singlepulse.npy')
 
