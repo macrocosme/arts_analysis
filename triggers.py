@@ -70,10 +70,8 @@ for ii, tt in enumerate(tt_cut):
     print(ii, tt)
     data_dmtime, data_freqtime = func(dm_cut[ii], tt)
 
-    fnout_freqtime = './data_snr%d_dm%d_t0%d_freq.npy' % 
-                            (sig_cut[ii], dm_cut[ii], tt)
-    fnout_dmtime = './data_snr%d_dm%d_t0%d_dm.npy' % 
-                            (sig_cut[ii], dm_cut[ii], tt)
+    fnout_freqtime = './data_snr%d_dm%d_t0%d_freq.npy' % (sig_cut[ii], dm_cut[ii], tt)
+    fnout_dmtime = './data_snr%d_dm%d_t0%d_dm.npy' % (sig_cut[ii], dm_cut[ii], tt)
 
     np.save(fnout_freqtime, data_freqtime)
     np.save(fnout_dmtime, data_freqtime)
