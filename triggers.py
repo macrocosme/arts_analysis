@@ -48,8 +48,14 @@ def proc_trigger(fn_fil, dm0, t0, ndm=50, mk_plot=False, downsamp=1):
 
     dt = 4.095999975106679e-05
     width = 1.0 # seconds
+    freq_up = rawdatafile.header['fch1'] 
+    freq_low = freq_up + 1536*rawdatafile.header['foff']
+    # Read in three disp delays
+    width = 3 * abs(4e3 * dm0 * (freq_up**-2 - freq_low**-2))
+    print("Using width %f" % width)
     chunksize = int(width/dt)
     start_bin = int((t0 - width/2)/dt)
+
     if start_bin < 0:
         extra = start_bin//2
         start_bin = 0
@@ -62,23 +68,30 @@ def proc_trigger(fn_fil, dm0, t0, ndm=50, mk_plot=False, downsamp=1):
     full_arr = np.empty([ndm, 400])   
     dm_max_jj = np.argmin(abs(dms-dm0))
 
+    snr_max = 0
+
     for jj, dm_ in enumerate(dms):
         print("Dedispersing to dm=%f starting at t=%d" % (dm_, start_bin))
         data = rawdatafile.get_spectra(start_bin, chunksize)
-        data.downsample(downsamp)
+
+        if downsamp > 1:
+            data.downsample(downsamp)
+
         data.data -= np.median(data.data, axis=-1)[:, None]
         data.dedisperse(dm_)
         dm_arr = data.data[:,t_min:t_max].mean(0)
+        snr_ = dm_arr.max() / np.std(dm_arr)
         full_arr[jj] = dm_arr
 
         if jj==dm_max_jj:
-            np.save('data', data)
+#        if snr_>=snr_max:
             data_dm_max = data.data[:, t_min:t_max].copy()
 
     if mk_plot is True:
         figure = plt.figure()
         plt.subplot(311)
-        plt.imshow(data_dm_max, aspect='auto')
+        ddm = data_dm_max[:, 100:300].reshape(-1, 16, 200).mean(1)
+        plt.imshow(ddm, aspect='auto')
 
         plt.subplot(312)
         plt.plot(data_dm_max.mean(0))
@@ -86,7 +99,8 @@ def proc_trigger(fn_fil, dm0, t0, ndm=50, mk_plot=False, downsamp=1):
         plt.subplot(313)
         plt.imshow(full_arr, aspect='auto')
         
-        fn_fig_out = './data_snr%d_dm%d_t0%d.pdf' % (sig_cut[ii], dm_cut[ii], tt)
+        fn_fig_out = './data_snr%d_dm%d_t0%d.pdf' % \
+                     (sig_cut[ii], dm_cut[ii], tt)
 
         plt.savefig(fn_fig_out)
 
