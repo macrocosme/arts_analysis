@@ -77,13 +77,13 @@ def proc_trigger(fn_fil, dm0, t0, ndm=50, mk_plot=False, downsamp=1):
 
     if mk_plot is True:
         figure = plt.figure()
-        plt.subplot(131)
+        plt.subplot(311)
         plt.imshow(data_dm_max, aspect='auto')
 
-        plt.subplot(132)
+        plt.subplot(312)
         plt.plot(data_dm_max.mean(0))
 
-        plt.subplot(133)
+        plt.subplot(313)
         plt.imshow(full_arr, aspect='auto')
         
         fn_fig_out = './data_snr%d_dm%d_t0%d.pdf' % (sig_cut[ii], dm_cut[ii], tt)
