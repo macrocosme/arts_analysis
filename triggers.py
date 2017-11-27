@@ -50,7 +50,9 @@ def proc_trigger(fn_fil, dm0, t0, ndm=50, mk_plot=False, downsamp=1):
     width = 1.0 # seconds
     chunksize = int(width/dt)
     start_bin = int((t0 - width/2)/dt)
-    start_bin = max(start_bin, 0)
+    if start_bin < 0:
+        extra = start_bin//2
+        start_bin = 0
 
     dm_min = max(0, dm0-5)
     dm_max = dm0+5
@@ -91,14 +93,13 @@ def proc_trigger(fn_fil, dm0, t0, ndm=50, mk_plot=False, downsamp=1):
     return full_arr, data_dm_max
 
 
-
 sig_cut, dm_cut, tt_cut = get_triggers(fn_sp)
 
 print("Using %d events" % len(sig_cut))
 
 for ii, tt in enumerate(tt_cut):
     print(ii, tt, sig_cut[ii])
-    data_dmtime, data_freqtime = proc_trigger(fn_fil, dm_cut[ii], tt, mk_plot=True)
+    data_dmtime, data_freqtime = proc_trigger(fn_fil, dm_cut[ii], tt, mk_plot=True, ndm=25)
 
     fnout_freqtime = './data_snr%d_dm%d_t0%d_freq.npy' % (sig_cut[ii], dm_cut[ii], tt)
     fnout_dmtime = './data_snr%d_dm%d_t0%d_dm.npy' % (sig_cut[ii], dm_cut[ii], tt)
