@@ -3,15 +3,17 @@ import numpy as np
 from pypulsar.formats import filterbank
 from pypulsar.formats import spectra
 
-fn='/data/01/filterbank/20171010/2017.10.10-02:56:50.B0531+21/CB00.fil'
+fn_fil = '/data/01/filterbank/20171010/2017.10.10-02:56:50.B0531+21/CB00.fil'
 #fn='/home/arts/leon/scratch/20170306/crab_1hr_dump/liamcrab/crab.liam_1ms_8bit.dfil'
+#sig_cut, dm_cut, tt_cut = get_triggers('crab4hr_singlepulse.npy')
+fn_sp = '/data/01/filterbank/20171010/2017.10.10-02:56:50.B0531+21/CBB_DM56.50.singlepulse'
 
 dt = 4.095999975106679e-05
 start_bin = 10000000+75000
 chunksize = int(1.0 / dt)
 downsamp = 1
 full_arr = np.empty([100, chunksize])
-rawdatafile = filterbank.filterbank(fn)
+rawdatafile = filterbank.filterbank(fn_fil)
 
 def get_triggers(fn):
     """ Get brightest trigger in each 10s chunk.
@@ -40,7 +42,13 @@ def get_triggers(fn):
 
     return sig_cut, dm_cut, tt_cut
 
-def func(dm0, t0, ndm=50):
+def proc_trigger(fn_fil, dm0, t0, ndm=50, mk_plot=False):
+    """ Read in filterbank file fn_fil along with 
+    dm0 and t0 arrays, save dedispersed data around each 
+    trigger. 
+    """
+    rawdatafile = filterbank.filterbank(fn_fil)
+
     dt = 4.095999975106679e-05
     width = 1.0 # seconds
     chunksize = int(width/dt)
@@ -56,7 +64,6 @@ def func(dm0, t0, ndm=50):
     dm_max_jj = np.argmin(abs(dms-dm0))
 
     for jj, dm_ in enumerate(dms):
-        print(dm_, start_bin, chunksize)
         data = rawdatafile.get_spectra(start_bin, chunksize)
         data.downsample(downsamp)
         data.data -= np.median(data.data, axis=-1)[:, None]
@@ -68,11 +75,20 @@ def func(dm0, t0, ndm=50):
             np.save('data', data)
             data_dm_max = data.data[:, t_min:t_max].copy()
 
+    if mk_plot is True:
+        figure = plt.figure()
+        plt.subplot(131)
+        plt.imshow(data_dm_max, aspect='auto')
+
+        plt.subplot(132)
+        plt.plot(data_dm_max.mean(0))
+
+        plt.subplot(133)
+        plt.imshow(full_arr, aspect='auto')
+
     return full_arr, data_dm_max
 
-#sig_cut, dm_cut, tt_cut = get_triggers('crab4hr_singlepulse.npy')
-fn = '/home/arts/leon/scratch/20170306/crab_1hr_dump/liamcrab/CBB_DM56.50.singlepulse'
-fn = '/data/01/filterbank/20171010/2017.10.10-02:56:50.B0531+21/CBB_DM56.50.singlepulse'
+
 
 sig_cut, dm_cut, tt_cut = get_triggers(fn)
 
@@ -80,7 +96,7 @@ print("Using %d events" % len(sig_cut))
 
 for ii, tt in enumerate(tt_cut):
     print(ii, tt, sig_cut[ii])
-    data_dmtime, data_freqtime = func(dm_cut[ii], tt)
+    data_dmtime, data_freqtime = proc_trigger(fn_fil, dm_cut[ii], tt, mk_plot=True)
 
     fnout_freqtime = './data_snr%d_dm%d_t0%d_freq.npy' % (sig_cut[ii], dm_cut[ii], tt)
     fnout_dmtime = './data_snr%d_dm%d_t0%d_dm.npy' % (sig_cut[ii], dm_cut[ii], tt)
