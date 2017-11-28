@@ -1,16 +1,37 @@
+import os
+
 import numpy as np
+import matplotlib.pyplot as plt
+import glob
 
 from pypulsar.formats import filterbank
 from pypulsar.formats import spectra
-
-import matplotlib.pyplot as plt
 
 fn_fil = '/data/01/filterbank/20171010/2017.10.10-02:56:50.B0531+21/CB00.fil'
 #fn='/home/arts/leon/scratch/20170306/crab_1hr_dump/liamcrab/crab.liam_1ms_8bit.dfil'
 #sig_cut, dm_cut, tt_cut = get_triggers('crab4hr_singlepulse.npy')
 fn_sp = '/data/01/filterbank/20171010/2017.10.10-02:56:50.B0531+21/CBB_DM56.50.singlepulse'
 
-dt = 4.095999975106679e-05
+dt = 4.096e-5
+
+def run_prepsubband(fn_fil, lodm, dmstep, numdms, downsamp=1, nsub=128):
+
+    fnout = fn_fil+'.out'
+    print(fnout)
+    numout = (30*60./dt)//downsamp*downsamp
+    os.system('prepsubband -nsub %d -numout %d -lodm %f \
+             -dmstep %f -numdms %d -downsamp %d -o %s %s' % \
+             (nsub, numout, lodm, dmstep, numdms, downsamp, fnout, fn_fil))
+    return 
+
+
+def run_single_pulse(fdir):
+    flist = glob.glob(fdir+'/*dat')
+
+    for ff in flist:
+        print(ff)
+        os.system('single_pulse_search.py -t 8.0 %s' % ff)
+
 
 def get_triggers(fn):
     """ Get brightest trigger in each 10s chunk.
@@ -106,11 +127,14 @@ def proc_trigger(fn_fil, dm0, t0, ndm=50, mk_plot=False, downsamp=1):
 
     return full_arr, data_dm_max
 
-
 sig_cut, dm_cut, tt_cut = get_triggers(fn_sp)
 
 print("Using %d events" % len(sig_cut))
 
+fn_fil = '/data/09/filterbank/20171127/2017.11.27-17:24:42.B0329+54/CB20.fil'
+#run_prepsubband(fn_fil, 20.00, 0.3, 50, downsamp=1, nsub=128)
+
+run_single_pulse('/data/09/filterbank/20171127/2017.11.27-17:24:42.B0329+54/')
 for ii, tt in enumerate(tt_cut):
     print(ii, tt, sig_cut[ii])
     data_dmtime, data_freqtime = proc_trigger(fn_fil, dm_cut[ii], tt, mk_plot=True, ndm=25)
