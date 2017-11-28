@@ -127,7 +127,22 @@ def proc_trigger(fn_fil, dm0, t0, ndm=50, mk_plot=False, downsamp=1):
 
     return full_arr, data_dm_max
 
-sig_cut, dm_cut, tt_cut = get_triggers(fn_sp)
+
+if __name__=='__main__':
+    mm = 0
+    flist = glob.glob('/data/*/filterbank/20171127/2017.11.27-17:24:42.B0329+54/*.fil')
+    flist = flist[mm*3:(mm+1)*3]
+
+    for fn_fil in flist:
+        fdir = fn_fil.split('CB')[0]
+        print(fn_fil)
+        print(fdir)
+        run_prepsubband(fn_fil, 20.00, 0.3, 50, downsamp=1, nsub=128)
+        run_single_pulse(fdir)
+
+    exit()
+
+    sig_cut, dm_cut, tt_cut = get_triggers(fn_sp)
 
 print("Using %d events" % len(sig_cut))
 
