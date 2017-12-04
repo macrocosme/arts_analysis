@@ -39,10 +39,14 @@ def get_triggers2(fn):
     """
     if fn.split('.')[-1]=='npy':
         A = np.load(fn)
+        dm, sig, tt, downs = A[:,0],A[:,1],A[:,2],A[:,4]
     elif fn.split('.')[-1]=='singlepulse':
         A = np.loadtxt(fn)
+        dm, sig, tt, downs = A[:,0],A[:,1],A[:,2],A[:,4]
+    elif fn.split('.')[-1]=='trigger':
+        A = np.loadtxt(fn)
+        dm, sig, tt, downs =  A[:, -3],A[:, -1],A[:, -4], A[:, 3]
 
-    dm, sig, tt, downs = A[:,0],A[:,1],A[:,2],A[:,4]
     sig_cut, dm_cut, tt_cut = [],[],[]
     
     for ii in xrange(10*4*3600//10):
@@ -76,13 +80,17 @@ def get_triggers(fn):
     """
     if fn.split('.')[-1]=='npy':
         A = np.load(fn)
+        dm, sig, tt, downs = A[:,0],A[:,1],A[:,2],A[:,4]
     elif fn.split('.')[-1]=='singlepulse':
         A = np.loadtxt(fn)
+        dm, sig, tt, downs = A[:,0],A[:,1],A[:,2],A[:,4]
+    elif fn.split('.')[-1]=='trigger':
+        A = np.loadtxt(fn)
+        dm, sig, tt, downs =  A[:, -3],A[:, -1],A[:, -4], A[:, 3]
 
     if len(A)==0:
         return 0, 0, 0, 0
 
-    dm, sig, tt, downs = A[:,0], A[:,1], A[:,2], A[:,4]
     sig_cut, dm_cut, tt_cut, ds_cut = [],[],[], []
     
     tduration = tt.max() - tt.min()
@@ -112,8 +120,31 @@ def get_triggers(fn):
 
     return sig_cut, dm_cut, tt_cut, ds_cut
 
+def get_mask(rfimask, startsamp, N):
+    """Return an array of boolean values to act as a mask
+        for a Spectra object.
+
+        Inputs:
+            rfimask: An rfifind.rfifind object
+            startsamp: Starting sample
+            N: number of samples to read
+
+        Output:
+            mask: 2D numpy array of boolean values. 
+                True represents an element that should be masked.
+    """
+    sampnums = np.arange(startsamp, startsamp+N)
+    blocknums = np.floor(sampnums/rfimask.ptsperint).astype('int')
+    mask = np.zeros((N, rfimask.nchan), dtype='bool')
+    for blocknum in np.unique(blocknums):
+        blockmask = np.zeros_like(mask[blocknums==blocknum])
+        blockmask[:,rfimask.mask_zap_chans_per_int[blocknum]] = True
+        mask[blocknums==blocknum] = blockmask
+    return mask.T[::-1]
+
 def proc_trigger(fn_fil, dm0, t0, sig_cut, 
-                 ndm=50, mk_plot=False, downsamp=1, beamno=''):
+                 ndm=50, mk_plot=False, downsamp=1, beamno='', 
+                 fn_mask=None):
     """ Read in filterbank file fn_fil along with 
     dm0 and t0 arrays, save dedispersed data around each 
     trigger. 
@@ -154,6 +185,11 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     data = rawdatafile.get_spectra(start_bin, chunksize)
     data.data -= np.median(data.data, axis=-1)[:, None]
 #    data.data[mask] = 0.
+
+    if not fn_mask is None:
+        rfimask = rfifind.rfifind(fn_mask)
+        mask = get_mask(rfimask, start_bin, chunksize)
+        data = data.masked(mask, maskval='median-mid80')
 
     for jj, dm_ in enumerate(dms):
         print("Dedispersing to dm=%f starting at t=%d" % (dm_, start_bin))
@@ -203,7 +239,10 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 if __name__=='__main__':
     import sys
 
-    assert len(sys.argv)==3, 'args must be: fn_filterbank fn_singlepulse'
+    try:
+        fn_mask = sys.argv[3]
+    except IndexError:
+        fn_mask = None
 
     fn_fil = sys.argv[1]
     fn_sp = sys.argv[2]
