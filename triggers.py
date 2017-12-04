@@ -175,22 +175,23 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         plt.subplot(311)
         ddm = data_dm_max[:, :].reshape(-1, 16, ntime).mean(1)
         ddm = ddm[:, :ntime//downsamp*downsamp].reshape(-1, ntime//downsamp, downsamp).mean(-1)
+        times = np.linspace(0, ntime*dt, len(ddm[0]))
 
         ddm /= np.std(ddm)
-        plt.imshow(ddm, aspect='auto', vmax=4, vmin=-4, extent=[0, ntime*dt*downsamp, freq_up, freq_low])
+        plt.imshow(ddm, aspect='auto', vmax=4, vmin=-4, extent=[0, times[-1], freq_up, freq_low])
         plt.ylabel('Freq [MHz]')
 
         plt.subplot(312)
-        plt.plot(ddm.mean(0))
+        plt.plot(times, ddm.mean(0))
         plt.ylabel('Flux')
 
         plt.subplot(313)
         full_dm_arr_ = full_arr[:, :ntime//downsamp*downsamp].reshape(-1, ntime//downsamp, downsamp).mean(-1)
-        plt.imshow(full_dm_arr_, aspect='auto', extent=[0, ntime*dt*downsamp, dms[0], dms[1]])
-        plt.xlabel('Time')
+        plt.imshow(full_dm_arr_, aspect='auto', extent=[0, times[-1], dms[0], dms[-1]])
+        plt.xlabel('Time [s]')
         plt.ylabel('DM')
     
-        plt.subtitle("data_beam%s_snr%d_dm%d_t0%d" % (beamno, sig_cut, dms[dm_max_jj], tt))
+        plt.suptitle("beam%s snr%d dm%d t0%d" % (beamno, sig_cut, dms[dm_max_jj], tt))
 
         fn_fig_out = './plots/data_beam%s_snr%d_dm%d_t0%d.pdf' % \
                      (beamno, sig_cut, dms[dm_max_jj], tt)
@@ -201,6 +202,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 
 if __name__=='__main__':
     import sys
+
+    assert len(sys.argv)==3, 'args must be: fn_filterbank fn_singlepulse'
 
     fn_fil = sys.argv[1]
     fn_sp = sys.argv[2]
