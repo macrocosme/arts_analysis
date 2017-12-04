@@ -98,7 +98,7 @@ def get_triggers(fn):
             try:    
                 t0, tm = 2*ii, 2*(ii+1)
                 ind = np.where((dm<dms[1]) & (dm>dms[0]) & (tt<tm) & (tt>t0))[0]
-                sig_cut.append(np.argmax(sig[ind]))
+                sig_cut.append(np.amax(sig[ind]))
                 dm_cut.append(dm[ind][np.argmax(sig[ind])])
                 tt_cut.append(tt[ind][np.argmax(sig[ind])]) 
                 ds_cut.append(downs[ind][np.argmax(sig[ind])])
