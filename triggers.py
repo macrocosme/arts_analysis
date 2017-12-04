@@ -190,155 +190,91 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         plt.xlabel('Time')
         plt.ylabel('DM')
     
+        plt.subtitle("data_beam%s_snr%d_dm%d_t0%d" % (beamno, sig_cut, dms[dm_max_jj], tt))
 
-        fn_fig_out = './plots/data%s_snr%d_dm%d_t0%d.pdf' % \
+        fn_fig_out = './plots/data_beam%s_snr%d_dm%d_t0%d.pdf' % \
                      (beamno, sig_cut, dms[dm_max_jj], tt)
 
         plt.savefig(fn_fig_out)
 
     return full_arr, data_dm_max
 
-def proc_trigger2(fn_fil, dm0, t0, ndm=50, mk_plot=False, downsamp=1):
-    """ Read in filterbank file fn_fil along with 
-    dm0 and t0 arrays, save dedispersed data around each 
-    trigger. 
-    """
-    rawdatafile = filterbank.filterbank(fn_fil)
-
-    dt = 4.095999975106679e-05
-    width = 1.0 # seconds
-    freq_up = rawdatafile.header['fch1'] 
-    freq_low = freq_up + 1536*rawdatafile.header['foff']
-    # Read in three disp delays
-    width = 3 * abs(4e3 * dm0 * (freq_up**-2 - freq_low**-2))
-    print("Using width %f" % width)
-    chunksize = int(width/dt)
-    start_bin = int((t0 - width/2)/dt)
-
-    if start_bin < 0:
-        extra = start_bin//2
-        start_bin = 0
-
-    dm_min = max(0, dm0-5)
-    dm_max = dm0+5
-    dms = np.linspace(dm_min, dm_max, ndm)
-    t_min, t_max = chunksize//2-200, chunksize//2+200
-
-    full_arr = np.empty([ndm, 400])   
-    dm_max_jj = np.argmin(abs(dms-dm0))
-
-    snr_max = 0
-
-    for jj, dm_ in enumerate(dms):
-        print("Dedispersing to dm=%f starting at t=%d" % (dm_, start_bin))
-        data = rawdatafile.get_spectra(start_bin, chunksize)
-
-        if downsamp > 1:
-            data.downsample(downsamp)
-
-        data.data -= np.median(data.data, axis=-1)[:, None]
-        data.dedisperse(dm_)
-        dm_arr = data.data[:,t_min:t_max].mean(0)
-        snr_ = dm_arr.max() / np.std(dm_arr)
-        full_arr[jj] = dm_arr
-
-        if jj==dm_max_jj:
-#        if snr_>=snr_max:
-            snr_max = snr_
-            data_dm_max = data.data[:, t_min:t_max].copy()
-
-    if mk_plot is True:
-        figure = plt.figure()
-        plt.subplot(311)
-        ddm = data_dm_max[:, 100:300].reshape(-1, 16, 200).mean(1)
-        plt.imshow(ddm, aspect='auto')
-
-        plt.subplot(312)
-        plt.plot(data_dm_max.mean(0))
-
-        plt.subplot(313)
-        plt.imshow(full_arr, aspect='auto')
-        
-        fn_fig_out = './plots/data_snr%d_dm%d_t0%d.pdf' % \
-                     (snr_max, dm_max_jj, tt)
-
-        plt.savefig(fn_fig_out)
-
-    return full_arr, data_dm_max
-
-
 if __name__=='__main__':
     import sys
-    flist = glob.glob('./all*singlepulse')
-#    mm=int(sys.argv[1])
-    for ff in flist[:]:
-        sig_cut, dm_cut, tt_cut, ds_cut = get_triggers(ff)
 
-        beamno = ff.split('_')[1][:2]
-        print(beamno)
+    fn_fil = sys.argv[1]
+    fn_sp = sys.argv[2]
 
-        fn_fil = glob.glob('/data/*/filterbank/20171127/2017.11.27-17:24:42.B0329+54/CB%s.fil' % beamno)[0]
-        print(fn_fil)
-        try:
-            print("%s with %d triggers" % (ff, len(sig_cut)))
-        except:
-            print("Skipping %s" % beamno)
-            continue 
+    sig_cut, dm_cut, tt_cut, ds_cut = get_triggers(fn_sp)
 
-        for ii, tt in enumerate(tt_cut):
-            print(ii, tt, sig_cut[ii], ds_cut[ii])
-            data_dmtime, data_freqtime = proc_trigger(fn_fil, dm_cut[ii], tt, sig_cut[ii], \
-                                                      mk_plot=True, ndm=25, downsamp=ds_cut[ii],\
-                                                      beamno=beamno)
+    for ii, tt in enumerate(tt_cut):
+        data_dmtime, data_freqtime = proc_trigger(fn_fil, dm_cut[ii], tt, sig_cut[ii], \
+                                                  mk_plot=True, ndm=25, downsamp=ds_cut[ii])
+
+        fnout_freqtime = './data_snr%d_dm%d_t0%d_freq.npy' % (sig_cut[ii], dm_cut[ii], tt)
+        fnout_dmtime = './data_snr%d_dm%d_t0%d_dm.npy' % (sig_cut[ii], dm_cut[ii], tt)
+
+        np.save(fnout_freqtime, data_freqtime)
+        np.save(fnout_dmtime, data_dmtime)
+
+    exit()
+
+
+#     flist = glob.glob('./all*singlepulse')
+# #    mm=int(sys.argv[1])
+#     for ff in flist[:]:
+#         sig_cut, dm_cut, tt_cut, ds_cut = get_triggers(ff)
+
+#         beamno = ff.split('_')[1][:2]
+#         print(beamno)
+
+#         fn_fil = glob.glob('/data/*/filterbank/20171127/2017.11.27-17:24:42.B0329+54/CB%s.fil' % beamno)[0]
+#         print(fn_fil)
+#         try:
+#             print("%s with %d triggers" % (ff, len(sig_cut)))
+#         except:
+#             print("Skipping %s" % beamno)
+#             continue 
+
+#         for ii, tt in enumerate(tt_cut):
+#             print(ii, tt, sig_cut[ii], ds_cut[ii])
+#             data_dmtime, data_freqtime = proc_trigger(fn_fil, dm_cut[ii], tt, sig_cut[ii], \
+#                                                       mk_plot=True, ndm=25, downsamp=ds_cut[ii],\
+#                                                       beamno=beamno)
             
-            fnout_freqtime = './data%s_snr%d_dm%d_t0%d_freq.npy' % (beamno, sig_cut[ii], dm_cut[ii], tt)
-            fnout_dmtime = './data%s_snr%d_dm%d_t0%d_dm.npy' % (beamno, sig_cut[ii], dm_cut[ii], tt)
+#             fnout_freqtime = './data%s_snr%d_dm%d_t0%d_freq.npy' % (beamno, sig_cut[ii], dm_cut[ii], tt)
+#             fnout_dmtime = './data%s_snr%d_dm%d_t0%d_dm.npy' % (beamno, sig_cut[ii], dm_cut[ii], tt)
 
-            np.save(fnout_freqtime, data_freqtime)
-            np.save(fnout_dmtime, data_dmtime)
-
-    exit()
-
-    mm = 10
-    flist = glob.glob(fdir)
-
-    for fn_fil in flist:
-        fdir = fn_fil.split('CB')[0]
-        beamno = fn_fil.split('CB')[-1][:2]
-        os.system('cat %s*%s*%s > all_%s.singlepulse' % (fdir, beamno, 'singlepulse', beamno))
-
-    exit()
-
-    flist = flist[mm*3:(mm+1)*3]
-
-    for fn_fil in flist:
-        fdir = fn_fil.split('CB')[0]
-        print(fn_fil)
-        print(fdir)
-        run_prepsubband(fn_fil, 20.00, 0.3, 50, downsamp=1, nsub=128)
-        run_single_pulse(fdir)
-
-    exit()
-
-    sig_cut, dm_cut, tt_cut = get_triggers(fn_sp)
+#             np.save(fnout_freqtime, data_freqtime)
+#             np.save(fnout_dmtime, data_dmtime)
 
 
-fn_fil = '/data/09/filterbank/20171127/2017.11.27-17:24:42.B0329+54/CB21.fil'
-fn_sp = 'all_21.singlepulse'
+#     mm = 10
+#     flist = glob.glob(fdir)
 
-sig_cut, dm_cut, tt_cut, ds_cut = get_triggers(fn_sp)
-#run_prepsubband(fn_fil, 20.00, 0.3, 50, downsamp=1, nsub=128)
-#run_single_pulse('/data/09/filterbank/20171127/2017.11.27-17:24:42.B0329+54/')
-for ii, tt in enumerate(tt_cut):
-    print(ii, tt, sig_cut[ii], ds_cut[ii])
-    data_dmtime, data_freqtime = proc_trigger(fn_fil, dm_cut[ii], tt, sig_cut[ii], \
-                                              mk_plot=True, ndm=25, downsamp=ds_cut[ii])
+#     for fn_fil in flist:
+#         fdir = fn_fil.split('CB')[0]
+#         beamno = fn_fil.split('CB')[-1][:2]
+#         os.system('cat %s*%s*%s > all_%s.singlepulse' % (fdir, beamno, 'singlepulse', beamno))
 
-    fnout_freqtime = './data_snr%d_dm%d_t0%d_freq.npy' % (sig_cut[ii], dm_cut[ii], tt)
-    fnout_dmtime = './data_snr%d_dm%d_t0%d_dm.npy' % (sig_cut[ii], dm_cut[ii], tt)
+#     exit()
 
-    np.save(fnout_freqtime, data_freqtime)
-    np.save(fnout_dmtime, data_dmtime)
+#     flist = flist[mm*3:(mm+1)*3]
+
+#     for fn_fil in flist:
+#         fdir = fn_fil.split('CB')[0]
+#         print(fn_fil)
+#         print(fdir)
+#         run_prepsubband(fn_fil, 20.00, 0.3, 50, downsamp=1, nsub=128)
+#         run_single_pulse(fdir)
+
+#     exit()
+
+#     sig_cut, dm_cut, tt_cut = get_triggers(fn_sp)
+
+
+# fn_fil = '/data/09/filterbank/20171127/2017.11.27-17:24:42.B0329+54/CB21.fil'
+# fn_sp = 'all_21.singlepulse'
 
 
 
