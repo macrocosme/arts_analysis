@@ -57,6 +57,7 @@ def get_triggers(fn):
         dm, sig, tt, downs = A[:, -2],A[:, -1],A[:, -3],A[:, 3]
     if len(A)==0:
         return 0, 0, 0, 0
+
     sig_cut, dm_cut, tt_cut, ds_cut = [],[],[],[]
     
     tduration = tt.max() - tt.min()
@@ -216,8 +217,8 @@ if __name__=='__main__':
     import sys
 
     try:
-        mm = int(sys.argv[3])
-#        fn_mask = sys.argv[3]
+#        mm = int(sys.argv[3])
+        fn_mask = sys.argv[3]
     except IndexError:
         fn_mask = None
 
@@ -230,12 +231,15 @@ if __name__=='__main__':
     print("Grouped down to %d triggers" % len(sig_cut))
     print("--------------------------- \n")
 
-    for ii, tt in enumerate(tt_cut[100*mm:100*(mm+1)]):
-        
+    for ii, tt in enumerate(tt_cut[:]):
+        if tt<10:
+            continue
+        if tt>13:
+            continue
         print(ii,dm_cut[ii])
-        data_dmtime, data_freqtime = proc_trigger(fn_fil, 56.8, 11.9706, 30, mk_plot=True, ndm=100, downsamp=ds_cut[ii])
-        #data_dmtime, data_freqtime = proc_trigger(fn_fil, dm_cut[ii], tt, sig_cut[ii], \
-        #                                          mk_plot=True, ndm=100, downsamp=ds_cut[ii])
+#        data_dmtime, data_freqtime = proc_trigger(fn_fil, 56.8, 11.9706, 30, mk_plot=True, ndm=100, downsamp=ds_cut[ii])
+        data_dmtime, data_freqtime = proc_trigger(fn_fil, dm_cut[ii], tt, sig_cut[ii], \
+                                                  mk_plot=True, ndm=100, downsamp=ds_cut[ii])
 
         fnout_freqtime = './data_trainsnr%d_dm%d_t0%d_freq.npy' % (sig_cut[ii], dm_cut[ii], tt)
         fnout_dmtime = './data_trainsnr%d_dm%d_t0%d_dm.npy' % (sig_cut[ii], dm_cut[ii], tt)
