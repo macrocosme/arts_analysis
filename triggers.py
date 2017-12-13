@@ -5,6 +5,7 @@ import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
 import glob
+import copy
 
 from pypulsar.formats import filterbank
 from pypulsar.formats import spectra
@@ -84,8 +85,6 @@ def get_triggers(fn):
     dm_cut = np.array(dm_cut)
     tt_cut = np.array(tt_cut)
     ds_cut = np.array(ds_cut)
-    print(dm_cut)
-    print(tt_cut)
 
     return sig_cut, dm_cut, tt_cut, ds_cut
 
@@ -120,15 +119,15 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     """
     rawdatafile = filterbank.filterbank(fn_fil)
 
-    mask = np.array([  5,   6,   9,  32,  35,  49,  75,  76,  78,  82,  83,  87,  92,
-                       93,  97,  98, 108, 110, 111, 112, 114, 118, 122, 123, 124, 157,
-                       160, 299, 300, 301, 302, 303, 304, 305, 306, 307, 308, 309, 660, 661])
+    mask = np.array([ 5,   6,   9,  32,  35,  49,  75,  76,  78,  82,  83,  87,  92,
+                      93,  97,  98, 108, 110, 111, 112, 114, 118, 122, 123, 124, 157,
+                      160, 299, 300, 301, 302, 303, 304, 305, 306, 307, 308, 309, 660, 
+                      661])
 
-    dt = 4.095999975106679e-05
-    width = 1.0 # seconds
+    dt = 4.096e-05
     freq_up = rawdatafile.header['fch1'] 
     freq_low = freq_up + 1536*rawdatafile.header['foff']
-    # Read in 15 disp delays
+    # Read in 5 disp delays
     width = 5 * abs(4e3 * dm0 * (freq_up**-2 - freq_low**-2))
     
     print("Using width %f" % width)
@@ -143,14 +142,16 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 
     dm_min = max(0, dm0-50)
     dm_max = dm0 + 50
-    dms = np.linspace(dm_min, dm_max, ndm)
+    dms = np.linspace(dm_min, dm_max, ndm, endpoint=True)
+
+    # make sure dm0 is in the array
+    dm_max_jj = np.argmin(abs(dms-dm0))
+    dms += (dm0-dms[dm_max_jj])
+
     t_min, t_max = chunksize//2-1500, chunksize//2+1500
-    #t_min  = t_min // downsamp
-    #t_max = t_max // downsamp
     ntime = t_max-t_min
 
     full_arr = np.empty([ndm, ntime])   
-    dm_max_jj = np.argmin(abs(dms-dm0))
 
     snr_max = 0
     data = rawdatafile.get_spectra(start_bin, chunksize)
@@ -163,20 +164,19 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         data = data.masked(mask, maskval='median-mid80')
 
     for jj, dm_ in enumerate(dms):
-        if (dm_>50.) and (dm_<60.):
-            downsamp=1 
-#        print("Dedispersing to dm=%f starting at t=%d" % (dm_, start_bin))
-        #data = rawdatafile.get_spectra(start_bin, chunksize)
-        #data.data -= np.median(data.data, axis=-1)[:, None]
-        data.dedisperse(dm_)
-        dm_arr = data.data[:,t_min:t_max].mean(0)
+        print("Dedispersing to dm=%f starting at t=%d" % (dm_, start_bin))
+#        data = rawdatafile.get_spectra(start_bin, chunksize)
+        data_copy = copy.deepcopy(data)
+        data_copy.dedisperse(dm_)
+        dm_arr = data_copy.data[:,t_min:t_max].mean(0)
         snr_ = dm_arr.max() / np.std(dm_arr)
-        full_arr[jj] = dm_arr.copy()
+        full_arr[jj] = copy.copy(dm_arr)
 
         if jj==dm_max_jj:
-            data_dm_max = data.data[:, t_min:t_max].copy()
+            print('using %d' % jj)
+            data_dm_max = data_copy.data[:, t_min:t_max]
 
-    downsamp = int(4*downsamp)
+    downsamp = int(2*downsamp)
 
     # bin down to 32 freq channels
     ddm = data_dm_max[:, :].reshape(32, -1, ntime).mean(1)
@@ -190,7 +190,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         plt.subplot(311)
 
         ddm /= np.std(ddm)
-        plt.imshow(ddm, aspect='auto', vmax=4, vmin=-4, extent=[0, times[-1], freq_up, freq_low])
+        plt.imshow(ddm, aspect='auto', vmax=4, vmin=-4, 
+                   extent=[0, times[-1], freq_up, freq_low])
         plt.ylabel('Freq [MHz]')
 
         plt.subplot(312)
@@ -198,19 +199,20 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         plt.ylabel('Flux')
 
         plt.subplot(313)
-        plt.imshow(full_dm_arr_, aspect='auto', extent=[0, times[-1], dms[-1], dms[0]])
+        plt.imshow(full_dm_arr_, aspect='auto', 
+                   extent=[0, times[-1], dms[-1], dms[0]])
         plt.xlabel('Time [s]')
         plt.ylabel('DM')
     
-        plt.suptitle("beam%s snr%d dm%d t0%d" % (beamno, sig_cut, dms[dm_max_jj], tt))
+        plt.suptitle("beam%s snr%d dm%d t0%d" % (beamno, sig_cut, dms[dm_max_jj], t0))
 
         fn_fig_out = './plots/train_data_beam%s_snr%d_dm%d_t0%d.pdf' % \
-                     (beamno, sig_cut, dms[dm_max_jj], tt)
+                     (beamno, sig_cut, dms[dm_max_jj], t0)
 
+        plt.show()
         plt.savefig(fn_fig_out)
     
     return full_dm_arr_, ddm
-#    return full_arr, data_dm_max
 
 if __name__=='__main__':
     import sys
