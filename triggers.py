@@ -112,8 +112,8 @@ def get_mask(rfimask, startsamp, N):
     return mask.T[::-1]
 
 def proc_trigger(fn_fil, dm0, t0, sig_cut, 
-                 ndm=50, mk_plot=False, downsamp=1, beamno='', 
-                 fn_mask=None):
+                 ndm=50, mk_plot=False, downsamp=1, 
+                 beamno='', fn_mask=None):
     """ Read in filterbank file fn_fil along with 
     dm0 and t0 arrays, save dedispersed data around each 
     trigger. 
@@ -130,7 +130,9 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     freq_low = freq_up + 1536*rawdatafile.header['foff']
     # Read in 15 disp delays
     width = 5 * abs(4e3 * dm0 * (freq_up**-2 - freq_low**-2))
+    
     print("Using width %f" % width)
+
     chunksize = int(width/dt)
     start_bin = int((t0 - width/2)/dt)
     start_bin = max(start_bin, 0)
@@ -224,16 +226,16 @@ if __name__=='__main__':
 
     sig_cut, dm_cut, tt_cut, ds_cut = get_triggers(fn_sp)
 
-    print("---------------------------")
+    print("-----------------------------")
     print("Grouped down to %d triggers" % len(sig_cut))
-    print("--------------------------- \n")
+    print("----------------------------- \n")
 
     for ii, tt in enumerate(tt_cut[:]):
         if dm_cut[ii]<50:
             continue
         if dm_cut[ii]>62:
             continue
-        print(ii, np.round(dm_cut[ii]))
+        print(ii, np.round(dm_cut[ii]), ds_cut[ii])
 #        data_dmtime, data_freqtime = proc_trigger(fn_fil, 56.8, 11.9706, 30, mk_plot=True, ndm=100, downsamp=ds_cut[ii])
         data_dmtime, data_freqtime = proc_trigger(fn_fil, dm_cut[ii], tt, sig_cut[ii], \
                                                   mk_plot=True, ndm=100, downsamp=ds_cut[ii])
