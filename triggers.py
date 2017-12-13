@@ -161,11 +161,6 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         data = data.masked(mask, maskval='median-mid80')
 
     for jj, dm_ in enumerate(dms):
-        if (dm_<60) and (dm_>50):
-            pass
-        else:
-            continue
-        print(ii, dm_)
 #        print("Dedispersing to dm=%f starting at t=%d" % (dm_, start_bin))
         #data = rawdatafile.get_spectra(start_bin, chunksize)
         #data.data -= np.median(data.data, axis=-1)[:, None]
@@ -177,7 +172,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         if jj==dm_max_jj:
             data_dm_max = data.data[:, t_min:t_max].copy()
 
-    downsamp = int(3*downsamp)
+    downsamp = int(2*downsamp)
 
     # bin down to 32 freq channels
     ddm = data_dm_max[:, :].reshape(32, -1, ntime).mean(1)
@@ -205,7 +200,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     
         plt.suptitle("beam%s snr%d dm%d t0%d" % (beamno, sig_cut, dms[dm_max_jj], tt))
 
-        fn_fig_out = './plots/data_beam%s_snr%d_dm%d_t0%d.pdf' % \
+        fn_fig_out = './plots/train_data_beam%s_snr%d_dm%d_t0%d.pdf' % \
                      (beamno, sig_cut, dms[dm_max_jj], tt)
 
         plt.savefig(fn_fig_out)
@@ -236,7 +231,7 @@ if __name__=='__main__':
             continue
         if dm_cut[ii]>62:
             continue
-        print(ii,dm_cut[ii])
+        print(ii, np.round(dm_cut[ii]))
 #        data_dmtime, data_freqtime = proc_trigger(fn_fil, 56.8, 11.9706, 30, mk_plot=True, ndm=100, downsamp=ds_cut[ii])
         data_dmtime, data_freqtime = proc_trigger(fn_fil, dm_cut[ii], tt, sig_cut[ii], \
                                                   mk_plot=True, ndm=100, downsamp=ds_cut[ii])
