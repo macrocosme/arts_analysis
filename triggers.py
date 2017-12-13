@@ -233,14 +233,10 @@ if __name__=='__main__':
     print("----------------------------- \n")
 
     for ii, tt in enumerate(tt_cut[:]):
-        if dm_cut[ii]<50:
-            continue
-        if dm_cut[ii]>62:
-            continue
         print(ii, np.round(dm_cut[ii]), ds_cut[ii])
 #        data_dmtime, data_freqtime = proc_trigger(fn_fil, 56.8, 11.9706, 30, mk_plot=True, ndm=100, downsamp=ds_cut[ii])
         data_dmtime, data_freqtime = proc_trigger(fn_fil, dm_cut[ii], tt, sig_cut[ii], \
-                                                  mk_plot=True, ndm=100, downsamp=ds_cut[ii])
+                                                  mk_plot=True, ndm=50, downsamp=ds_cut[ii])
 
         fnout_freqtime = './data_trainsnr%d_dm%d_t0%d_freq.npy' % (sig_cut[ii], dm_cut[ii], tt)
         fnout_dmtime = './data_trainsnr%d_dm%d_t0%d_dm.npy' % (sig_cut[ii], dm_cut[ii], tt)
