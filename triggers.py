@@ -172,7 +172,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         if jj==dm_max_jj:
             data_dm_max = data.data[:, t_min:t_max].copy()
 
-    downsamp = int(2*downsamp)
+    downsamp = int(4*downsamp)
 
     # bin down to 32 freq channels
     ddm = data_dm_max[:, :].reshape(32, -1, ntime).mean(1)
