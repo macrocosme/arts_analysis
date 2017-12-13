@@ -161,6 +161,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         data = data.masked(mask, maskval='median-mid80')
 
     for jj, dm_ in enumerate(dms):
+        if (dm_>50.) and (dm_<60.):
+            downsamp=1 
 #        print("Dedispersing to dm=%f starting at t=%d" % (dm_, start_bin))
         #data = rawdatafile.get_spectra(start_bin, chunksize)
         #data.data -= np.median(data.data, axis=-1)[:, None]
