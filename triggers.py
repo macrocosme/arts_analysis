@@ -232,9 +232,9 @@ if __name__=='__main__':
     print("--------------------------- \n")
 
     for ii, tt in enumerate(tt_cut[:]):
-        if tt<10:
+        if dm_cut[ii]<50:
             continue
-        if tt>13:
+        if dm_cut[ii]>62:
             continue
         print(ii,dm_cut[ii])
 #        data_dmtime, data_freqtime = proc_trigger(fn_fil, 56.8, 11.9706, 30, mk_plot=True, ndm=100, downsamp=ds_cut[ii])
