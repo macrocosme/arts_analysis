@@ -11,7 +11,7 @@ from pypulsar.formats import spectra
 
 fn_fil = '/data/01/filterbank/20171010/2017.10.10-02:56:50.B0531+21/CB00.fil'
 #fn='/home/arts/leon/scratch/20170306/crab_1hr_dump/liamcrab/crab.liam_1ms_8bit.dfil'
-#sig_cut, dm_cut, tt_cut = get_triggers('crab4hr_singlepulse.npy')
+# 'crab4hr_singlepulse.npy'
 fn_sp = '/data/01/filterbank/20171010/2017.10.10-02:56:50.B0531+21/CBB_DM56.50.singlepulse'
 fdir = '/data/*/filterbank/20171127/2017.11.27-17:24:42.B0329+54/*.fil'
 
@@ -20,7 +20,6 @@ dt = 4.096e-5
 def run_prepsubband(fn_fil, lodm, dmstep, numdms, downsamp=1, nsub=128):
 
     fnout = fn_fil+'.out'
-    print(fnout)
     numout = (30*60./dt)//downsamp*downsamp
     os.system('prepsubband -nsub %d -numout %d -lodm %f \
              -dmstep %f -numdms %d -downsamp %d -o %s %s' % \
@@ -33,37 +32,6 @@ def run_single_pulse(fdir):
     for ff in flist:
         print(ff)
         os.system('single_pulse_search.py -t 8.0 %s' % ff)
-
-def get_triggers2(fn):
-    """ Get brightest trigger in each 10s chunk.
-    """
-    if fn.split('.')[-1]=='npy':
-        A = np.load(fn)
-        dm, sig, tt, downs = A[:,0],A[:,1],A[:,2],A[:,4]
-    elif fn.split('.')[-1]=='singlepulse':
-        A = np.loadtxt(fn)
-        dm, sig, tt, downs = A[:,0],A[:,1],A[:,2],A[:,4]
-    elif fn.split('.')[-1]=='trigger':
-        A = np.loadtxt(fn)
-        dm, sig, tt, downs =  A[:, -3],A[:, -1],A[:, -4], A[:, 3]
-
-    sig_cut, dm_cut, tt_cut = [],[],[]
-    
-    for ii in xrange(10*4*3600//10):
-        t0, tm = 10*ii, 10*(ii+1)                                                                 
-        ind = np.where((tt<tm) & (tt>t0))[0]
-        try: 
-            sig_cut.append(sig[ind].max())
-            dm_cut.append(dm[ind][np.argmax(sig[ind])])
-            tt_cut.append(tt[ind][np.argmax(sig[ind])])        
-        except:                                     
-            continue
-
-    sig_cut = np.array(sig_cut)
-    dm_cut = np.array(dm_cut)
-    tt_cut = np.array(tt_cut)
-
-    return sig_cut, dm_cut, tt_cut
 
 def dm_range(dm_max, dm_min=2, frac=0.2):
 
@@ -86,12 +54,10 @@ def get_triggers(fn):
         dm, sig, tt, downs = A[:,0],A[:,1],A[:,2],A[:,4]
     elif fn.split('.')[-1]=='trigger':
         A = np.loadtxt(fn)
-        dm, sig, tt, downs =  A[:, -3],A[:, -1],A[:, -4], A[:, 3]
-
+        dm, sig, tt, downs = A[:, -2],A[:, -1],A[:, -3],A[:, 3]
     if len(A)==0:
         return 0, 0, 0, 0
-
-    sig_cut, dm_cut, tt_cut, ds_cut = [],[],[], []
+    sig_cut, dm_cut, tt_cut, ds_cut = [],[],[],[]
     
     tduration = tt.max() - tt.min()
     ntime = int(len(tt) / tduration)
@@ -117,6 +83,8 @@ def get_triggers(fn):
     dm_cut = np.array(dm_cut)
     tt_cut = np.array(tt_cut)
     ds_cut = np.array(ds_cut)
+    print(dm_cut)
+    print(tt_cut)
 
     return sig_cut, dm_cut, tt_cut, ds_cut
 
@@ -159,8 +127,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     width = 1.0 # seconds
     freq_up = rawdatafile.header['fch1'] 
     freq_low = freq_up + 1536*rawdatafile.header['foff']
-    # Read in three disp delays
-    width = 15 * abs(4e3 * dm0 * (freq_up**-2 - freq_low**-2))
+    # Read in 15 disp delays
+    width = 5 * abs(4e3 * dm0 * (freq_up**-2 - freq_low**-2))
     print("Using width %f" % width)
     chunksize = int(width/dt)
     start_bin = int((t0 - width/2)/dt)
@@ -170,8 +138,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         extra = start_bin//2
         start_bin = 0
 
-    dm_min = max(0, dm0-10)
-    dm_max = dm0 + 10
+    dm_min = max(0, dm0-50)
+    dm_max = dm0 + 50
     dms = np.linspace(dm_min, dm_max, ndm)
     t_min, t_max = chunksize//2-1500, chunksize//2+1500
     #t_min  = t_min // downsamp
@@ -184,7 +152,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     snr_max = 0
     data = rawdatafile.get_spectra(start_bin, chunksize)
     data.data -= np.median(data.data, axis=-1)[:, None]
-#    data.data[mask] = 0.
+    data.data[mask] = 0.
 
     if not fn_mask is None:
         rfimask = rfifind.rfifind(fn_mask)
@@ -192,7 +160,12 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         data = data.masked(mask, maskval='median-mid80')
 
     for jj, dm_ in enumerate(dms):
-        print("Dedispersing to dm=%f starting at t=%d" % (dm_, start_bin))
+        if (dm_<60) and (dm_>50):
+            pass
+        else:
+            continue
+        print(ii, dm_)
+#        print("Dedispersing to dm=%f starting at t=%d" % (dm_, start_bin))
         #data = rawdatafile.get_spectra(start_bin, chunksize)
         #data.data -= np.median(data.data, axis=-1)[:, None]
         data.dedisperse(dm_)
@@ -203,15 +176,18 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         if jj==dm_max_jj:
             data_dm_max = data.data[:, t_min:t_max].copy()
 
-    if mk_plot is True:
+    downsamp = int(3*downsamp)
 
-        downsamp = int(downsamp)
+    # bin down to 32 freq channels
+    ddm = data_dm_max[:, :].reshape(32, -1, ntime).mean(1)
+    ddm = ddm[:, :ntime//downsamp*downsamp].reshape(-1, ntime//downsamp, downsamp).mean(-1)
+    times = np.linspace(0, ntime*dt, len(ddm[0]))
+    full_dm_arr_ = full_arr[:, :ntime//downsamp*downsamp].reshape(-1, ntime//downsamp, downsamp).mean(-1)
+
+    if mk_plot is True:
 
         figure = plt.figure()
         plt.subplot(311)
-        ddm = data_dm_max[:, :].reshape(-1, 16, ntime).mean(1)
-        ddm = ddm[:, :ntime//downsamp*downsamp].reshape(-1, ntime//downsamp, downsamp).mean(-1)
-        times = np.linspace(0, ntime*dt, len(ddm[0]))
 
         ddm /= np.std(ddm)
         plt.imshow(ddm, aspect='auto', vmax=4, vmin=-4, extent=[0, times[-1], freq_up, freq_low])
@@ -222,8 +198,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         plt.ylabel('Flux')
 
         plt.subplot(313)
-        full_dm_arr_ = full_arr[:, :ntime//downsamp*downsamp].reshape(-1, ntime//downsamp, downsamp).mean(-1)
-        plt.imshow(full_dm_arr_, aspect='auto', extent=[0, times[-1], dms[0], dms[-1]])
+        plt.imshow(full_dm_arr_, aspect='auto', extent=[0, times[-1], dms[-1], dms[0]])
         plt.xlabel('Time [s]')
         plt.ylabel('DM')
     
@@ -233,14 +208,16 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
                      (beamno, sig_cut, dms[dm_max_jj], tt)
 
         plt.savefig(fn_fig_out)
-
-    return full_arr, data_dm_max
+    
+    return full_dm_arr_, ddm
+#    return full_arr, data_dm_max
 
 if __name__=='__main__':
     import sys
 
     try:
-        fn_mask = sys.argv[3]
+        mm = int(sys.argv[3])
+#        fn_mask = sys.argv[3]
     except IndexError:
         fn_mask = None
 
@@ -249,12 +226,19 @@ if __name__=='__main__':
 
     sig_cut, dm_cut, tt_cut, ds_cut = get_triggers(fn_sp)
 
-    for ii, tt in enumerate(tt_cut):
-        data_dmtime, data_freqtime = proc_trigger(fn_fil, dm_cut[ii], tt, sig_cut[ii], \
-                                                  mk_plot=True, ndm=25, downsamp=ds_cut[ii])
+    print("---------------------------")
+    print("Grouped down to %d triggers" % len(sig_cut))
+    print("--------------------------- \n")
 
-        fnout_freqtime = './data_snr%d_dm%d_t0%d_freq.npy' % (sig_cut[ii], dm_cut[ii], tt)
-        fnout_dmtime = './data_snr%d_dm%d_t0%d_dm.npy' % (sig_cut[ii], dm_cut[ii], tt)
+    for ii, tt in enumerate(tt_cut[100*mm:100*(mm+1)]):
+        
+        print(ii,dm_cut[ii])
+        data_dmtime, data_freqtime = proc_trigger(fn_fil, 56.8, 11.9706, 30, mk_plot=True, ndm=100, downsamp=ds_cut[ii])
+        #data_dmtime, data_freqtime = proc_trigger(fn_fil, dm_cut[ii], tt, sig_cut[ii], \
+        #                                          mk_plot=True, ndm=100, downsamp=ds_cut[ii])
+
+        fnout_freqtime = './data_trainsnr%d_dm%d_t0%d_freq.npy' % (sig_cut[ii], dm_cut[ii], tt)
+        fnout_dmtime = './data_trainsnr%d_dm%d_t0%d_dm.npy' % (sig_cut[ii], dm_cut[ii], tt)
 
         np.save(fnout_freqtime, data_freqtime)
         np.save(fnout_dmtime, data_dmtime)
