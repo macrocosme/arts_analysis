@@ -149,7 +149,11 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     dm_max_jj = np.argmin(abs(dms-dm0))
     dms += (dm0-dms[dm_max_jj])
 
-    t_min, t_max = chunksize//2-1500, chunksize//2+1500
+    if chunksize > 3000:
+        t_min, t_max = chunksize//2-1500, chunksize//2+1500
+    else:
+        t_min, t_max = 0, chunksize
+
     ntime = t_max-t_min
 
     full_arr = np.empty([ndm, ntime])   
@@ -169,7 +173,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 #        data = rawdatafile.get_spectra(start_bin, chunksize)
         data_copy = copy.deepcopy(data)
         data_copy.dedisperse(dm_)
-        dm_arr = data_copy.data[:,t_min:t_max].mean(0)
+        dm_arr = data_copy.data[:, t_min:t_max].mean(0)
         snr_ = dm_arr.max() / np.std(dm_arr)
         full_arr[jj] = copy.copy(dm_arr)
 
