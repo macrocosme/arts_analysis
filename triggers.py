@@ -169,7 +169,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         data = data.masked(mask, maskval='median-mid80')
 
     for jj, dm_ in enumerate(dms):
-        print("Dedispersing to dm=%f starting at t=%d" % (dm_, start_bin))
+        print("Dedispersing to dm=%f starting at t=%d sec" % (dm_, start_bin*dt))
 #        data = rawdatafile.get_spectra(start_bin, chunksize)
         data_copy = copy.deepcopy(data)
         data_copy.dedisperse(dm_)
