@@ -69,6 +69,7 @@ def get_triggers(fn):
     # 10% of the largest trigger
     dm_list = dm_range(1.1*dm.max(), dm_min=0.9*dm.min())
 
+    # might wanna make this a search in (dm,t,width) cubes
     for dms in dm_list:
         for ii in xrange(ntime):
             try:    
@@ -124,9 +125,9 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
                       160, 299, 300, 301, 302, 303, 304, 305, 306, 307, 308, 309, 660, 
                       661])
 
-    dt = 4.096e-05
-    freq_up = rawdatafile.header['fch1'] 
-    freq_low = freq_up + 1536*rawdatafile.header['foff']
+    dt = rawdatafile.header['tsamp']
+    freq_up = rawdatafile.header['fch1']
+    freq_low = freq_up + rawdatafile.header['nchans']*rawdatafile.header['foff']
     # Read in 5 disp delays
     width = 5 * abs(4e3 * dm0 * (freq_up**-2 - freq_low**-2))
     
