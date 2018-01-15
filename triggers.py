@@ -114,10 +114,37 @@ def get_mask(rfimask, startsamp, N):
 
 def proc_trigger(fn_fil, dm0, t0, sig_cut, 
                  ndm=50, mk_plot=False, downsamp=1, 
-                 beamno='', fn_mask=None):
-    """ Read in filterbank file fn_fil along with 
-    dm0 and t0 arrays, save dedispersed data around each 
-    trigger. 
+                 beamno='', fn_mask=None, nfreq_plot=32):
+    """ Locate data within filterbank file (fn_fi)
+    at some time t0, and dedisperse to dm0, generating 
+    plots 
+
+    Parameters:
+    ----------
+    fn_fil     : str 
+        name of filterbank file
+    dm0        : float 
+        trigger dm found by single pulse search software
+    t0         : float 
+        time in seconds where trigger was found 
+    sig_cut    : np.float 
+        sigma of detected trigger at (t0, dm0)
+    ndm        : int 
+        number of DMs to use in DM transform 
+    mk_plot    : bool 
+        make three-panel plots 
+    downsamp   : int 
+        factor by which to downsample in time. comes from searchsoft. 
+    beamno     : str 
+        beam number, for fig names 
+    nfreq_plot : int 
+        number of frequencies channels to plot 
+
+    Returns:
+    -------
+    full_dm_arr_ : 
+
+    ddm 
     """
     rawdatafile = filterbank.filterbank(fn_fil)
 
@@ -128,7 +155,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 
     dt = rawdatafile.header['tsamp']
     freq_up = rawdatafile.header['fch1']
-    freq_low = freq_up + rawdatafile.header['nchans']*rawdatafile.header['foff']
+    nfreq = rawdatafile.header['nchans']
+    freq_low = freq_up + nfreq*rawdatafile.header['foff']
     # Read in 5 disp delays
     width = 5 * abs(4e3 * dm0 * (freq_up**-2 - freq_low**-2))
     
@@ -184,27 +212,32 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     downsamp = int(2*downsamp)
 
     # bin down to 32 freq channels
-    ddm = data_dm_max[:, :].reshape(32, -1, ntime).mean(1)
-    ddm = ddm[:, :ntime//downsamp*downsamp].reshape(-1, ntime//downsamp, downsamp).mean(-1)
-    times = np.linspace(0, ntime*dt, len(ddm[0]))
-    full_dm_arr_ = full_arr[:, :ntime//downsamp*downsamp].reshape(-1, ntime//downsamp, downsamp).mean(-1)
+
+    full_freq_arr_downsamp = data_dm_max[:nfreq//nfreq_plot*nfreq_plot, :].reshape(\
+                                   nfreq_plot, -1, ntime).mean(1)
+    full_freq_arr_downsamp = full_freq_arr_downsamp[:, :ntime//downsamp*downsamp\
+                                   ].reshape(-1, ntime//downsamp, downsamp).mean(-1)
+    
+    times = np.linspace(0, ntime*dt, len(full_freq_arr_downsamp[0]))
+
+    full_dm_arr_downsamp = full_arr[:, :ntime//downsamp*downsamp].reshape(-1, ntime//downsamp, downsamp).mean(-1)
 
     if mk_plot is True:
 
         figure = plt.figure()
         plt.subplot(311)
 
-        ddm /= np.std(ddm)
-        plt.imshow(ddm, aspect='auto', vmax=4, vmin=-4, 
+        full_freq_arr_downsamp /= np.std(full_freq_arr_downsamp)
+        plt.imshow(full_freq_arr_downsamp, aspect='auto', vmax=4, vmin=-4, 
                    extent=[0, times[-1], freq_up, freq_low], interpolation='nearest')
         plt.ylabel('Freq [MHz]')
 
         plt.subplot(312)
-        plt.plot(times, ddm.mean(0))
+        plt.plot(times, full_freq_arr_downsamp.mean(0))
         plt.ylabel('Flux')
 
         plt.subplot(313)
-        plt.imshow(full_dm_arr_, aspect='auto', 
+        plt.imshow(full_dm_arr_downsamp, aspect='auto', 
                    extent=[0, times[-1], dms[-1], dms[0]], interpolation='nearest')
         plt.xlabel('Time [s]')
         plt.ylabel('DM')
@@ -217,7 +250,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         plt.show()
         plt.savefig(fn_fig_out)
     
-    return full_dm_arr_, ddm
+    return full_dm_arr_downsamp, full_freq_arr_downsamp
 
 if __name__=='__main__':
     import sys
