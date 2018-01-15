@@ -142,9 +142,10 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 
     Returns:
     -------
-    full_dm_arr_ : 
-
-    ddm 
+    full_dm_arr_downsamp : np.array
+        data array with downsampled dm-transformed intensities
+    full_freq_arr_downsamp : np.array
+        data array with downsampled freq-time intensities 
     """
     rawdatafile = filterbank.filterbank(fn_fil)
 
