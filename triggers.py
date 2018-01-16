@@ -1,4 +1,5 @@
 import os
+import sys
 
 import numpy as np
 import matplotlib as mpl
@@ -6,6 +7,7 @@ mpl.use('Agg')
 import matplotlib.pyplot as plt
 import glob
 import copy
+import optparse
 
 from pypulsar.formats import filterbank
 from pypulsar.formats import spectra
@@ -256,19 +258,40 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     return full_dm_arr_downsamp, full_freq_arr_downsamp
 
 if __name__=='__main__':
-    import sys
+# Example usage 
+# python triggers.py /data/09/filterbank/20171107/2017.11.07-01:27:36.B0531+21/CB21.fil\
+#     CB21_2017.11.07-01:27:36.B0531+21.trigger
+#
+#
+#
 
-    try:
-#        mm = int(sys.argv[3])
-        fn_mask = sys.argv[3]
-    except IndexError:
-        fn_mask = None
+    parser = optparse.OptionParser(prog="triggers.py", \
+                        version="", \
+                        usage="%prog FN_FILTERBANK FN_TRIGGERS [OPTIONS]", \
+                        description="Create diagnostic plots for individual triggers")
 
-    fn_fil = sys.argv[1]
-    fn_sp = sys.argv[2]
+    parser.add_option('-sig_thresh', dest='sig_thresh', type='float', \
+                        action='append', \
+                        help="Only process events above >sig_thresh S/N" \
+                                "(Default: 8.0)", default=8.0)
+    parser.add_option('-ndm', dest='ndm', type='int', \
+                        help="Number of DMs to use in DM transform (Default: 50).", \
+                        default=50)
+    parser.add_option('-mask', dest='maskfile', type='string', \
+                        help="Mask file produced by rfifind. (Default: No Mask).", \
+                        default=None)
 
-    sig_cut, dm_cut, tt_cut, ds_cut = get_triggers(fn_sp, sig_thresh=10.0)
+    parser.add_option('-mk_plot', dest='mk_plot', action='store_true', \
+                        help="make plot if True",
+                        default=True)
 
+    options, args = parser.parse_args()
+
+    fn_fil = args[0]
+    fn_sp = args[1]
+
+    sig_cut, dm_cut, tt_cut, ds_cut = get_triggers(fn_sp, sig_thresh=options.sig_thresh)
+    
     print("-----------------------------")
     print("Grouped down to %d triggers" % len(sig_cut))
     print("----------------------------- \n")
@@ -277,7 +300,7 @@ if __name__=='__main__':
         print(ii, np.round(dm_cut[ii]), ds_cut[ii])
 #        data_dmtime, data_freqtime = proc_trigger(fn_fil, 56.8, 11.9706, 30, mk_plot=True, ndm=100, downsamp=ds_cut[ii])
         data_dmtime, data_freqtime = proc_trigger(fn_fil, dm_cut[ii], tt, sig_cut[ii], \
-                                                  mk_plot=True, ndm=50, downsamp=ds_cut[ii])
+                                                  mk_plot=options.mk_plot, ndm=options.ndm, downsamp=ds_cut[ii])
 
         fnout_freqtime = './data_trainsnr%d_dm%d_t0%d_freq.npy' % (sig_cut[ii], dm_cut[ii], tt)
         fnout_dmtime = './data_trainsnr%d_dm%d_t0%d_dm.npy' % (sig_cut[ii], dm_cut[ii], tt)

@@ -76,7 +76,7 @@ def read_fil_data(fn, start=0, stop=1e7):
 	freq = get_freqs(fil_obj)
 	data = fil_obj.get_spectra(start, stop)
 	# turn array into time-major, for preprocess
-	data = data.transpose() 
+#	data = data.transpose() 
 
 	return data, freq, delta_t, header
 
@@ -90,7 +90,7 @@ def process_full_fil(fn):
 			break
 
 		print data.shape, start
-		data = apply_rfi_filters(data, delta_t)
+#		data = dataapply_rfi_filters(data, delta_t)
 
 		if ii==0:
 			fn_rfi_clean = write_to_fil(data.transpose(), header, fn)
