@@ -44,7 +44,7 @@ def dm_range(dm_max, dm_min=2, frac=0.2):
         dm_max = int(prefac*dm_max)
     return dm_list
 
-def get_triggers(fn):
+def get_triggers(fn, sig_thresh=5.0):
     """ Get brightest trigger in each 10s chunk.
     """
     if fn.split('.')[-1]=='npy':
@@ -76,6 +76,8 @@ def get_triggers(fn):
                 # step through windows of 2 seconds, starting from tt.min()
                 t0, tm = 2*ii+tt.min(), 2*(ii+1)+tt.min()
                 ind = np.where((dm<dms[1]) & (dm>dms[0]) & (tt<tm) & (tt>t0))[0]
+                if sig[ind].max() < sig_thresh:
+                    continue 
                 sig_cut.append(np.amax(sig[ind]))
                 dm_cut.append(dm[ind][np.argmax(sig[ind])])
                 tt_cut.append(tt[ind][np.argmax(sig[ind])]) 
@@ -265,7 +267,7 @@ if __name__=='__main__':
     fn_fil = sys.argv[1]
     fn_sp = sys.argv[2]
 
-    sig_cut, dm_cut, tt_cut, ds_cut = get_triggers(fn_sp)
+    sig_cut, dm_cut, tt_cut, ds_cut = get_triggers(fn_sp, sig_thresh=10.0)
 
     print("-----------------------------")
     print("Grouped down to %d triggers" % len(sig_cut))
