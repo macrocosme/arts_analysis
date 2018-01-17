@@ -1,0 +1,7 @@
+*.pyc
+*.npy
+*.hdf5
+
+*.pdf
+
+/*.egg-info

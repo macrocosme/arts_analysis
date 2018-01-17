@@ -196,7 +196,21 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         data_copy = copy.deepcopy(data)
         data_copy.dedisperse(dm_)
         dm_arr = data_copy.data[:, t_min:t_max].mean(0)
-        snr_ = dm_arr.max() / np.std(dm_arr)
+
+        # Taken from PRESTO's single_pulse_search:
+        # The following gets rid of (hopefully) most of the                                                                                                                
+        # outlying values (i.e. power dropouts and single pulses)                                                                                                          
+        # If you throw out 5% (2.5% at bottom and 2.5% at top)                                                                                                             
+        # of random gaussian deviates, the measured stdev is ~0.871                                                                                                        
+        # of the true stdev.  Thus the 1.0/0.871=1.148 correction below.                                                                                                   
+        # The following is roughly .std() since we already removed the median 
+
+        std_chunk = scipy.signal.detrend(dm_arr, type='linear')
+        std_chunk.sort()
+        stds = 1.148*np.sqrt((std_chunk[ntime/40:-ntime/40]**2.0).sum() /
+                                   (0.95*ntime))
+        snr_ = std_chunk[-1] / stds 
+        #snr_ = dm_arr.max() / np.std(dm_arr) old way, biased low
         full_arr[jj] = copy.copy(dm_arr)
 
         if jj==dm_max_jj:
@@ -222,7 +236,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 
         full_freq_arr_downsamp /= np.std(full_freq_arr_downsamp)
         plt.imshow(full_freq_arr_downsamp, aspect='auto', vmax=4, vmin=-4, 
-                   extent=[0, times[-1], freq_up, freq_low], 
+                   extent=[0, times[-1], freq_low, freq_up], 
                    interpolation='nearest')
         plt.ylabel('Freq [MHz]')
 
@@ -232,7 +246,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 
         plt.subplot(313, sharex=ax1)
         plt.imshow(full_dm_arr_downsamp, aspect='auto', 
-                   extent=[0, times[-1], dms[-1], dms[0]], 
+                   extent=[0, times[-1], dms[0], dms[-1]], 
                    interpolation='nearest')
         plt.xlabel('Time [s]')
         plt.ylabel('DM')
