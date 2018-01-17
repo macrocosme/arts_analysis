@@ -358,10 +358,10 @@ if __name__=='__main__':
 
             if options.save_data == 'npy':
 
-                fnout_freq_time = '%s/data_trainsnr%d_dm%d_t0%d_freq.npy'\
-                         % (basedir, sig_cut[ii], dm_cut[ii], tt)
-                fnout_dm_time = '%s/data_trainsnr%d_dm%d_t0%d_dm.npy'\
-                         % (basedir, sig_cut[ii], dm_cut[ii], tt)
+                fnout_freq_time = '%s/data_trainsnr%d_dm%d_t0%f_freq.npy'\
+                         % (basedir, sig_cut[ii], dm_cut[ii], np.round(t0, 2))
+                fnout_dm_time = '%s/data_trainsnr%d_dm%d_t0%f_dm.npy'\
+                         % (basedir, sig_cut[ii], dm_cut[ii], np.round(t0, 2))
 
                 np.save(fnout_freq_time, data_freqtime)
                 np.save(fnout_dm_time, data_dmtime)
