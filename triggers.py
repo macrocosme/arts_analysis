@@ -286,7 +286,7 @@ if __name__=='__main__':
                         help="make plot if True",
                         default=True)
 
-    parser.add_option('--nfreq_plot', dest='nfreq_plot', 
+    parser.add_option('--nfreq_plot', dest='nfreq_plot', type='int'
                         help="make plot with this number of freq channels",
                         default=True)
 
