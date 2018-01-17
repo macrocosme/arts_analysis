@@ -172,7 +172,6 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     dms += (dm0-dms[dm_max_jj])
     dms[0] = max(0, dms[0])
 
-    print(chunksize, width, downsamp)
     if chunksize > 10000:
         t_min, t_max = chunksize//2-5000, chunksize//2+5000
     else:
@@ -193,7 +192,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         data = data.masked(mask, maskval='median-mid80')
 
     for jj, dm_ in enumerate(dms):
-        print("Dedispersing to dm=%f starting at t=%d sec" % (dm_, start_bin*dt))
+        print("Dedispersing to dm=%f starting at t=%d sec" % (np.round(dm_, 2), start_bin*dt))
         data_copy = copy.deepcopy(data)
         data_copy.dedisperse(dm_)
         dm_arr = data_copy.data[:, t_min:t_max].mean(0)
@@ -201,14 +200,11 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         full_arr[jj] = copy.copy(dm_arr)
 
         if jj==dm_max_jj:
-            print('Dedispersing to best DM=%f' % dm_)
             data_dm_max = data_copy.data[:, t_min:t_max]
 
     downsamp = int(downsamp)
 
     # bin down to 32 freq channels
-    print(nfreq, nfreq_plot, ntime)
-    print(data_dm_max.shape)
     full_freq_arr_downsamp = data_dm_max[:nfreq//nfreq_plot*nfreq_plot, :].reshape(\
                                    nfreq_plot, -1, ntime).mean(1)
     full_freq_arr_downsamp = full_freq_arr_downsamp[:, :ntime//downsamp*downsamp\
@@ -318,7 +314,6 @@ if __name__=='__main__':
                         default=32)
 
     options, args = parser.parse_args()
-    print(options)
     fn_fil = args[0]
     fn_sp = args[1]
 
@@ -336,7 +331,6 @@ if __name__=='__main__':
 #            continue 
 
         print("Starting DM=%f" % dm_cut[ii])
-#        data_dmtime, data_freqtime = proc_trigger(fn_fil, 56.8, 11.9706, 30, mk_plot=True, ndm=100, downsamp=ds_cut[ii])
         data_dm_time, data_freq_time = proc_trigger(fn_fil, dm_cut[ii], t0, sig_cut[ii],
                                                   mk_plot=options.mk_plot, ndm=options.ndm, 
                                                   downsamp=ds_cut[ii], nfreq_plot=options.nfreq_plot)
@@ -344,9 +338,7 @@ if __name__=='__main__':
         basedir = '/data/03/Triggers/2017.11.07-01:27:36.B0531+21/CB21/'
 
         if options.save_data != '0':
-            print('saving data')
             if options.save_data == 'hdf5':
-                print(0)
                 h5_writer(data_freq_time, data_dm_time, 
                         dm_cut[ii], t0, sig_cut[ii], beamno='', basedir='./',)
 
@@ -359,6 +351,8 @@ if __name__=='__main__':
 
                 np.save(fnout_freq_time, data_freqtime)
                 np.save(fnout_dm_time, data_dmtime)
+        else:
+            print('Not saving data')
 
     exit()
 
