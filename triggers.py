@@ -292,6 +292,11 @@ def h5_writer(data_freq_time, data_dm_time,
 
     print("Wrote to file %s" % fnout)
 
+def concat_files(fdir):
+
+    file_list = glob.glob('%s*' % fdir)
+
+
 
 if __name__=='__main__':
 # Example usage 
@@ -316,7 +321,8 @@ if __name__=='__main__':
 
     parser.add_option('--save_data', dest='save_data', type='str',
                         help="save each trigger's data. 0 = don't save. \
-                        hdf5 = save to hdf5. npy = save to npy",
+                        hdf5 = save to hdf5. npy = save to npy. concat to \
+                        save all triggers into one file",
                         default='hdf5')
 
     parser.add_option('--mk_plot', dest='mk_plot', action='store_true', \
@@ -331,18 +337,18 @@ if __name__=='__main__':
     fn_fil = args[0]
     fn_sp = args[1]
 
+    if options.save_data == 'concat':
+        data_dm_time_full = []
+        data_freq_time_full = []
+        params_full = []
+
     sig_cut, dm_cut, tt_cut, ds_cut = get_triggers(fn_sp, sig_thresh=options.sig_thresh)
     
     print("-----------------------------")
     print("Grouped down to %d triggers" % len(sig_cut))
     print("----------------------------- \n")
 
-    for ii, t0 in enumerate(tt_cut[:]):
-
-#        if np.abs(dm_cut[ii]-56.8) < 2:
-#            continue 
-#        if np.abs(dm_cut[ii]-26.8) < 2:
-#            continue 
+    for ii, t0 in enumerate(tt_cut):
 
         print("Starting DM=%f" % dm_cut[ii])
         data_dm_time, data_freq_time = proc_trigger(fn_fil, dm_cut[ii], t0, sig_cut[ii],
@@ -355,8 +361,7 @@ if __name__=='__main__':
             if options.save_data == 'hdf5':
                 h5_writer(data_freq_time, data_dm_time, 
                         dm_cut[ii], t0, sig_cut[ii], beamno='', basedir='./',)
-
-            if options.save_data == 'npy':
+            elif options.save_data == 'npy':
 
                 fnout_freq_time = '%s/data_trainsnr%d_dm%d_t0%f_freq.npy'\
                          % (basedir, sig_cut[ii], dm_cut[ii], np.round(t0, 2))
@@ -365,8 +370,25 @@ if __name__=='__main__':
 
                 np.save(fnout_freq_time, data_freqtime)
                 np.save(fnout_dm_time, data_dmtime)
+
+            elif options.save_data == 'concat':
+                data_dm_time_full.append(data_dm_time)
+                data_freq_time_full.append(data_freq_time)
+                params = [dm_cut[ii], 0, ds_cut[ii], 0, -2, 0, t0, sig_cut[ii]]
+                params_full.append(params)
         else:
             print('Not saving data')
+
+    if options.save_data == 'concat':
+        data_dm_time_full = np.concatenate(data_dm_time_full)
+        data_freq_time_full = np.concatenate(data_freq_time_full)
+        fnout = '%s/data_training_full.hdf5'
+
+        f = h5py.File(fnout, 'w')
+        f.create_dataset('data_freq_time', data=data_freq_time)
+        f.create_dataset('data_dm_time', data=data_dm_time)
+        f.create_dataset('params', data=params_full)
+        f.close()
 
     exit()
 
