@@ -238,24 +238,27 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     if mk_plot is True:
 
         figure = plt.figure()
-        plt.subplot(311)
+        ax1 = plt.subplot(311)
 
         full_freq_arr_downsamp /= np.std(full_freq_arr_downsamp)
         plt.imshow(full_freq_arr_downsamp, aspect='auto', vmax=4, vmin=-4, 
-                   extent=[0, times[-1], freq_up, freq_low], interpolation='nearest')
+                   extent=[0, times[-1], freq_up, freq_low], 
+                   interpolation='nearest')
         plt.ylabel('Freq [MHz]')
 
-        plt.subplot(312)
+        plt.subplot(312, sharex=ax1)
         plt.plot(times, full_freq_arr_downsamp.mean(0))
         plt.ylabel('Flux')
 
-        plt.subplot(313)
+        plt.subplot(313, sharex=ax2)
         plt.imshow(full_dm_arr_downsamp, aspect='auto', 
-                   extent=[0, times[-1], dms[-1], dms[0]], interpolation='nearest')
+                   extent=[0, times[-1], dms[-1], dms[0]], 
+                   interpolation='nearest')
         plt.xlabel('Time [s]')
         plt.ylabel('DM')
     
-        plt.suptitle("beam%s snr%d dm%d t0%d" % (beamno, sig_cut, dms[dm_max_jj], t0))
+        plt.suptitle("beam%s snr%d dm%d t0%d" %\
+                     (beamno, sig_cut, dms[dm_max_jj], t0))
 
         fn_fig_out = './plots/train_data_beam%s_snr%d_dm%d_t0%d.pdf' % \
                      (beamno, sig_cut, dms[dm_max_jj], t0)
