@@ -78,8 +78,10 @@ def get_triggers(fn, sig_thresh=5.0):
                 # step through windows of 2 seconds, starting from tt.min()
                 t0, tm = 2*ii+tt.min(), 2*(ii+1)+tt.min()
                 ind = np.where((dm<dms[1]) & (dm>dms[0]) & (tt<tm) & (tt>t0))[0]
+
                 if sig[ind].max() < sig_thresh:
                     continue 
+
                 sig_cut.append(np.amax(sig[ind]))
                 dm_cut.append(dm[ind][np.argmax(sig[ind])])
                 tt_cut.append(tt[ind][np.argmax(sig[ind])]) 
@@ -183,6 +185,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     # make sure dm0 is in the array
     dm_max_jj = np.argmin(abs(dms-dm0))
     dms += (dm0-dms[dm_max_jj])
+    dms[0] = max(0, dms[0])
 
     print(chunksize, width, downsamp)
     if chunksize > 10000:
@@ -213,12 +216,14 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         full_arr[jj] = copy.copy(dm_arr)
 
         if jj==dm_max_jj:
-            print('using %d' % jj)
+            print('Dedispersing to best DM=%f' % dm_)
             data_dm_max = data_copy.data[:, t_min:t_max]
 
     downsamp = int(downsamp)
 
     # bin down to 32 freq channels
+    print(nfreq, nfreq_plot, ntime)
+    print(data_dm_max.shape)
     full_freq_arr_downsamp = data_dm_max[:nfreq//nfreq_plot*nfreq_plot, :].reshape(\
                                    nfreq_plot, -1, ntime).mean(1)
     full_freq_arr_downsamp = full_freq_arr_downsamp[:, :ntime//downsamp*downsamp\
@@ -286,12 +291,12 @@ if __name__=='__main__':
                         help="make plot if True",
                         default=True)
 
-    parser.add_option('--nfreq_plot', dest='nfreq_plot', type='int'
+    parser.add_option('--nfreq_plot', dest='nfreq_plot', type='int',
                         help="make plot with this number of freq channels",
-                        default=True)
+                        default=32)
 
     options, args = parser.parse_args()
-
+    print(options.nfreq_plot)
     fn_fil = args[0]
     fn_sp = args[1]
 
@@ -302,7 +307,13 @@ if __name__=='__main__':
     print("----------------------------- \n")
 
     for ii, tt in enumerate(tt_cut[:]):
-        print(ii, np.round(dm_cut[ii]), ds_cut[ii])
+
+        if np.abs(dm_cut[ii]-56.8) < 2:
+            continue 
+        if np.abs(dm_cut[ii]-26.8) < 2:
+            continue 
+
+        print("Starting DM=%f" % dm_cut[ii])
 #        data_dmtime, data_freqtime = proc_trigger(fn_fil, 56.8, 11.9706, 30, mk_plot=True, ndm=100, downsamp=ds_cut[ii])
         data_dmtime, data_freqtime = proc_trigger(fn_fil, dm_cut[ii], tt, sig_cut[ii],
                                                   mk_plot=options.mk_plot, ndm=options.ndm, 
