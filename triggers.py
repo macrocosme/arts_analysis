@@ -162,8 +162,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     freq_up = rawdatafile.header['fch1']
     nfreq = rawdatafile.header['nchans']
     freq_low = freq_up + nfreq*rawdatafile.header['foff']
-    # Read in 5 disp delays
-    width = 5 * abs(4e3 * dm0 * (freq_up**-2 - freq_low**-2))
+    # Read in 10 disp delays
+    width = 50 * abs(4e3 * dm0 * (freq_up**-2 - freq_low**-2))
     
     print("Using width %f" % width)
 
@@ -183,8 +183,9 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     dm_max_jj = np.argmin(abs(dms-dm0))
     dms += (dm0-dms[dm_max_jj])
 
-    if chunksize > 3000:
-        t_min, t_max = chunksize//2-1500, chunksize//2+1500
+    print(chunksize, width, downsamp)
+    if chunksize > 10000:
+        t_min, t_max = chunksize//2-5000, chunksize//2+5000
     else:
         t_min, t_max = 0, chunksize
 
@@ -214,10 +215,9 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
             print('using %d' % jj)
             data_dm_max = data_copy.data[:, t_min:t_max]
 
-    downsamp = int(2*downsamp)
+    downsamp = int(downsamp)
 
     # bin down to 32 freq channels
-
     full_freq_arr_downsamp = data_dm_max[:nfreq//nfreq_plot*nfreq_plot, :].reshape(\
                                    nfreq_plot, -1, ntime).mean(1)
     full_freq_arr_downsamp = full_freq_arr_downsamp[:, :ntime//downsamp*downsamp\
@@ -270,18 +270,17 @@ if __name__=='__main__':
                         usage="%prog FN_FILTERBANK FN_TRIGGERS [OPTIONS]", \
                         description="Create diagnostic plots for individual triggers")
 
-    parser.add_option('-sig_thresh', dest='sig_thresh', type='float', \
-                        action='append', \
+    parser.add_option('--sig_thresh', dest='sig_thresh', type='float', \
                         help="Only process events above >sig_thresh S/N" \
                                 "(Default: 8.0)", default=8.0)
-    parser.add_option('-ndm', dest='ndm', type='int', \
+    parser.add_option('--ndm', dest='ndm', type='int', \
                         help="Number of DMs to use in DM transform (Default: 50).", \
                         default=50)
-    parser.add_option('-mask', dest='maskfile', type='string', \
+    parser.add_option('--mask', dest='maskfile', type='string', \
                         help="Mask file produced by rfifind. (Default: No Mask).", \
                         default=None)
 
-    parser.add_option('-mk_plot', dest='mk_plot', action='store_true', \
+    parser.add_option('--mk_plot', dest='mk_plot', action='store_true', \
                         help="make plot if True",
                         default=True)
 
@@ -302,8 +301,11 @@ if __name__=='__main__':
         data_dmtime, data_freqtime = proc_trigger(fn_fil, dm_cut[ii], tt, sig_cut[ii], \
                                                   mk_plot=options.mk_plot, ndm=options.ndm, downsamp=ds_cut[ii])
 
-        fnout_freqtime = './data_trainsnr%d_dm%d_t0%d_freq.npy' % (sig_cut[ii], dm_cut[ii], tt)
-        fnout_dmtime = './data_trainsnr%d_dm%d_t0%d_dm.npy' % (sig_cut[ii], dm_cut[ii], tt)
+        basedir = '/data/03/Triggers/2017.11.07-01:27:36.B0531+21/CB21/'
+        fnout_freqtime = '%s/data_trainsnr%d_dm%d_t0%d_freq.npy'\
+                         % (basedir, sig_cut[ii], dm_cut[ii], tt)
+        fnout_dmtime = '%s/data_trainsnr%d_dm%d_t0%d_dm.npy'\
+                         % (basedir, sig_cut[ii], dm_cut[ii], tt)
 
         np.save(fnout_freqtime, data_freqtime)
         np.save(fnout_dmtime, data_dmtime)
