@@ -21,22 +21,6 @@ fdir = '/data/*/filterbank/20171127/2017.11.27-17:24:42.B0329+54/*.fil'
 
 dt = 4.096e-5
 
-def run_prepsubband(fn_fil, lodm, dmstep, numdms, downsamp=1, nsub=128):
-
-    fnout = fn_fil+'.out'
-    numout = (30*60./dt)//downsamp*downsamp
-    os.system('prepsubband -nsub %d -numout %d -lodm %f \
-             -dmstep %f -numdms %d -downsamp %d -o %s %s' % \
-             (nsub, numout, lodm, dmstep, numdms, downsamp, fnout, fn_fil))
-    return 
-
-def run_single_pulse(fdir):
-    flist = glob.glob(fdir+'/*dat')
-
-    for ff in flist:
-        print(ff)
-        os.system('single_pulse_search.py -t 8.0 %s' % ff)
-
 def dm_range(dm_max, dm_min=2, frac=0.2):
 
     dm_list =[]
@@ -273,7 +257,7 @@ def h5_writer(data_freq_time, data_dm_time,
     """ Write to an hdf5 file trigger data, 
     pulse parameters
     """
-    fnout = '%s/data_trainsnr%d_dm%d_t0%d.npy'\
+    fnout = '%s/data_trainsnr%d_dm%d_t0%d.hdf5'\
                 % (basedir, snr, dm0, t0)
 
     f = h5py.File(fnout, 'w')
