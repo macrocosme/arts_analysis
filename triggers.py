@@ -264,13 +264,39 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     
     return full_dm_arr_downsamp, full_freq_arr_downsamp
 
+def h5_writer(data_freq_time, data_dm_time, 
+              dm0, t0, snr, beamno='', basedir='./',):
+    """ Write to an hdf5 file trigger data, 
+    pulse parameters
+    """
+    fnout = '%s/data_trainsnr%d_dm%d_t0%d.npy'\
+                % (basedir, snr, dm0, t0)
+
+    f = h5py.File(fnout, 'w')
+
+    f.create_dataset('data_freq_time', data=data_freq_time)
+
+    if data_dm_time is not None:    
+        f.create_dataset('data_dm_time', data=data_dm_time)
+        ndm = data_dm_time.shape[0]
+    else:
+        ndm = 0
+
+    f.attrs.create('snr', data=snr)
+    f.attrs.create('ndm', data=ndm)
+    f.attrs.create('nfreq', data=nfreq)
+    f.attrs.create('t0', data=t0)
+    f.attrs.create('beamno', data=beamno)
+    f.close()
+
+    print("Wrote to file %s" % fnout)
+
+
 if __name__=='__main__':
 # Example usage 
 # python triggers.py /data/09/filterbank/20171107/2017.11.07-01:27:36.B0531+21/CB21.fil\
 #     CB21_2017.11.07-01:27:36.B0531+21.trigger --sig_thresh 12.0 --mk_plot False
-#
-#
-#
+
 
     parser = optparse.OptionParser(prog="triggers.py", \
                         version="", \
@@ -286,6 +312,11 @@ if __name__=='__main__':
     parser.add_option('--mask', dest='maskfile', type='string', \
                         help="Mask file produced by rfifind. (Default: No Mask).", \
                         default=None)
+
+    parser.add_option('--save_data', dest='nfreq_plot', type='str',
+                        help="save each trigger's data. 0 = don't save. \
+                        hdf5 = save to hdf5. npy = save to npy",
+                        default='hdf5')
 
     parser.add_option('--mk_plot', dest='mk_plot', action='store_true', \
                         help="make plot if True",
@@ -315,19 +346,26 @@ if __name__=='__main__':
 
         print("Starting DM=%f" % dm_cut[ii])
 #        data_dmtime, data_freqtime = proc_trigger(fn_fil, 56.8, 11.9706, 30, mk_plot=True, ndm=100, downsamp=ds_cut[ii])
-        data_dmtime, data_freqtime = proc_trigger(fn_fil, dm_cut[ii], tt, sig_cut[ii],
+        data_dm_time, data_freq_time = proc_trigger(fn_fil, dm_cut[ii], tt, sig_cut[ii],
                                                   mk_plot=options.mk_plot, ndm=options.ndm, 
                                                   downsamp=ds_cut[ii], nfreq_plot=options.nfreq_plot)
 
         basedir = '/data/03/Triggers/2017.11.07-01:27:36.B0531+21/CB21/'
 
-        fnout_freqtime = '%s/data_trainsnr%d_dm%d_t0%d_freq.npy'\
+        if options.save_data != 0:
+            if options.save_data == 'hdf5':
+                h5_writer(data_freq_time, data_dm_time, 
+                        dm0, t0, snr, beamno='', basedir='./',)
+
+            if options.save_data == 'npy':
+
+                fnout_freq_time = '%s/data_trainsnr%d_dm%d_t0%d_freq.npy'\
                          % (basedir, sig_cut[ii], dm_cut[ii], tt)
-        fnout_dmtime = '%s/data_trainsnr%d_dm%d_t0%d_dm.npy'\
+                fnout_dm_time = '%s/data_trainsnr%d_dm%d_t0%d_dm.npy'\
                          % (basedir, sig_cut[ii], dm_cut[ii], tt)
 
-        np.save(fnout_freqtime, data_freqtime)
-        np.save(fnout_dmtime, data_dmtime)
+                np.save(fnout_freq_time, data_freqtime)
+                np.save(fnout_dm_time, data_dmtime)
 
     exit()
 
