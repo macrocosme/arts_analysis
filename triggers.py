@@ -250,7 +250,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         plt.plot(times, full_freq_arr_downsamp.mean(0))
         plt.ylabel('Flux')
 
-        plt.subplot(313, sharex=ax2)
+        plt.subplot(313, sharex=ax1)
         plt.imshow(full_dm_arr_downsamp, aspect='auto', 
                    extent=[0, times[-1], dms[-1], dms[0]], 
                    interpolation='nearest')
@@ -341,16 +341,16 @@ if __name__=='__main__':
     print("Grouped down to %d triggers" % len(sig_cut))
     print("----------------------------- \n")
 
-    for ii, tt in enumerate(tt_cut[:]):
+    for ii, t0 in enumerate(tt_cut[:]):
 
-        if np.abs(dm_cut[ii]-56.8) < 2:
-            continue 
-        if np.abs(dm_cut[ii]-26.8) < 2:
-            continue 
+#        if np.abs(dm_cut[ii]-56.8) < 2:
+#            continue 
+#        if np.abs(dm_cut[ii]-26.8) < 2:
+#            continue 
 
         print("Starting DM=%f" % dm_cut[ii])
 #        data_dmtime, data_freqtime = proc_trigger(fn_fil, 56.8, 11.9706, 30, mk_plot=True, ndm=100, downsamp=ds_cut[ii])
-        data_dm_time, data_freq_time = proc_trigger(fn_fil, dm_cut[ii], tt, sig_cut[ii],
+        data_dm_time, data_freq_time = proc_trigger(fn_fil, dm_cut[ii], t0, sig_cut[ii],
                                                   mk_plot=options.mk_plot, ndm=options.ndm, 
                                                   downsamp=ds_cut[ii], nfreq_plot=options.nfreq_plot)
 
@@ -359,6 +359,7 @@ if __name__=='__main__':
         if options.save_data != '0':
             print('saving data')
             if options.save_data == 'hdf5':
+                print(0)
                 h5_writer(data_freq_time, data_dm_time, 
                         dm0, t0, snr, beamno='', basedir='./',)
 
