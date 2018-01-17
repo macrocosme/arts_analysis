@@ -286,9 +286,12 @@ def h5_writer(data_freq_time, data_dm_time,
     else:
         ndm = 0
 
+    nfreq, ntime = data_freq_time.shape
+
     f.attrs.create('snr', data=snr)
     f.attrs.create('ndm', data=ndm)
     f.attrs.create('nfreq', data=nfreq)
+    f.attrs.create('ntime', data=ntime)
     f.attrs.create('t0', data=t0)
     f.attrs.create('beamno', data=beamno)
     f.close()
