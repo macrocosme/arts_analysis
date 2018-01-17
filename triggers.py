@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
+import h5py
 import glob
 import copy
 import optparse
@@ -313,7 +314,7 @@ if __name__=='__main__':
                         help="Mask file produced by rfifind. (Default: No Mask).", \
                         default=None)
 
-    parser.add_option('--save_data', dest='nfreq_plot', type='str',
+    parser.add_option('--save_data', dest='save_data', type='str',
                         help="save each trigger's data. 0 = don't save. \
                         hdf5 = save to hdf5. npy = save to npy",
                         default='hdf5')
@@ -327,7 +328,7 @@ if __name__=='__main__':
                         default=32)
 
     options, args = parser.parse_args()
-    print(options.nfreq_plot)
+    print(options)
     fn_fil = args[0]
     fn_sp = args[1]
 
@@ -352,7 +353,8 @@ if __name__=='__main__':
 
         basedir = '/data/03/Triggers/2017.11.07-01:27:36.B0531+21/CB21/'
 
-        if options.save_data != 0:
+        if options.save_data != '0':
+            print('saving data')
             if options.save_data == 'hdf5':
                 h5_writer(data_freq_time, data_dm_time, 
                         dm0, t0, snr, beamno='', basedir='./',)
