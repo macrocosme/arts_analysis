@@ -364,7 +364,7 @@ if __name__=='__main__':
             if options.save_data == 'hdf5':
                 print(0)
                 h5_writer(data_freq_time, data_dm_time, 
-                        dm0, t0, snr, beamno='', basedir='./',)
+                        dm_cut[ii], t0, sig_cut[ii], beamno='', basedir='./',)
 
             if options.save_data == 'npy':
 
