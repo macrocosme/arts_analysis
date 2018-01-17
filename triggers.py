@@ -162,7 +162,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     freq_up = rawdatafile.header['fch1']
     nfreq = rawdatafile.header['nchans']
     freq_low = freq_up + nfreq*rawdatafile.header['foff']
-    # Read in 10 disp delays
+
+    # Read in 50 disp delays
     width = 50 * abs(4e3 * dm0 * (freq_up**-2 - freq_low**-2))
     
     print("Using width %f" % width)
@@ -225,7 +226,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     
     times = np.linspace(0, ntime*dt, len(full_freq_arr_downsamp[0]))
 
-    full_dm_arr_downsamp = full_arr[:, :ntime//downsamp*downsamp].reshape(-1, ntime//downsamp, downsamp).mean(-1)
+    full_dm_arr_downsamp = full_arr[:, :ntime//downsamp*downsamp]
+    full_dm_arr_downsamp = full_dm_arr_downsamp.reshape(-1, ntime//downsamp, downsamp).mean(-1)
 
     if mk_plot is True:
 
@@ -260,7 +262,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 if __name__=='__main__':
 # Example usage 
 # python triggers.py /data/09/filterbank/20171107/2017.11.07-01:27:36.B0531+21/CB21.fil\
-#     CB21_2017.11.07-01:27:36.B0531+21.trigger
+#     CB21_2017.11.07-01:27:36.B0531+21.trigger --sig_thresh 12.0 --mk_plot False
 #
 #
 #
@@ -284,6 +286,10 @@ if __name__=='__main__':
                         help="make plot if True",
                         default=True)
 
+    parser.add_option('--nfreq_plot', dest='nfreq_plot', 
+                        help="make plot with this number of freq channels",
+                        default=True)
+
     options, args = parser.parse_args()
 
     fn_fil = args[0]
@@ -298,10 +304,12 @@ if __name__=='__main__':
     for ii, tt in enumerate(tt_cut[:]):
         print(ii, np.round(dm_cut[ii]), ds_cut[ii])
 #        data_dmtime, data_freqtime = proc_trigger(fn_fil, 56.8, 11.9706, 30, mk_plot=True, ndm=100, downsamp=ds_cut[ii])
-        data_dmtime, data_freqtime = proc_trigger(fn_fil, dm_cut[ii], tt, sig_cut[ii], \
-                                                  mk_plot=options.mk_plot, ndm=options.ndm, downsamp=ds_cut[ii])
+        data_dmtime, data_freqtime = proc_trigger(fn_fil, dm_cut[ii], tt, sig_cut[ii],
+                                                  mk_plot=options.mk_plot, ndm=options.ndm, 
+                                                  downsamp=ds_cut[ii], nfreq_plot=options.nfreq_plot)
 
         basedir = '/data/03/Triggers/2017.11.07-01:27:36.B0531+21/CB21/'
+
         fnout_freqtime = '%s/data_trainsnr%d_dm%d_t0%d_freq.npy'\
                          % (basedir, sig_cut[ii], dm_cut[ii], tt)
         fnout_dmtime = '%s/data_trainsnr%d_dm%d_t0%d_dm.npy'\
