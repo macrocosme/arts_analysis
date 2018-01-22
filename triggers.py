@@ -149,6 +149,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     freq_up = rawdatafile.header['fch1']
     nfreq = rawdatafile.header['nchans']
     freq_low = freq_up + nfreq*rawdatafile.header['foff']
+    time_res = dt * downsamp
 
     # Read in 50 disp delays
     width = 50 * abs(4e3 * dm0 * (freq_up**-2 - freq_low**-2))
@@ -260,10 +261,11 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         plt.show()
         plt.savefig(fn_fig_out)
     
-    return full_dm_arr_downsamp, full_freq_arr_downsamp
+    return full_dm_arr_downsamp, full_freq_arr_downsamp, time_res
 
 def h5_writer(data_freq_time, data_dm_time, 
-              dm0, t0, snr, beamno='', basedir='./',):
+              dm0, t0, snr, beamno='', basedir='./',
+              time_res=''):
     """ Write to an hdf5 file trigger data, 
     pulse parameters
     """
@@ -271,7 +273,6 @@ def h5_writer(data_freq_time, data_dm_time,
                 % (basedir, snr, dm0, t0)
 
     f = h5py.File(fnout, 'w')
-
     f.create_dataset('data_freq_time', data=data_freq_time)
 
     if data_dm_time is not None:    
@@ -283,9 +284,11 @@ def h5_writer(data_freq_time, data_dm_time,
     nfreq, ntime = data_freq_time.shape
 
     f.attrs.create('snr', data=snr)
+    f.attrs.create('dm0', data=dm0)
     f.attrs.create('ndm', data=ndm)
     f.attrs.create('nfreq', data=nfreq)
     f.attrs.create('ntime', data=ntime)
+    f.attrs.create('time_res', data=time_res)
     f.attrs.create('t0', data=t0)
     f.attrs.create('beamno', data=beamno)
     f.close()
@@ -351,7 +354,7 @@ if __name__=='__main__':
     for ii, t0 in enumerate(tt_cut):
 
         print("Starting DM=%f" % dm_cut[ii])
-        data_dm_time, data_freq_time = proc_trigger(fn_fil, dm_cut[ii], t0, sig_cut[ii],
+        data_dm_time, data_freq_time, time_res = proc_trigger(fn_fil, dm_cut[ii], t0, sig_cut[ii],
                                                   mk_plot=options.mk_plot, ndm=options.ndm, 
                                                   downsamp=ds_cut[ii], nfreq_plot=options.nfreq_plot)
 
@@ -360,7 +363,8 @@ if __name__=='__main__':
         if options.save_data != '0':
             if options.save_data == 'hdf5':
                 h5_writer(data_freq_time, data_dm_time, 
-                        dm_cut[ii], t0, sig_cut[ii], beamno='', basedir='./',)
+                          dm_cut[ii], t0, sig_cut[ii], 
+                          beamno='', basedir='./', time_res=time_res)
             elif options.save_data == 'npy':
 
                 fnout_freq_time = '%s/data_trainsnr%d_dm%d_t0%f_freq.npy'\
