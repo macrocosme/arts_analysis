@@ -144,8 +144,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     freq_low = freq_up + nfreq*rawdatafile.header['foff']
     time_res = dt * downsamp
 
-    # Read in 50 disp delays
-    width = 50 * abs(4e3 * dm0 * (freq_up**-2 - freq_low**-2))
+    # Read in 10 disp delays
+    width = 10 * abs(4e3 * dm0 * (freq_up**-2 - freq_low**-2))
     
     print("Using width %f" % width)
 
