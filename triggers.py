@@ -199,12 +199,12 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         # of the true stdev.  Thus the 1.0/0.871=1.148 correction below.                                                                                                   
         # The following is roughly .std() since we already removed the median 
 
-        std_chunk = scipy.signal.detrend(dm_arr, type='linear')
-        std_chunk.sort()
-        stds = 1.148*np.sqrt((std_chunk[ntime/40:-ntime/40]**2.0).sum() /
-                                   (0.95*ntime))
-        snr_ = std_chunk[-1] / stds 
-        #snr_ = dm_arr.max() / np.std(dm_arr) old way, biased low
+        # std_chunk = scipy.signal.detrend(dm_arr, type='linear')
+        # std_chunk.sort()
+        # stds = 1.148*np.sqrt((std_chunk[ntime/40:-ntime/40]**2.0).sum() /
+        #                            (0.95*ntime))
+        # snr_ = std_chunk[-1] / stds 
+        snr_ = dm_arr.max() / np.std(dm_arr) old way, biased low
         full_arr[jj] = copy.copy(dm_arr)
 
         if jj==dm_max_jj:
@@ -389,6 +389,8 @@ if __name__=='__main__':
         f.create_dataset('data_dm_time', data=data_dm_time_full)
         f.create_dataset('params', data=params_full)
         f.close()
+
+        print('Saved all triggers to %s' % fnout)
 
     exit()
 
