@@ -360,7 +360,7 @@ if __name__=='__main__':
             if options.save_data == 'hdf5':
                 h5_writer(data_freq_time, data_dm_time, 
                           dm_cut[ii], t0, sig_cut[ii], 
-                          beamno='', basedir='./', time_res=time_res)
+                          beamno='', basedir=basedir, time_res=time_res)
             elif options.save_data == 'npy':
 
                 fnout_freq_time = '%s/data_trainsnr%d_dm%d_t0%f_freq.npy'\
