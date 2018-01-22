@@ -204,7 +204,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         # stds = 1.148*np.sqrt((std_chunk[ntime/40:-ntime/40]**2.0).sum() /
         #                            (0.95*ntime))
         # snr_ = std_chunk[-1] / stds 
-        snr_ = dm_arr.max() / np.std(dm_arr) old way, biased low
+        snr_ = dm_arr.max() / np.std(dm_arr) 
         full_arr[jj] = copy.copy(dm_arr)
 
         if jj==dm_max_jj:
