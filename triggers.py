@@ -13,14 +13,6 @@ import optparse
 from pypulsar.formats import filterbank
 from pypulsar.formats import spectra
 
-fn_fil = '/data/01/filterbank/20171010/2017.10.10-02:56:50.B0531+21/CB00.fil'
-#fn='/home/arts/leon/scratch/20170306/crab_1hr_dump/liamcrab/crab.liam_1ms_8bit.dfil'
-# 'crab4hr_singlepulse.npy'
-fn_sp = '/data/01/filterbank/20171010/2017.10.10-02:56:50.B0531+21/CBB_DM56.50.singlepulse'
-fdir = '/data/*/filterbank/20171127/2017.11.27-17:24:42.B0329+54/*.fil'
-
-dt = 4.096e-5
-
 def dm_range(dm_max, dm_min=2, frac=0.2):
 
     dm_list =[]
