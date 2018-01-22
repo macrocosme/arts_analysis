@@ -343,9 +343,18 @@ if __name__=='__main__':
 
     sig_cut, dm_cut, tt_cut, ds_cut = get_triggers(fn_sp, sig_thresh=options.sig_thresh)
     
+    ntrig_grouped = len(sig_cut)
     print("-----------------------------")
-    print("Grouped down to %d triggers" % len(sig_cut))
+    print("Grouped down to %d triggers" % ntrig_grouped)
     print("----------------------------- \n")
+
+    grouped_triggers = np.empty([len(sig_cut), 4])
+    grouped_triggers[:,0] = sig_cut
+    grouped_triggers[:,1] = dm_cut
+    grouped_triggers[:,2] = tt_cut
+    grouped_triggers[:,3] = ds_cut
+
+    np.savetxt('grouped_pulses.singlepulse', grouped_triggers)
 
     for ii, t0 in enumerate(tt_cut[:options.ntrig]):
 
