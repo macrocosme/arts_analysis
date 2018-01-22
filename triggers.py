@@ -348,12 +348,11 @@ if __name__=='__main__':
     print("Grouped down to %d triggers" % ntrig_grouped)
     print("----------------------------- \n")
 
-    grouped_triggers = np.empty([1+ntrig_grouped, 4])
-    grouped_triggers[0, :] = "string"
-    grouped_triggers[1:,0] = sig_cut
-    grouped_triggers[1:,1] = dm_cut
-    grouped_triggers[1:,2] = tt_cut
-    grouped_triggers[1:,3] = ds_cut
+    grouped_triggers = np.empty([ntrig_grouped, 4])
+    grouped_triggers[:,0] = sig_cut
+    grouped_triggers[:,1] = dm_cut
+    grouped_triggers[:,2] = tt_cut
+    grouped_triggers[:,3] = ds_cut
 
     np.savetxt('grouped_pulses.singlepulse', grouped_triggers)
 
