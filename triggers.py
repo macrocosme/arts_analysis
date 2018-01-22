@@ -298,6 +298,9 @@ if __name__=='__main__':
 # python triggers.py /data/09/filterbank/20171107/2017.11.07-01:27:36.B0531+21/CB21.fil\
 #     CB21_2017.11.07-01:27:36.B0531+21.trigger --sig_thresh 12.0 --mk_plot False
 
+python triggers.py /data/09/filterbank/20171107/2017.11.07-01:27:36.B0531+21/CB21.fil\
+     CB21_2017.11.07-01:27:36.B0531+21.trigger --sig_thresh 12.0 --mk_plot False
+
 
     parser = optparse.OptionParser(prog="triggers.py", \
                         version="", \
@@ -319,6 +322,10 @@ if __name__=='__main__':
                         hdf5 = save to hdf5. npy = save to npy. concat to \
                         save all triggers into one file",
                         default='hdf5')
+
+    parser.add_option('--ntrig', dest='ntrig', type='int',
+                        help="Only process this many triggers",
+                        default=-1)
 
     parser.add_option('--mk_plot', dest='mk_plot', action='store_true', \
                         help="make plot if True",
@@ -343,7 +350,7 @@ if __name__=='__main__':
     print("Grouped down to %d triggers" % len(sig_cut))
     print("----------------------------- \n")
 
-    for ii, t0 in enumerate(tt_cut):
+    for ii, t0 in enumerate(tt_cut[:options.ntrig]):
 
         print("Starting DM=%f" % dm_cut[ii])
         data_dm_time, data_freq_time, time_res = proc_trigger(fn_fil, dm_cut[ii], t0, sig_cut[ii],
