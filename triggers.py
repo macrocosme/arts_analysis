@@ -298,10 +298,6 @@ if __name__=='__main__':
 # python triggers.py /data/09/filterbank/20171107/2017.11.07-01:27:36.B0531+21/CB21.fil\
 #     CB21_2017.11.07-01:27:36.B0531+21.trigger --sig_thresh 12.0 --mk_plot False
 
-python triggers.py /data/09/filterbank/20171107/2017.11.07-01:27:36.B0531+21/CB21.fil\
-     CB21_2017.11.07-01:27:36.B0531+21.trigger --sig_thresh 12.0 --mk_plot False
-
-
     parser = optparse.OptionParser(prog="triggers.py", \
                         version="", \
                         usage="%prog FN_FILTERBANK FN_TRIGGERS [OPTIONS]", \
