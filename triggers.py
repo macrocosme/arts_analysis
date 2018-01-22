@@ -381,8 +381,8 @@ if __name__=='__main__':
         fnout = '%s/data_training_full.hdf5'
 
         f = h5py.File(fnout, 'w')
-        f.create_dataset('data_freq_time', data=data_freq_time)
-        f.create_dataset('data_dm_time', data=data_dm_time)
+        f.create_dataset('data_freq_time', data=data_freq_time_full)
+        f.create_dataset('data_dm_time', data=data_dm_time_full)
         f.create_dataset('params', data=params_full)
         f.close()
 
