@@ -14,7 +14,25 @@ import optparse
 from pypulsar.formats import filterbank
 from pypulsar.formats import spectra
 
-def dm_range(dm_max, dm_min=2, frac=0.2):
+def dm_range(dm_max, dm_min=2., frac=0.2):
+    """ Generate list of DM-windows in which 
+    to search for single pulse groups. 
+
+    Parameters
+    ----------
+    dm_max : float 
+        max DM 
+    dm_min : float  
+        min DM 
+    frac : float 
+        fractional size of each window 
+
+    Returns
+    -------
+    dm_list : list 
+        list of tuples containing (min, max) of each 
+        DM window
+    """
 
     dm_list =[]
     prefac = (1-frac)/(1+frac)
@@ -24,8 +42,28 @@ def dm_range(dm_max, dm_min=2, frac=0.2):
         dm_max = int(prefac*dm_max)
     return dm_list
 
-def get_triggers(fn, sig_thresh=5.0):
+def get_triggers(fn, sig_thresh=5.0, t_window=2.):
     """ Get brightest trigger in each 10s chunk.
+
+    Parameters
+    ----------
+    fn : str 
+        filename with triggers (.npy, .singlepulse, .trigger)
+    sig_thresh : float
+        min S/N to include
+    t_window : float 
+        Size of each time window in seconds
+
+    Returns
+    -------
+    sig_cut : ndarray
+        S/N array of brightest trigger in each DM/T window 
+    dm_cut : ndarray
+        DMs of brightest trigger in each DM/T window 
+    tt_cut : ndarray
+        Arrival times of brightest trigger in each DM/T window 
+    ds_cut : ndarray 
+        downsample factor array of brightest trigger in each DM/T window 
     """
     if fn.split('.')[-1]=='npy':
         A = np.load(fn)
@@ -54,7 +92,7 @@ def get_triggers(fn, sig_thresh=5.0):
         for ii in xrange(ntime):
             try:    
                 # step through windows of 2 seconds, starting from tt.min()
-                t0, tm = 2*ii+tt.min(), 2*(ii+1)+tt.min()
+                t0, tm = t_window*ii+tt.min(), t_window*(ii+1)+tt.min()
                 ind = np.where((dm<dms[1]) & (dm>dms[0]) & (tt<tm) & (tt>t0))[0]
 
                 if sig[ind].max() < sig_thresh:
@@ -212,9 +250,10 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 
     downsamp = int(downsamp)
 
-    # bin down to 32 freq channels
+    # bin down to nfreq_plot freq channels
     full_freq_arr_downsamp = data_dm_max[:nfreq//nfreq_plot*nfreq_plot, :].reshape(\
                                    nfreq_plot, -1, ntime).mean(1)
+    # bin down in time by factor of downsamp
     full_freq_arr_downsamp = full_freq_arr_downsamp[:, :ntime//downsamp*downsamp\
                                    ].reshape(-1, ntime//downsamp, downsamp).mean(-1)
     
@@ -305,15 +344,18 @@ def file_reader(fn, ftype='hdf5'):
 
 def concat_files(fdir, ftype='hdf5', nfreq_f=32, 
                  ntime_f=64):
-    """ Read in 
+    """ Read in a list of files, extract central ntime_f 
+    times, bin down to nfreq_f, and write to a single h5 
+    file. 
     """
+    fnout = fdir + 'data_train_full.hdf5'
 
     file_list = glob.glob('%s*%s' % (fdir, ftype))
 
     data_freq_time_full, data_dm_time_full = [], []
 
     for fn in file_list:
-        data_freq_time, data_dm_time = h5_reader(fn)
+        data_freq_time, data_dm_time = file_reader(fn, ftype=ftype)
 
         nfreq, ntime = data_freq_time.shape
 
@@ -323,7 +365,7 @@ def concat_files(fdir, ftype='hdf5', nfreq_f=32,
 
         if nfreq > nfreq_f:
             data_freq_time = data_freq_time[:nfreq//nfreq_f*nfreq_f]
-            data_freq_time = data_freq_time.reshape(nfreq_f, -1, ntime).mean(1)
+            data_freq_time = data_freq_time.reshape(nfreq_f, -1, ntime_f).mean(1)
 
         try:
             ndm = data_dm_time.shape[0]
@@ -334,8 +376,22 @@ def concat_files(fdir, ftype='hdf5', nfreq_f=32,
 
         data_freq_time_full.append(data_freq_time)
 
+    g = h5py.File(fnout, 'w')
+    
+
+    try:
+        data_dm_time_full = np.concatenate(data_dm_time_full)
+        data_dm_time_full = data_freq_time_full.reshape(-1, ndm, ntime_f)
+        
+        g.create_dataset('data_dm_time', data=data_dm_time_full)
+    except:
+        pass 
+
     data_freq_time_full = np.concatenate(data_freq_time_full)
     data_freq_time_full = data_freq_time_full.reshape(-1, nfreq_f, ntime_f)
+
+    g.create_dataset('data_freq_time', data=data_freq_time_full)
+    g.close()
 
     return data_freq_time_full, data_dm_time_full
 
