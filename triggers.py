@@ -288,11 +288,56 @@ def h5_writer(data_freq_time, data_dm_time,
 
     print("Wrote to file %s" % fnout)
 
-def concat_files(fdir):
+def file_reader(fn, ftype='hdf5'):
+    if ftype is 'hdf5':
+        f = h5py.File(fn, 'r')
 
-    file_list = glob.glob('%s*' % fdir)
+        data_freq_time = f['data_freq_time'][:]
+        data_dm_time = f['data_dm_time'][:]
 
+        return data_freq_time, data_dm_time
 
+    elif ftype is 'npy':
+        data = np.load(fn)
+
+        return data
+    
+
+def concat_files(fdir, ftype='hdf5', nfreq_f=32, 
+                 ntime_f=64):
+    """ Read in 
+    """
+
+    file_list = glob.glob('%s*%s' % (fdir, ftype))
+
+    data_freq_time_full, data_dm_time_full = [], []
+
+    for fn in file_list:
+        data_freq_time, data_dm_time = h5_reader(fn)
+
+        nfreq, ntime = data_freq_time.shape
+
+        if ntime != ntime_f:
+            tl, th = ntime//2-ntime_f//2, ntime//2+ntime_f//2
+            data_freq_time = data_freq_time[:, tl:th]
+
+        if nfreq > nfreq_f:
+            data_freq_time = data_freq_time[:nfreq//nfreq_f*nfreq_f]
+            data_freq_time = data_freq_time.reshape(nfreq_f, -1, ntime).mean(1)
+
+        try:
+            ndm = data_dm_time.shape[0]
+            data_dm_time = data_dm_time[:, tl:th]
+            data_dm_time_full.append(data_dm_time)
+        except:
+            pass 
+
+        data_freq_time_full.append(data_freq_time)
+
+    data_freq_time_full = np.concatenate(data_freq_time_full)
+    data_freq_time_full = data_freq_time_full.reshape(-1, nfreq_f, ntime_f)
+
+    return data_freq_time_full, data_dm_time_full
 
 if __name__=='__main__':
 # Example usage 
