@@ -138,7 +138,7 @@ def get_mask(rfimask, startsamp, N):
         mask[blocknums==blocknum] = blockmask
     return mask.T[::-1]
 
-def plot_three_panel(data_freq_time, data_dm_time, times, 
+def plot_three_panel(data_freq_time, data_dm_time, times, dms, 
                      freq_up=1550, freq_low=1250,
                      cmap="RdBu", suptitle="", fnout="out.pdf"):
     figure = plt.figure()
@@ -162,11 +162,8 @@ def plot_three_panel(data_freq_time, data_dm_time, times,
 
     plt.suptitle(suptitle)
 
-    fn_fig_out = './plots/train_data_beam%s_snr%d_dm%d_t0%d.pdf' % \
-                 (beamno, sig_cut, dms[dm_max_jj], t0)
-
     plt.show()
-    plt.savefig(fn_fig_out)
+    plt.savefig(fnout)
 
 def proc_trigger(fn_fil, dm0, t0, sig_cut, 
                  ndm=50, mk_plot=False, downsamp=1, 
@@ -308,7 +305,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 
     if mk_plot is True:
         plot_three_panel(full_freq_arr_downsamp, full_dm_arr_downsamp, 
-                         times, freq_low=freq_low, freq_up=freq_up, 
+                         times, dms, freq_low=freq_low, freq_up=freq_up, 
                          suptitle=suptitle, fnout=fn_fig_out)
     
     return full_dm_arr_downsamp, full_freq_arr_downsamp, time_res
