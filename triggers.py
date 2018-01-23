@@ -134,9 +134,39 @@ def get_mask(rfimask, startsamp, N):
         mask[blocknums==blocknum] = blockmask
     return mask.T[::-1]
 
+def plot_three_panel(data_freq_time, data_dm_time, 
+                     cmap="RdBu", suptitle="", fnout="out.pdf"):
+    figure = plt.figure()
+    ax1 = plt.subplot(311)
+
+    plt.imshow(data_freq_time, aspect='auto', vmax=4, vmin=-4, 
+               extent=[0, times[-1], freq_low, freq_up], 
+               interpolation='nearest', cmap=cmap)
+    plt.ylabel('Freq [MHz]')
+
+    plt.subplot(312, sharex=ax1)
+    plt.plot(times, data_freq_time.mean(0), color='k')
+    plt.ylabel('Flux')
+
+    plt.subplot(313, sharex=ax1)
+    plt.imshow(data_dm_time, aspect='auto', 
+               extent=[0, times[-1], dms[0], dms[-1]], 
+               interpolation='nearest', cmap=cmap)
+    plt.xlabel('Time [s]')
+    plt.ylabel('DM')
+
+    plt.suptitle(suptitle)
+
+    fn_fig_out = './plots/train_data_beam%s_snr%d_dm%d_t0%d.pdf' % \
+                 (beamno, sig_cut, dms[dm_max_jj], t0)
+
+    plt.show()
+    plt.savefig(fn_fig_out)
+
 def proc_trigger(fn_fil, dm0, t0, sig_cut, 
                  ndm=50, mk_plot=False, downsamp=1, 
-                 beamno='', fn_mask=None, nfreq_plot=32):
+                 beamno='', fn_mask=None, nfreq_plot=32,
+                 cmap='RdBu'):
     """ Locate data within filterbank file (fn_fi)
     at some time t0, and dedisperse to dm0, generating 
     plots 
@@ -237,12 +267,12 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         # of the true stdev.  Thus the 1.0/0.871=1.148 correction below.                                                                                                   
         # The following is roughly .std() since we already removed the median 
 
-        # std_chunk = scipy.signal.detrend(dm_arr, type='linear')
-        # std_chunk.sort()
-        # stds = 1.148*np.sqrt((std_chunk[ntime/40:-ntime/40]**2.0).sum() /
-        #                            (0.95*ntime))
-        # snr_ = std_chunk[-1] / stds 
-        snr_ = dm_arr.max() / np.std(dm_arr) 
+        std_chunk = scipy.signal.detrend(dm_arr, type='linear')
+        std_chunk.sort()
+        stds = 1.148*np.sqrt((std_chunk[ntime/40:-ntime/40]**2.0).sum() /
+                                   (0.95*ntime))
+        snr_ = std_chunk[-1]/stds 
+        #snr_ = dm_arr.max() / np.std(dm_arr) 
         full_arr[jj] = copy.copy(dm_arr)
 
         if jj==dm_max_jj:
@@ -262,36 +292,18 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     full_dm_arr_downsamp = full_arr[:, :ntime//downsamp*downsamp]
     full_dm_arr_downsamp = full_dm_arr_downsamp.reshape(-1, ntime//downsamp, downsamp).mean(-1)
 
-    if mk_plot is True:
+    full_freq_arr_downsamp /= np.std(full_freq_arr_downsamp)
+    full_dm_arr_downsamp /= np.std(full_dm_arr_downsamp)
 
-        figure = plt.figure()
-        ax1 = plt.subplot(311)
+    suptitle = "beam%s snr%d dm%d t0%d" %\
+                 (beamno, sig_cut, dms[dm_max_jj], t0)
 
-        full_freq_arr_downsamp /= np.std(full_freq_arr_downsamp)
-        plt.imshow(full_freq_arr_downsamp, aspect='auto', vmax=4, vmin=-4, 
-                   extent=[0, times[-1], freq_low, freq_up], 
-                   interpolation='nearest')
-        plt.ylabel('Freq [MHz]')
-
-        plt.subplot(312, sharex=ax1)
-        plt.plot(times, full_freq_arr_downsamp.mean(0))
-        plt.ylabel('Flux')
-
-        plt.subplot(313, sharex=ax1)
-        plt.imshow(full_dm_arr_downsamp, aspect='auto', 
-                   extent=[0, times[-1], dms[0], dms[-1]], 
-                   interpolation='nearest')
-        plt.xlabel('Time [s]')
-        plt.ylabel('DM')
-    
-        plt.suptitle("beam%s snr%d dm%d t0%d" %\
-                     (beamno, sig_cut, dms[dm_max_jj], t0))
-
-        fn_fig_out = './plots/train_data_beam%s_snr%d_dm%d_t0%d.pdf' % \
+    fn_fig_out = './plots/train_data_beam%s_snr%d_dm%d_t0%d.pdf' % \
                      (beamno, sig_cut, dms[dm_max_jj], t0)
 
-        plt.show()
-        plt.savefig(fn_fig_out)
+    if mk_plot is True:
+        plot_three_panel(full_freq_arr_downsamp, full_dm_arr_downsamp,
+                     suptitle=suptitle, fnout=fn_fig_out)
     
     return full_dm_arr_downsamp, full_freq_arr_downsamp, time_res
 
@@ -353,9 +365,14 @@ def concat_files(fdir, ftype='hdf5', nfreq_f=32,
     file_list = glob.glob('%s*%s' % (fdir, ftype))
 
     data_freq_time_full, data_dm_time_full = [], []
+    ntrig = len(file_list)
 
     for fn in file_list:
+        if 'data_train_full' in fn:
+            continue
+
         print(fn)
+
         data_freq_time, data_dm_time = file_reader(fn, ftype=ftype)
 
         nfreq, ntime = data_freq_time.shape
@@ -368,17 +385,26 @@ def concat_files(fdir, ftype='hdf5', nfreq_f=32,
             data_freq_time = data_freq_time[:nfreq//nfreq_f*nfreq_f]
             data_freq_time = data_freq_time.reshape(nfreq_f, -1, ntime_f).mean(1)
 
+        #normalize to zero median, unit variaance
+        data_freq_time -= np.median(data_freq_time)
+        data_freq_time /= np.std(data_freq_time)
+
         try:
             ndm = data_dm_time.shape[0]
             data_dm_time = data_dm_time[:, tl:th]
+            
+            #normalize to zero median, unit variance
+            data_dm_time -= np.median(data_dm_time)
+            data_dm_time /= np.std(data_dm_time)
+
             data_dm_time_full.append(data_dm_time)
         except:
             pass 
 
         data_freq_time_full.append(data_freq_time)
 
+    print(ndm)
     g = h5py.File(fnout, 'w')
-    
 
     try:
         data_dm_time_full = np.concatenate(data_dm_time_full)
@@ -392,6 +418,11 @@ def concat_files(fdir, ftype='hdf5', nfreq_f=32,
     data_freq_time_full = data_freq_time_full.reshape(-1, nfreq_f, ntime_f)
 
     g.create_dataset('data_freq_time', data=data_freq_time_full)
+
+    # Indicate that data has no labels
+    y = -1*np.ones([ntrig])
+    g.create_dataset('labels', data=y)
+
     g.close()
 
     return data_freq_time_full, data_dm_time_full
@@ -436,6 +467,10 @@ if __name__=='__main__':
                         help="make plot with this number of freq channels",
                         default=32)
 
+    parser.add_option('--cmap', dest='cmap', type='str',
+                        help="imshow colourmap", 
+                        default='RdBu')
+
     options, args = parser.parse_args()
     fn_fil = args[0]
     fn_sp = args[1]
@@ -465,7 +500,8 @@ if __name__=='__main__':
         print("Starting DM=%f" % dm_cut[ii])
         data_dm_time, data_freq_time, time_res = proc_trigger(fn_fil, dm_cut[ii], t0, sig_cut[ii],
                                                   mk_plot=options.mk_plot, ndm=options.ndm, 
-                                                  downsamp=ds_cut[ii], nfreq_plot=options.nfreq_plot)
+                                                  downsamp=ds_cut[ii], nfreq_plot=options.nfreq_plot,
+                                                  cmap=options.cmap)
 
         basedir = '/data/03/Triggers/2017.11.07-01:27:36.B0531+21/CB21/'
 
