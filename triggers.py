@@ -355,6 +355,7 @@ def concat_files(fdir, ftype='hdf5', nfreq_f=32,
     data_freq_time_full, data_dm_time_full = [], []
 
     for fn in file_list:
+        print(fn)
         data_freq_time, data_dm_time = file_reader(fn, ftype=ftype)
 
         nfreq, ntime = data_freq_time.shape
@@ -408,9 +409,11 @@ if __name__=='__main__':
     parser.add_option('--sig_thresh', dest='sig_thresh', type='float', \
                         help="Only process events above >sig_thresh S/N" \
                                 "(Default: 8.0)", default=8.0)
+
     parser.add_option('--ndm', dest='ndm', type='int', \
                         help="Number of DMs to use in DM transform (Default: 50).", \
                         default=50)
+
     parser.add_option('--mask', dest='maskfile', type='string', \
                         help="Mask file produced by rfifind. (Default: No Mask).", \
                         default=None)
