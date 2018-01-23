@@ -87,6 +87,10 @@ def get_triggers(fn, sig_thresh=5.0, t_window=2.):
     # 10% of the largest trigger
     dm_list = dm_range(1.1*dm.max(), dm_min=0.9*dm.min())
 
+
+    print("Grouping in window of %f sec" % t_window)
+    print("DMs:", dm_list)
+
     # might wanna make this a search in (dm,t,width) cubes
     for dms in dm_list:
         for ii in xrange(ntime):
