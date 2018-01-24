@@ -38,8 +38,12 @@ def dm_range(dm_max, dm_min=2., frac=0.2):
     prefac = (1-frac)/(1+frac)
 
     while dm_max>dm_min:
+        if dm_max < 20.:
+            prefac = 0.0 
+
         dm_list.append((int(prefac*dm_max), dm_max))
         dm_max = int(prefac*dm_max)
+
     return dm_list
 
 def get_triggers(fn, sig_thresh=5.0, t_window=2.):
@@ -87,8 +91,7 @@ def get_triggers(fn, sig_thresh=5.0, t_window=2.):
     # 10% of the largest trigger
     dm_list = dm_range(1.1*dm.max(), dm_min=0.9*dm.min())
 
-
-    print("Grouping in window of %f sec" % t_window)
+    print("Grouping in window of %.2f sec" % np.round(t_window,2))
     print("DMs:", dm_list)
 
     # might wanna make this a search in (dm,t,width) cubes
@@ -348,87 +351,18 @@ def file_reader(fn, ftype='hdf5'):
 
         data_freq_time = f['data_freq_time'][:]
         data_dm_time = f['data_dm_time'][:]
+        attr = f.attrs.items()
 
-        return data_freq_time, data_dm_time
+        snr, dm0, time_res, t0 = attr[0][1], attr[1][1], attr[5][1], attr[6][1] 
+
+        f.close()
+
+        return data_freq_time, data_dm_time, [snr, dm0, time_res, t0]
 
     elif ftype is 'npy':
         data = np.load(fn)
 
         return data
-    
-
-def concat_files(fdir, ftype='hdf5', nfreq_f=32, 
-                 ntime_f=64):
-    """ Read in a list of files, extract central ntime_f 
-    times, bin down to nfreq_f, and write to a single h5 
-    file. 
-    """
-    fnout = fdir + 'data_train_full.hdf5'
-
-    file_list = glob.glob('%s*%s' % (fdir, ftype))
-
-    data_freq_time_full, data_dm_time_full = [], []
-    ntrig = len(file_list)
-
-    for fn in file_list:
-        if 'data_train_full' in fn:
-            continue
-
-        print(fn)
-
-        data_freq_time, data_dm_time = file_reader(fn, ftype=ftype)
-
-        nfreq, ntime = data_freq_time.shape
-
-        if ntime != ntime_f:
-            tl, th = ntime//2-ntime_f//2, ntime//2+ntime_f//2
-            data_freq_time = data_freq_time[:, tl:th]
-
-        if nfreq > nfreq_f:
-            data_freq_time = data_freq_time[:nfreq//nfreq_f*nfreq_f]
-            data_freq_time = data_freq_time.reshape(nfreq_f, -1, ntime_f).mean(1)
-
-        #normalize to zero median, unit variaance
-        data_freq_time -= np.median(data_freq_time)
-        data_freq_time /= np.std(data_freq_time)
-
-        try:
-            ndm = data_dm_time.shape[0]
-            data_dm_time = data_dm_time[:, tl:th]
-            
-            #normalize to zero median, unit variance
-            data_dm_time -= np.median(data_dm_time)
-            data_dm_time /= np.std(data_dm_time)
-
-            data_dm_time_full.append(data_dm_time)
-        except:
-            pass 
-
-        data_freq_time_full.append(data_freq_time)
-
-    print(ndm)
-    g = h5py.File(fnout, 'w')
-
-    try:
-        data_dm_time_full = np.concatenate(data_dm_time_full)
-        data_dm_time_full = data_freq_time_full.reshape(-1, ndm, ntime_f)
-        
-        g.create_dataset('data_dm_time', data=data_dm_time_full)
-    except:
-        pass 
-
-    data_freq_time_full = np.concatenate(data_freq_time_full)
-    data_freq_time_full = data_freq_time_full.reshape(-1, nfreq_f, ntime_f)
-
-    g.create_dataset('data_freq_time', data=data_freq_time_full)
-
-    # Indicate that data has no labels
-    y = -1*np.ones([ntrig])
-    g.create_dataset('labels', data=y)
-
-    g.close()
-
-    return data_freq_time_full, data_dm_time_full
 
 if __name__=='__main__':
 # Example usage 
