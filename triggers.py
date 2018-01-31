@@ -46,7 +46,7 @@ def dm_range(dm_max, dm_min=2., frac=0.2):
 
     return dm_list
 
-def get_triggers(fn, sig_thresh=5.0, t_window=2.):
+def get_triggers(fn, sig_thresh=5.0, t_window=0.5):
     """ Get brightest trigger in each 10s chunk.
 
     Parameters
@@ -230,8 +230,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         extra = start_bin//2
         start_bin = 0
 
-    dm_min = max(0, dm0-50)
-    dm_max = dm0 + 50
+    dm_min = max(0, dm0-100)
+    dm_max = dm0 + 100
     dms = np.linspace(dm_min, dm_max, ndm, endpoint=True)
 
     # make sure dm0 is in the array
@@ -245,7 +245,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         t_min, t_max = 0, chunksize
 
     ntime = t_max-t_min
-
+    print(ntime, ntime//downsamp)
+    
     full_arr = np.empty([ndm, ntime])   
 
     snr_max = 0
@@ -441,6 +442,7 @@ if __name__=='__main__':
                                                   cmap=options.cmap)
 
         basedir = '/data/03/Triggers/2017.11.07-01:27:36.B0531+21/CB21/'
+        basedir = './'
 
         if options.save_data != '0':
             if options.save_data == 'hdf5':
