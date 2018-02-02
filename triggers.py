@@ -171,6 +171,7 @@ def plot_three_panel(data_freq_time, data_dm_time, times, dms,
 def proc_trigger(fn_fil, dm0, t0, sig_cut, 
                  ndm=50, mk_plot=False, downsamp=1, 
                  beamno='', fn_mask=None, nfreq_plot=32,
+                 ntime_plot=250,
                  cmap='RdBu'):
     """ Locate data within filterbank file (fn_fi)
     at some time t0, and dedisperse to dm0, generating 
@@ -217,8 +218,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     freq_low = freq_up + nfreq*rawdatafile.header['foff']
     time_res = dt * downsamp
 
-    # Read in 10 disp delays
-    width = 10 * abs(4e3 * dm0 * (freq_up**-2 - freq_low**-2))
+    # Read in 5 disp delays
+    width = 5 * abs(4e3 * dm0 * (freq_up**-2 - freq_low**-2))
     
     print("Using width %f" % width)
 
@@ -239,13 +240,15 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     dms += (dm0-dms[dm_max_jj])
     dms[0] = max(0, dms[0])
 
-    if chunksize > 10000:
-        t_min, t_max = chunksize//2-5000, chunksize//2+5000
+    chunksize = max(ntime_plot*downsamp, int(width / dt))
+
+    if chunksize > ntime_plot*downsamp:
+#        t_min, t_max = chunksize//2-5000, chunksize//2+5000
+        t_min, t_max = chunksize//2-ntime_plot//2, chunksize+ntime_plot//2
     else:
         t_min, t_max = 0, chunksize
 
     ntime = t_max-t_min
-    print(ntime, ntime//downsamp)
     
     full_arr = np.empty([ndm, ntime])   
 
@@ -405,6 +408,10 @@ if __name__=='__main__':
                         help="make plot with this number of freq channels",
                         default=32)
 
+    parser.add_option('--ntime_plot', dest='ntime_plot', type='int',
+                        help="make plot with this number of time samples",
+                        default=250)
+
     parser.add_option('--cmap', dest='cmap', type='str',
                         help="imshow colourmap", 
                         default='RdBu')
@@ -439,7 +446,7 @@ if __name__=='__main__':
         data_dm_time, data_freq_time, time_res = proc_trigger(fn_fil, dm_cut[ii], t0, sig_cut[ii],
                                                   mk_plot=options.mk_plot, ndm=options.ndm, 
                                                   downsamp=ds_cut[ii], nfreq_plot=options.nfreq_plot,
-                                                  cmap=options.cmap)
+                                                  ntime_plot=options.ntime_plot, cmap=options.cmap)
 
         basedir = '/data/03/Triggers/2017.11.07-01:27:36.B0531+21/CB21/'
         basedir = './'
