@@ -48,7 +48,12 @@ def file_reader(fn, ftype='hdf5'):
         f = h5py.File(fn, 'r')
 
         data_freq_time = f['data_freq_time'][:]
-        data_dm_time = f['data_dm_time'][:]
+
+        try:
+            data_dm_time = f['data_dm_time'][:]
+        except:
+            data_dm_time = 0
+
         attr = f.attrs.items()
 
         snr, dm0, time_res, t0 = attr[0][1], attr[1][1], attr[5][1], attr[6][1] 
@@ -69,7 +74,7 @@ def concat_files(fdir, ftype='hdf5', nfreq_f=32,
     file. 
     """
 
-    file_list = glob.glob('%s*%s' % (fdir, ftype))
+    file_list = glob.glob('%s/*%s' % (fdir, ftype))
 
     data_freq_time_full, data_dm_time_full, params_full = [], [], []
     ntrig = len(file_list)
