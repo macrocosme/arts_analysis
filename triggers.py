@@ -245,7 +245,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 
     if chunksize > ntime_plot*downsamp:
 #        t_min, t_max = chunksize//2-5000, chunksize//2+5000
-        t_min, t_max = chunksize//2-ntime_plot//2, chunksize//2+ntime_plot//2
+        t_min = chunksize//2 - (ntime_plot*downsamp)//2
+        t_max = chunksize//2 + (ntime_plot*downsamp)//2
     else:
         t_min, t_max = 0, chunksize
 
