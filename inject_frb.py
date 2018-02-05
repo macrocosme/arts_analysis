@@ -419,7 +419,7 @@ def inject_in_filterbank(fn_fil, fn_fil_out, N_FRBs=1,
         t0_ind = offset+NTIME//2+chunksize*ii
         t0 = t0_ind * delta_t
 
-        if data==0:
+        if len(data)==0:
             break             
 
         data_event = (data[offset:offset+NTIME].transpose()).astype(np.float)
