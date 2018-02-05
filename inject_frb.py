@@ -476,7 +476,7 @@ if __name__=='__main__':
 
     options, args = parser.parse_args()
     fn_fil = args[0]
-    fn_sp = args[1]
+    fn_fil_out = args[1]
 
     params = inject_in_filterbank(fn_fil, fn_fil_out, N_FRBs=options.nfrb, 
                                   NTIME=2**15)
