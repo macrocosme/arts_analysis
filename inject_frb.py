@@ -414,7 +414,7 @@ def inject_in_filterbank(fn_fil, fn_fil_out, N_FRBs=1,
         start=1000000000
         data, freq, delta_t, header = reader.read_fil_data(fn_fil, 
                                                 start=start, stop=stop)
-
+        print(data)
         # injected pulse time in seconds since start of file
         t0_ind = offset+NTIME//2+chunksize*ii
         t0 = t0_ind * delta_t
