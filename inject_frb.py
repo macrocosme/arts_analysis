@@ -3,6 +3,7 @@ import random
 import numpy as np
 import glob
 from scipy import signal
+import optparse
 
 try:
     import matplotlib.pyplot as plt
