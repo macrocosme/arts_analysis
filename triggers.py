@@ -84,8 +84,7 @@ def get_triggers(fn, sig_thresh=5.0, t_window=0.5):
     sig_cut, dm_cut, tt_cut, ds_cut = [],[],[],[]
     
     tduration = tt.max() - tt.min()
-    ntime = int(len(tt) / tduration)
-    ntime = int(tduration / 1)
+    ntime = int(tduration / t_window)
 
     # Make dm windows between 90% of the lowest trigger and 
     # 10% of the largest trigger
