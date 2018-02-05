@@ -97,6 +97,7 @@ def get_triggers(fn, sig_thresh=5.0, t_window=0.5):
     # might wanna make this a search in (dm,t,width) cubes
     for dms in dm_list:
         for ii in xrange(ntime):
+            print(dms, ii)
             try:    
                 # step through windows of 2 seconds, starting from tt.min()
                 t0, tm = t_window*ii+tt.min(), t_window*(ii+1)+tt.min()
@@ -445,7 +446,6 @@ if __name__=='__main__':
     np.savetxt('grouped_pulses.singlepulse', grouped_triggers)
 
     for ii, t0 in enumerate(tt_cut[:options.ntrig]):
-
         print("Starting DM=%f" % dm_cut[ii])
         data_dm_time, data_freq_time, time_res = \
                         proc_trigger(fn_fil, dm_cut[ii], t0, sig_cut[ii],
