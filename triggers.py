@@ -307,10 +307,10 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     full_dm_arr_downsamp /= np.std(full_dm_arr_downsamp)
 
     suptitle = "beam%s snr%d dm%d t0%d" %\
-                 (beamno, sig_cut, dms[dm_max_jj], t0)
+                 (beamno, snr_, dms[dm_max_jj], t0)
 
     fn_fig_out = './plots/train_data_beam%s_snr%d_dm%d_t0%d.pdf' % \
-                     (beamno, sig_cut, dms[dm_max_jj], t0)
+                     (beamno, snr_, dms[dm_max_jj], t0)
 
     if mk_plot is True:
         plot_three_panel(full_freq_arr_downsamp, full_dm_arr_downsamp, 
