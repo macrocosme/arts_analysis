@@ -104,6 +104,9 @@ def concat_files(fdir, ftype='hdf5', nfreq_f=32,
         data_freq_time -= np.median(data_freq_time)
         data_freq_time /= np.std(data_freq_time)
 
+        if data_freq_time.shape != (nfreq_f, ntime_f):
+            continue
+
         try:
             ndm = data_dm_time.shape[0]
             data_dm_time = data_dm_time[:, tl:th]

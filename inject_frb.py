@@ -11,7 +11,6 @@ except:
     pass
 
 import reader
-import tools 
 
 # To do: 
 # Put things into physical units. Scattering measure, actual widths, fluences, etc. 
