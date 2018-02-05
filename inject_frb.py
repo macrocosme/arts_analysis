@@ -402,7 +402,7 @@ def inject_in_filterbank(fn_fil, fn_fil_out, N_FRBs=1,
         at random times. Default params are for Apertif data.
     """
 
-    chunksize = 5e5
+    chunksize = 5e4
     ii=0
 
     params_full_arr = []
