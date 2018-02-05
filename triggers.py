@@ -250,6 +250,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     else:
         t_min, t_max = 0, chunksize
 
+    t_min, t_max = int(t_min), int(t_max)
     ntime = t_max-t_min
     
     full_arr = np.empty([int(ndm), int(ntime)])   
@@ -269,7 +270,6 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
                     (np.round(dm_, 2), start_bin*dt))
         data_copy = copy.deepcopy(data)
         data_copy.dedisperse(dm_)
-        print(t_min, t_max)
         dm_arr = data_copy.data[:, t_min:t_max].mean(0)
 
         # Taken from PRESTO's single_pulse_search:
