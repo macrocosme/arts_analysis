@@ -35,7 +35,11 @@ def read_fil_data(fn, start=0, stop=1e7):
 	foff = header['foff']
 	fch_f = fch1 + nchans*foff
 	freq = np.linspace(fch1, fch_f, nchans)
-	data = fil_obj.get_spectra(start, stop)
+
+	try:
+		data = fil_obj.get_spectra(start, stop)
+	except(ValueError):
+		data = 0
 	# turn array into time-major, for preprocess
 #	data = data.transpose() 
 
