@@ -95,7 +95,7 @@ def get_triggers(fn, sig_thresh=5.0, t_window=0.5):
 
     # might wanna make this a search in (dm,t,width) cubes
     for dms in dm_list:
-        for ii in xrange(ntime):
+        for ii in xrange(ntime+1):
             try:    
                 # step through windows of 2 seconds, starting from tt.min()
                 t0, tm = t_window*ii+tt.min(), t_window*(ii+1)+tt.min()
