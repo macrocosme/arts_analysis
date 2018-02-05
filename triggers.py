@@ -223,10 +223,6 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     
     print("Using width %f" % width)
 
-    chunksize = int(width/dt)
-    start_bin = int((t0 - width/2)/dt)
-    start_bin = max(start_bin, 0)
-
     if start_bin < 0:
         extra = start_bin//2
         start_bin = 0
@@ -243,8 +239,10 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     chunksize = max(ntime_plot*downsamp, width / dt)
     chunksize = int(chunksize)
 
+    start_bin = int((t0 - width/2)/dt)
+    start_bin = max(start_bin, 0)
+
     if chunksize > ntime_plot*downsamp:
-#        t_min, t_max = chunksize//2-5000, chunksize//2+5000
         t_min = chunksize//2 - (ntime_plot*downsamp)//2
         t_max = chunksize//2 + (ntime_plot*downsamp)//2
     else:
@@ -403,7 +401,7 @@ if __name__=='__main__':
 
     parser.add_option('--ntrig', dest='ntrig', type='int',
                         help="Only process this many triggers",
-                        default=-1)
+                        default=None)
 
     parser.add_option('--mk_plot', dest='mk_plot', action='store_true', \
                         help="make plot if True",
@@ -430,7 +428,8 @@ if __name__=='__main__':
         data_freq_time_full = []
         params_full = []
 
-    sig_cut, dm_cut, tt_cut, ds_cut = get_triggers(fn_sp, sig_thresh=options.sig_thresh)
+    sig_cut, dm_cut, tt_cut, ds_cut = get_triggers(fn_sp, 
+                                sig_thresh=options.sig_thresh)
     
     ntrig_grouped = len(sig_cut)
     print("-----------------------------")
