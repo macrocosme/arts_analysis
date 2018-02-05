@@ -252,7 +252,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 
     ntime = t_max-t_min
     
-    full_arr = np.empty([ndm, ntime])   
+    full_arr = np.empty([int(ndm), int(ntime)])   
 
     snr_max = 0
     data = rawdatafile.get_spectra(start_bin, chunksize)
@@ -301,7 +301,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     times = np.linspace(0, ntime*dt, len(full_freq_arr_downsamp[0]))
 
     full_dm_arr_downsamp = full_arr[:, :ntime//downsamp*downsamp]
-    full_dm_arr_downsamp = full_dm_arr_downsamp.reshape(-1, ntime//downsamp, downsamp).mean(-1)
+    full_dm_arr_downsamp = full_dm_arr_downsamp.reshape(-1, 
+                                 ntime//downsamp, downsamp).mean(-1)
 
     full_freq_arr_downsamp /= np.std(full_freq_arr_downsamp)
     full_dm_arr_downsamp /= np.std(full_dm_arr_downsamp)
@@ -445,11 +446,12 @@ if __name__=='__main__':
     for ii, t0 in enumerate(tt_cut[:options.ntrig]):
 
         print("Starting DM=%f" % dm_cut[ii])
-        data_dm_time, data_freq_time, time_res = proc_trigger(fn_fil, dm_cut[ii], t0, sig_cut[ii],
-                                                  mk_plot=options.mk_plot, ndm=options.ndm, 
-                                                  downsamp=ds_cut[ii], nfreq_plot=options.nfreq_plot,
-                                                  ntime_plot=options.ntime_plot, cmap=options.cmap,
-                                                  fn_mask=options.maskfile)
+        data_dm_time, data_freq_time, time_res = \
+                        proc_trigger(fn_fil, dm_cut[ii], t0, sig_cut[ii],
+                        mk_plot=options.mk_plot, ndm=options.ndm, 
+                        downsamp=ds_cut[ii], nfreq_plot=options.nfreq_plot,
+                        ntime_plot=options.ntime_plot, cmap=options.cmap,
+                        fn_mask=options.maskfile)
 
         basedir = '/data/03/Triggers/2017.11.07-01:27:36.B0531+21/CB21/'
         basedir = './'
