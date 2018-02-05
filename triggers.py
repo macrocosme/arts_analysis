@@ -265,9 +265,11 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         data = data.masked(mask, maskval='median-mid80')
 
     for jj, dm_ in enumerate(dms):
-        print("Dedispersing to dm=%f starting at t=%d sec" % (np.round(dm_, 2), start_bin*dt))
+        print("Dedispersing to dm=%f starting at t=%d sec" % 
+                    (np.round(dm_, 2), start_bin*dt))
         data_copy = copy.deepcopy(data)
         data_copy.dedisperse(dm_)
+        print(t_min, t_max)
         dm_arr = data_copy.data[:, t_min:t_max].mean(0)
 
         # Taken from PRESTO's single_pulse_search:
