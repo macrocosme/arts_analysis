@@ -448,7 +448,8 @@ if __name__=='__main__':
         data_dm_time, data_freq_time, time_res = proc_trigger(fn_fil, dm_cut[ii], t0, sig_cut[ii],
                                                   mk_plot=options.mk_plot, ndm=options.ndm, 
                                                   downsamp=ds_cut[ii], nfreq_plot=options.nfreq_plot,
-                                                  ntime_plot=options.ntime_plot, cmap=options.cmap)
+                                                  ntime_plot=options.ntime_plot, cmap=options.cmap,
+                                                  fn_mask=options.maskfile)
 
         basedir = '/data/03/Triggers/2017.11.07-01:27:36.B0531+21/CB21/'
         basedir = './'
