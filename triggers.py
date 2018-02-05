@@ -97,7 +97,6 @@ def get_triggers(fn, sig_thresh=5.0, t_window=0.5):
     # might wanna make this a search in (dm,t,width) cubes
     for dms in dm_list:
         for ii in xrange(ntime):
-            print(dms, ii)
             try:    
                 # step through windows of 2 seconds, starting from tt.min()
                 t0, tm = t_window*ii+tt.min(), t_window*(ii+1)+tt.min()
@@ -111,6 +110,7 @@ def get_triggers(fn, sig_thresh=5.0, t_window=0.5):
                 tt_cut.append(tt[ind][np.argmax(sig[ind])]) 
                 ds_cut.append(downs[ind][np.argmax(sig[ind])])
             except:
+                print('except', t_window*ii+tt.min(), t_window*(ii+1)+tt.min())
                 continue
 
     sig_cut = np.array(sig_cut)
