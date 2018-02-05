@@ -100,6 +100,7 @@ def get_triggers(fn, sig_thresh=5.0, t_window=0.5):
                 # step through windows of 2 seconds, starting from tt.min()
                 t0, tm = t_window*ii+tt.min(), t_window*(ii+1)+tt.min()
                 ind = np.where((dm<dms[1]) & (dm>dms[0]) & (tt<tm) & (tt>t0))[0]
+
                 if sig[ind].max() < sig_thresh:
                     continue 
 
@@ -221,10 +222,6 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     
     print("Using width %f" % width)
 
-    if start_bin < 0:
-        extra = start_bin//2
-        start_bin = 0
-
     dm_min = max(0, dm0-100)
     dm_max = dm0 + 100
     dms = np.linspace(dm_min, dm_max, ndm, endpoint=True)
@@ -239,6 +236,10 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 
     start_bin = int((t0 - width/2)/dt)
     start_bin = max(start_bin, 0)
+
+    if start_bin < 0:
+        extra = start_bin//2
+        start_bin = 0
 
     if chunksize > ntime_plot*downsamp:
         t_min = chunksize//2 - (ntime_plot*downsamp)//2
