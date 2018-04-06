@@ -1,5 +1,6 @@
-import random
+import time
 
+import random
 import numpy as np
 import glob
 from scipy import signal
@@ -11,6 +12,7 @@ except:
     plt = None
     pass
 
+import simulate_frb
 import reader
 
 # To do: 
@@ -136,19 +138,21 @@ class Event(object):
 
         scint_amp = self.scintillation(freq)
         rollind = 0#*int(np.random.normal(0, 5)) #hack
-        
+
+        stds = np.std(data)
+
         for ii, f in enumerate(freq):
             width_ = 1e-3 * self.calc_width(self._dm, self._f_ref*1e-3, 
-                                            bw=400.0, NFREQ=NFREQ,
+                                            bw=np.abs(freq[-1]-freq[0]), NFREQ=NFREQ,
                                             ti=self._width, tsamp=delta_t, tau=0)
 
 #            width_ = self.dm_smear(self._dm, self._f_ref, 
 #                                   delta_freq=400.0/1024, 
 #                                   ti=self._width, tsamp=delta_t, tau=0)
             index_width = max(1, (np.round((width_/ delta_t))).astype(int))
-            tpix = int(self.arrival_time(f) / delta_t)
+            tpix = tmid + int(self.arrival_time(f) / delta_t)
 
-            if abs(tpix) >= tmid:
+            if abs(tpix) >= 2*tmid:
                 # ensure that edges of data are not crossed
                 continue
 
@@ -160,6 +164,7 @@ class Event(object):
             val = val * (f / self._f_ref) ** self._spec_ind 
             val = (0.25 + scint_amp[ii]) * val 
             val = np.roll(val, rollind)
+#            data[ii, tpix:tpix+5*index_width] += 5*np.std(data[ii])
             data[ii] += val
 
     def dm_transform(self, delta_t, data, freq, maxdm=5.0, NDM=50):
@@ -396,7 +401,7 @@ def inject_in_filterbank_background(fn_fil):
     np.save('data_250.npy', data_full)
 
 
-def inject_in_filterbank(fn_fil, fn_fil_out, N_FRBs=1, 
+def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1, 
                          NFREQ=1536, NTIME=2**15):
     """ Inject an FRB in each chunk of data 
         at random times. Default params are for Apertif data.
@@ -407,6 +412,10 @@ def inject_in_filterbank(fn_fil, fn_fil_out, N_FRBs=1,
 
     params_full_arr = []
 
+    timestr = time.strftime("%Y%m%d-%H%M%S")
+    fn_fil_out = fn_out_dir + '/' + timestr + '.fil'
+    params_out = fn_out_dir + '/' + timestr + '.txt'
+
     for ii in xrange(N_FRBs):
         start, stop = chunksize*ii, chunksize*(ii+1)
         # drop FRB in random location in data chunk
@@ -415,6 +424,10 @@ def inject_in_filterbank(fn_fil, fn_fil_out, N_FRBs=1,
         data, freq, delta_t, header = reader.read_fil_data(fn_fil, 
                                                 start=start, stop=stop)
 
+        if ii==0:
+            fn_rfi_clean = reader.write_to_fil(np.zeros([NFREQ, 0]), header, fn_fil_out)
+
+        data = data.data
         # injected pulse time in seconds since start of file
         t0_ind = offset+NTIME//2+chunksize*ii
         t0 = t0_ind * delta_t
@@ -422,22 +435,24 @@ def inject_in_filterbank(fn_fil, fn_fil_out, N_FRBs=1,
         if len(data)==0:
             break             
 
-        data_event = (data[offset:offset+NTIME].transpose()).astype(np.float)
+        data_event = (data[:, offset:offset+NTIME]).astype(np.float)
 
-        data_event, params = gen_simulated_frb(NFREQ=NFREQ, 
-                                               NTIME=NTIME, sim=True, fluence=(0.01, 1.), 
-                                               spec_ind=(-4, 4), width=(delta_t, 2), 
-                                               dm=(100, 1000), scat_factor=(-4, -0.5), 
+        data_event, params = simulate_frb.gen_simulated_frb(NFREQ=NFREQ, 
+                                               NTIME=NTIME, sim=True, 
+                                               fluence=1000000,
+                                               spec_ind=(0), width=(delta_t), 
+                                               dm=(500.0), scat_factor=(-4, -3.5), 
                                                background_noise=data_event, 
                                                delta_t=delta_t, plot_burst=False, 
                                                freq=(1550, 1250), 
-                                               FREQ_REF=1550.)
+                                               FREQ_REF=1400., scintillate=False)
+
 
         params.append(offset)
         print("Injecting with DM:%f width: %f offset: %d" % 
                                 (params[0], params[2], offset))
         
-        data[offset:offset+NTIME] = data_event.transpose()
+        data[:, offset:offset+NTIME] = data_event
 
         #params_full_arr.append(params)
         width = params[2]
@@ -445,19 +460,16 @@ def inject_in_filterbank(fn_fil, fn_fil_out, N_FRBs=1,
 
         params_full_arr.append([params[0], 20.0, t0, t0_ind, downsamp])
 
-        if ii==0:
-            fn_rfi_clean = reader.write_to_fil(data, header, fn_fil_out)
-        elif ii>0:
+        if ii<0:
+            fn_rfi_clean = reader.write_to_fil(data.transpose(), header, fn_fil_out)
+        elif ii>=0:
             fil_obj = reader.filterbank.FilterbankFile(fn_fil_out, mode='readwrite')
-            fil_obj.append_spectra(data) 
-
-        del data 
+            fil_obj.append_spectra(data.transpose())
 
     params_full_arr = np.array(params_full_arr)
+    np.savetxt(params_out, params_full_arr)
 
-    np.savetxt('/home/arts/connor/arts-analysis/simulated.singlepulse', params_full_arr)
-
-    return params_full_arr
+    return data_event, data
 
 if __name__=='__main__':
     parser = optparse.OptionParser(prog="inject_frb.py", \
@@ -480,12 +492,4 @@ if __name__=='__main__':
 
     params = inject_in_filterbank(fn_fil, fn_fil_out, N_FRBs=options.nfrb, 
                                   NTIME=2**15)
-
-
-
-
-
-
-
-
 
