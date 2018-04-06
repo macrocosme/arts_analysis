@@ -81,6 +81,12 @@ def get_triggers(fn, sig_thresh=5.0, t_window=0.5):
     if len(A)==0:
         return 0, 0, 0, 0
 
+    low_sig_ind = np.where(sig < sig_thresh)[0]
+    sig = np.delete(sig, low_sig_ind)
+    tt = np.delete(tt, low_sig_ind)
+    dm = np.delete(dm, low_sig_ind)
+    downs = np.delete(downs, low_sig_ind)
+
     sig_cut, dm_cut, tt_cut, ds_cut = [],[],[],[]
     
     tduration = tt.max() - tt.min()
@@ -100,9 +106,6 @@ def get_triggers(fn, sig_thresh=5.0, t_window=0.5):
                 # step through windows of 2 seconds, starting from tt.min()
                 t0, tm = t_window*ii+tt.min(), t_window*(ii+1)+tt.min()
                 ind = np.where((dm<dms[1]) & (dm>dms[0]) & (tt<tm) & (tt>t0))[0]
-
-                if sig[ind].max() < sig_thresh:
-                    continue 
 
                 sig_cut.append(np.amax(sig[ind]))
                 dm_cut.append(dm[ind][np.argmax(sig[ind])])
@@ -217,11 +220,6 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     freq_low = freq_up + nfreq*rawdatafile.header['foff']
     time_res = dt * downsamp
 
-    # Read in 5 disp delays
-    width = 5 * abs(4e3 * dm0 * (freq_up**-2 - freq_low**-2))
-    
-    print("Using width %f" % width)
-
     dm_min = max(0, dm0-100)
     dm_max = dm0 + 100
     dms = np.linspace(dm_min, dm_max, ndm, endpoint=True)
@@ -231,21 +229,32 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     dms += (dm0-dms[dm_max_jj])
     dms[0] = max(0, dms[0])
 
-    chunksize = max(ntime_plot*downsamp, width / dt)
-    chunksize = int(chunksize)
+    # Read in 5 disp delays
+    width = 5 * abs(4e3 * dm0 * (freq_up**-2 - freq_low**-2))
+    
+    print("Using width %f" % width)
 
-    start_bin = int((t0 - width/2)/dt)
-    start_bin = max(start_bin, 0)
+    tdisp = width / dt
+    tplot = ntime_plot * downsamp 
 
-    if start_bin < 0:
-        extra = start_bin//2
-        start_bin = 0
-
-    if chunksize > ntime_plot*downsamp:
+    if tdisp > tplot:
+        # Need to read in more data than you'll plot
+        # because of large dispersion time
+        chunksize = int(tdisp)
         t_min = chunksize//2 - (ntime_plot*downsamp)//2
         t_max = chunksize//2 + (ntime_plot*downsamp)//2
     else:
+        # Only need ot read in enough to plot 
+        chunksize = int(tplot)        
         t_min, t_max = 0, chunksize
+
+    start_bin = int(t0*dt - chunksize/2.)
+
+    if start_bin < 0:
+        extra = start_bin
+        start_bin = 0
+        t_min += extra
+        t_max += extra
 
     t_min, t_max = int(t_min), int(t_max)
     ntime = t_max-t_min
