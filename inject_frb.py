@@ -14,6 +14,7 @@ except:
 
 import simulate_frb
 import reader
+import rfi_test
 
 # To do: 
 # Put things into physical units. Scattering measure, actual widths, fluences, etc. 
@@ -135,6 +136,9 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
         downsamp = max(1, int(width/delta_t))
 
         params_full_arr.append([params[0], 20.0, t0, t0_ind, downsamp])
+
+        if rfi_clean is True:
+            data = rfi_test.apply_rfi_filters(data, delta_t)
 
         if ii<0:
             fn_rfi_clean = reader.write_to_fil(data.transpose(), header, fn_fil_out)
