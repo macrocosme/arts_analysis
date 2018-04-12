@@ -1,7 +1,7 @@
 import numpy as np
 
 import filterbank
-import preprocess
+import preprocess_rfi
 
 HPF_WIDTH = 100.0 * 1e-3 # HPF width in seconds
 
@@ -57,13 +57,13 @@ def plotsome(data):
 
 def apply_rfi_filters(data, delta_t):
 	print "Applying RFI filters"
-	data = preprocess.highpass_filter(data, HPF_WIDTH / delta_t)
+	data = preprocess_rfi.highpass_filter(data, HPF_WIDTH / delta_t)
 	print "     highpass_filter"
-	preprocess.remove_outliers(data, 5)
+	preprocess_rfi.remove_outliers(data, 5)
 	print "     remove_outliers"
-	preprocess.remove_noisy_freq(data, 3)
-	preprocess.remove_bad_times(data, 3)
-	preprocess.remove_noisy_freq(data, 3)	
+	preprocess_rfi.remove_noisy_freq(data, 3)
+	preprocess_rfi.remove_bad_times(data, 3)
+	preprocess_rfi.remove_noisy_freq(data, 3)	
 	print "     time/freq cuts"
 
 	return data

@@ -79,7 +79,7 @@ def inject_in_filterbank_background(fn_fil):
 
 
 def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1, 
-                         NFREQ=1536, NTIME=2**15):
+                         NFREQ=1536, NTIME=2**15, rfi_clean=False):
     """ Inject an FRB in each chunk of data 
         at random times. Default params are for Apertif data.
     """
@@ -118,7 +118,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
                                                NTIME=NTIME, sim=True, 
                                                fluence=5000,
                                                spec_ind=(0), width=(0.01*delta_t), 
-                                               dm=(1000.0), scat_factor=(-4, -3.5), 
+                                               dm=(500.0), scat_factor=(-4, -3.5), 
                                                background_noise=data_event, 
                                                delta_t=delta_t, plot_burst=False, 
                                                freq=(1550, 1250), 
@@ -138,7 +138,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
         params_full_arr.append([params[0], 20.0, t0, t0_ind, downsamp])
 
         if rfi_clean is True:
-            data = rfi_test.apply_rfi_filters(data, delta_t)
+            data = rfi_test.apply_rfi_filters(data.astype(np.float32), delta_t)
 
         if ii<0:
             fn_rfi_clean = reader.write_to_fil(data.transpose(), header, fn_fil_out)
@@ -171,5 +171,5 @@ if __name__=='__main__':
     fn_fil_out = args[1]
 
     params = inject_in_filterbank(fn_fil, fn_fil_out, N_FRBs=options.nfrb, 
-                                  NTIME=2**15)
+                                  NTIME=2**15, rfi_clean=True)
 

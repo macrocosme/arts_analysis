@@ -135,7 +135,7 @@ if __name__=='__main__':
 	parser.add_argument('name', help='Pulsar name, e.g. B0329+54')
 	parser.add_argument('time', help='Integration time [s]', type=int)
 	parser.add_argument('-Ndish', help='Number of dishes', type=int, default=1)
-	parser.add_argument('-npol', help='Number of polarizations', type=int, default=1)	
+	parser.add_argument('-npol', help='Number of polarizations', type=int, default=2)	
 	parser.add_argument('-BW', help='Bandwidth used [MHz]', type=int, default=300)		
 	args = parser.parse_args()
 
