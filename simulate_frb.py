@@ -141,6 +141,7 @@ class Event(object):
             # Do not add FRB to missing channels
             if data[ii].sum()==0:
                 continue
+
             width_ = self.calc_width(self._dm, self._f_ref*1e-3, 
                                             bw=bandwidth, NFREQ=NFREQ,
                                             ti=self._width, tsamp=delta_t, tau=0)
@@ -148,7 +149,7 @@ class Event(object):
             index_width = max(1, (np.round((width_/ delta_t))).astype(int))
             tpix = int(self.arrival_time(f) / delta_t)
 
-
+            print(f, tpix)
             if abs(tpix) >= tmid:
                 # ensure that edges of data are not crossed
                 continue
@@ -166,6 +167,41 @@ class Event(object):
                 val = (0.1 + scint_amp[ii]) * val 
 
             data[ii] += val
+
+    def add_to_data_sigmas(self, delta_t, freq, data, snr, 
+                    scintillate=True, bandwidth=300.):
+        """ Method to add simulated pulse 
+        to background noise data for a specific
+        S/N.
+        """
+
+        NFREQ = data.shape[0]
+        NTIME = data.shape[1]
+        tmid = NTIME//2
+
+        self._fluence /= np.sqrt(NFREQ)
+        stds = np.std(data)
+
+        for ii, f in enumerate(freq):
+            # Do not add FRB to missing channels
+            if data[ii].sum()==0:
+                continue
+                
+            width_ = self.calc_width(self._dm, self._f_ref*1e-3, 
+                                            bw=bandwidth, NFREQ=NFREQ,
+                                            ti=self._width, tsamp=delta_t, tau=0)
+
+            index_width = max(1, (np.round((width_/ delta_t))).astype(int))
+            tpix = int(self.arrival_time(f) / delta_t)
+
+            snr_per_pix = snr / (np.sqrt(NFREQ*index_width))
+
+            if abs(tpix) >= tmid:
+                # ensure that edges of data are not crossed
+                continue
+
+            val = snr_per_pix*np.std(data[ii])
+            data[ii, tpix] += val
 
     def dm_transform(self, delta_t, data, freq, maxdm=5.0, NDM=50):
         """ Transform freq/time data to dm/time data.
