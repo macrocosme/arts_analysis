@@ -14,7 +14,7 @@ except:
 
 import simulate_frb
 import reader
-import rfi_test
+#import rfi_test
 
 def inject_in_filterbank_background(fn_fil):
     """ Inject an FRB in each chunk of data 
