@@ -16,13 +16,6 @@ import simulate_frb
 import reader
 import rfi_test
 
-# To do: 
-# Put things into physical units. Scattering measure, actual widths, fluences, etc. 
-# Need inputs of real telescopes. Currently it's vaguely like the Pathfinder.
-# Need to not just simulate noise for the FRB triggers. 
-# More single pixel widths. Unresolved bursts.
-# Inverse fluence relationship right now! UPDATE DO IT 
-
 def inject_in_filterbank_background(fn_fil):
     """ Inject an FRB in each chunk of data 
         at random times. Default params are for Apertif data.
@@ -79,19 +72,35 @@ def inject_in_filterbank_background(fn_fil):
 
 
 def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1, 
-                         NFREQ=1536, NTIME=2**15, rfi_clean=False):
+                         NFREQ=1536, NTIME=2**15, rfi_clean=False,
+                         dm=2500.0, freq=(1250, 1550), dt=0.00004096,
+                         chunksize=5e4):
     """ Inject an FRB in each chunk of data 
         at random times. Default params are for Apertif data.
     """
 
-    chunksize = 5e4
-    ii=0
+    if type(dm) is not tuple:
+        max_dm = dm
+    else:
+        max_dm = max(dm)
 
+    t_delay_max = abs(4.14e3*max_dm*(freq[0]**-2 - freq[1]**-2))
+    t_delay_max_pix = int(t_delay_max / dt)
+    
+    while chunksize <= t_delay_max_pix:
+        chunksize *= 2
+        NTIME *= 2
+        print(NTIME, chunksize)
+
+    ii=0
     params_full_arr = []
 
     timestr = time.strftime("%Y%m%d-%H%M%S")
     fn_fil_out = fn_out_dir + timestr + '.fil'
     params_out = fn_out_dir + timestr + '.txt'
+
+    f_params_out = open(params_out, 'w+')
+    f_params_out.write('# DM time_frb_sec time_frb_index downsampling\n')
 
     for ii in xrange(N_FRBs):
         start, stop = chunksize*ii, chunksize*(ii+1)
@@ -102,7 +111,8 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
                                                 start=start, stop=stop)
 
         if ii==0:
-            fn_rfi_clean = reader.write_to_fil(np.zeros([NFREQ, 0]), header, fn_fil_out)
+            fn_rfi_clean = reader.write_to_fil(np.zeros([NFREQ, 0]), 
+                                            header, fn_fil_out)
 
         data = data.data
         # injected pulse time in seconds since start of file
@@ -118,24 +128,22 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
                                                NTIME=NTIME, sim=True, 
                                                fluence=5000,
                                                spec_ind=(0), width=(0.01*delta_t), 
-                                               dm=(500.0), scat_factor=(-4, -3.5), 
+                                               dm=dm, scat_factor=(-4, -3.5), 
                                                background_noise=data_event, 
                                                delta_t=delta_t, plot_burst=False, 
-                                               freq=(1550, 1250), 
+                                               freq=freq, 
                                                FREQ_REF=1400., scintillate=False)
 
 
         params.append(offset)
-        print("Injecting with DM:%f width: %f offset: %d" % 
-                                (params[0], params[2], offset))
+        print("%d/%d Injecting with DM:%d width: %.2f offset: %d" % 
+                                (ii, N_FRBs, params[0], params[2], offset))
         
         data[:, offset:offset+NTIME] = data_event
 
         #params_full_arr.append(params)
         width = params[2]
         downsamp = max(1, int(width/delta_t))
-
-        params_full_arr.append([params[0], 20.0, t0, t0_ind, downsamp])
 
         if rfi_clean is True:
             data = rfi_test.apply_rfi_filters(data.astype(np.float32), delta_t)
@@ -145,11 +153,14 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
         elif ii>=0:
             fil_obj = reader.filterbank.FilterbankFile(fn_fil_out, mode='readwrite')
             fil_obj.append_spectra(data.transpose())
+        
+        
+        f_params_out.write('%f %f %f %f\n' % (params[0], t0, t0_ind, downsamp))
 
+        del data, data_event
+
+    f_params_out.close()
     params_full_arr = np.array(params_full_arr)
-    np.savetxt(params_out, params_full_arr)
-
-    return data_event, data
 
 if __name__=='__main__':
     parser = optparse.OptionParser(prog="inject_frb.py", \
@@ -165,11 +176,36 @@ if __name__=='__main__':
                         help="Number of FRBs to inject(Default: 50).", \
                         default=10)
 
+    parser.add_option('--rfi_clean', dest='rfi_clean', default=False,\
+                        help="apply rfi filters")
+
+    parser.add_option('--dm_low', dest='dm_low', default=None,\
+                        help="min dm to use, either float or tuple", 
+                      type='float')
+
+    parser.add_option('--dm_high', dest='dm_high', default=None,\
+                        help="max dms to use, either float or tuple", 
+                      type='float')
+
 
     options, args = parser.parse_args()
     fn_fil = args[0]
     fn_fil_out = args[1]
+ 
+    if options.dm_low is None:
+        if options.dm_high is None:
+            dm = 500.
+        else:
+            dm = options.dm_high
+    elif options.dm_high is None:
+        dm = options.dm_low
+    else:
+        dm = (options.dm_low, options.dm_high)
+
+    print("Simulating with DM:", dm)
 
     params = inject_in_filterbank(fn_fil, fn_fil_out, N_FRBs=options.nfrb, 
-                                  NTIME=2**15, rfi_clean=True)
+                                  NTIME=2**15, rfi_clean=options.rfi_clean, 
+                                  dm=dm)
 
+ 
