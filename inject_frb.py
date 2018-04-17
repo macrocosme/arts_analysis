@@ -107,14 +107,14 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
         # drop FRB in random location in data chunk
         offset = int(np.random.uniform(0.1*chunksize, 0.9*chunksize)) 
 
-        data, freq, delta_t, header = reader.read_fil_data(fn_fil, 
+        data_filobj, freq, delta_t, header = reader.read_fil_data(fn_fil, 
                                                 start=start, stop=stop)
 
         if ii==0:
             fn_rfi_clean = reader.write_to_fil(np.zeros([NFREQ, 0]), 
                                             header, fn_fil_out)
 
-        data = data.data
+        data = data_filobj.data
         # injected pulse time in seconds since start of file
         t0_ind = offset+NTIME//2+chunksize*ii
         t0 = t0_ind * delta_t
@@ -153,9 +153,22 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
         elif ii>=0:
             fil_obj = reader.filterbank.FilterbankFile(fn_fil_out, mode='readwrite')
             fil_obj.append_spectra(data.transpose())
+
+        if calc_snr is True:
+            data_filobj.dedisperse(params[0])
+            data_filobj.downsample(downsamp)
+            data_ts = data_filobj.data.mean(0)
+            ntime = len(data_ts)
+            std_chunk = scipy.signal.detrend(data_ts, type='linear')
+            std_chunk.sort()
+            stds = 1.148*np.sqrt((std_chunk[ntime/40:-ntime/40]**2.0).sum() /
+                                   (0.95*ntime))
+            snr_ = std_chunk[-1]/stds
+            print(snr_)
+        else:
+            snr_ = 10.0
         
-        
-        f_params_out.write('%.2f %.2f %.5f %d %d\n' % (params[0], 10.0, t0, t0_ind, downsamp))
+        f_params_out.write('%.2f %.2f %.5f %d %d\n' % (params[0], snr_, t0, t0_ind, downsamp))
 
         del data, data_event
 
