@@ -149,7 +149,6 @@ class Event(object):
             index_width = max(1, (np.round((width_/ delta_t))).astype(int))
             tpix = int(self.arrival_time(f) / delta_t)
 
-            print(f, tpix)
             if abs(tpix) >= tmid:
                 # ensure that edges of data are not crossed
                 continue
@@ -166,7 +165,8 @@ class Event(object):
             if scintillate is True:
                 val = (0.1 + scint_amp[ii]) * val 
 
-            data[ii] += val
+            data[ii, NTIME//2+tpix:NTIME//2+tpix+10] += np.std(data[ii])
+#            data[ii] += val
 
     def add_to_data_sigmas(self, delta_t, freq, data, snr, 
                     scintillate=True, bandwidth=300.):
