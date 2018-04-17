@@ -4,7 +4,7 @@ import glob
 
 outdir = '/data/03/Triggers/'
 infile = '/data/03/Triggers/CB_random.fil'
-NFRB = 11
+NFRB = 15
 
 fn250 = 'dm250_%sfrbs' % NFRB
 fn500 = 'dm500_%sfrbs' % NFRB
