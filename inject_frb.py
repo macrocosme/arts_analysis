@@ -101,8 +101,10 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
 
     f_params_out = open(params_out, 'w+')
     f_params_out.write('# DM time_frb_sec time_frb_index downsampling\n')
-
+    f_params_out.close()
+    
     for ii in xrange(N_FRBs):
+        f_params_out = open(params_out, 'w+')
         start, stop = chunksize*ii, chunksize*(ii+1)
         # drop FRB in random location in data chunk
         offset = int(np.random.uniform(0.1*chunksize, 0.9*chunksize)) 
@@ -156,10 +158,10 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
         
         
         f_params_out.write('%f %f %f %f\n' % (params[0], t0, t0_ind, downsamp))
+        f_params_out.close()
 
         del data, data_event
 
-    f_params_out.close()
     params_full_arr = np.array(params_full_arr)
 
 if __name__=='__main__':
