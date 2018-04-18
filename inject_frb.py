@@ -148,7 +148,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
         else:
             snr_ = 10.0
         
-        f_params_out.write('%12f     %12f     %12f     %d     %d\n' % 
+        f_params_out.write('%6f %6f %6f %6d %d\n' % 
                            (params[0], snr_, t0, t0_ind, downsamp))
 
         del data, data_event
