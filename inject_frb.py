@@ -134,7 +134,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
 
             data_ts = data_filobj.data.mean(0)
 
-            sig3 = np.std(data_ts[end_pix:])
+            sig3 = np.std(data_ts[:int(0.1*len(data_ts)/downsamp)])
 
             data_ts = data_ts[:-end_pix]
             data_ts -= np.median(data_ts)
