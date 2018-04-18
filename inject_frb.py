@@ -133,6 +133,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
 
             data_filobj.data = data_filobj.data[:-end_pix]
 
+            print(data_filobj.data.mean(0), data_filobj.data.mean(0).sum())
             snr_2 = tools.calc_snr_widths(data_filobj.data.mean(0), widths=None)
 
             data_filobj.downsample(downsamp)
