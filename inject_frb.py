@@ -129,32 +129,25 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
             data_filobj.data = data
             data_filobj.dedisperse(dm_)
             end_t = abs(4.14e3*dm_*(freq[0]**-2 - freq[1]**-2))
-            end_pix = int(end_t / dt / downsamp)
+            end_pix = int(end_t / dt)
+
+            data_filobj.data = data_filobj.data[:-end_pix]
+
             data_filobj.downsample(downsamp)
 
             data_ts = data_filobj.data.mean(0)
-
-            t0=time.time()
-            sig3 = np.std(data_ts[:int(0.1*len(data_ts)/downsamp)])
-
-            data_ts = data_ts[:-end_pix]
             data_ts -= np.median(data_ts)
 
-            snr_3 = data_ts.max() / sig3
-            print(time.time()-t0)
+            snr_2 = tools.calc_snr_widths(data, widths=None)
 
-            t0 = time.time()
-            data_ts_2 = data_ts.copy()
-            snr_2 = tools.calc_snr(data_ts_2)
-            print(time.time() - t0)
+            if False:
+                sig3 = np.std(data_ts[:int(0.1*len(data_ts)/downsamp)])
+                snr_ = data_ts.max() / sig3
 
-            ntime = len(data_ts)
-            std_chunk = scipy.signal.detrend(data_ts, type='linear')
-            std_chunk.sort()
-            stds = 1.148*np.sqrt((std_chunk[ntime/40:-ntime/40]**2.0).sum() /
-                                   (0.95*ntime))
-            snr_ = std_chunk[-1]/stds
-            print("S/N: %.2f %.2f %.2f" % (snr_, snr_2, snr_3))
+            snr_ = tools.calc_snr(data_ts)
+
+            print("S/N: %.2f" % snr_)
+            print(snr_2)
         else:
             snr_ = 10.0
         

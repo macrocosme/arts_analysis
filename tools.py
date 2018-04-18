@@ -14,7 +14,7 @@ def calc_snr(data):
 
     return snr_
 
-def calc_snr_widths(data, widths=None, fast=False):
+def calc_snr_widths(data, widths=None):
     """ Calculate the S/N of pulse profile after 
     trying 9 rebinnings.
 
