@@ -5,7 +5,7 @@ def calc_snr(data):
     """ Calculate S/N of 1D input array (data)
     after excluding 0.05 at tails
     """
-#    std_chunk = scipy.signal.detrend(data, type='linear')
+    std_chunk = scipy.signal.detrend(data, type='linear')
     std_chunk = data.copy()
     std_chunk.sort()
     ntime_r = len(std_chunk)
