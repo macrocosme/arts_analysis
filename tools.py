@@ -31,6 +31,8 @@ def calc_snr_widths(data, widths=None):
     assert len(data.shape)==1
     
     ntime = len(data)
+    print(ntime)
+    print(data.sum())
     snr_max = 0
     data -= np.median(data)
 
