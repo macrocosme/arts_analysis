@@ -41,21 +41,22 @@ def calc_snr_widths(data, widths=None):
 
 #    for ii in range(1, 10):
     for ii in widths:
-
-        # skip if boxcar width is greater than 1/4th ntime
-        if ii > ntime//8:
-            continue
+        for jj in range(ii):
+            # skip if boxcar width is greater than 1/4th ntime
+            if ii > ntime//8:
+                continue
             
-        arr_copy = data.copy()
-        arr_ = arr_copy[:ntime//ii*ii].reshape(-1, ii).mean(-1)
+            arr_copy = data.copy()
+            arr_copy = np.roll(arr_copy, jj)
+            arr_ = arr_copy[:ntime//ii*ii].reshape(-1, ii).mean(-1)
 
-        snr_ = calc_snr(arr_)
+            snr_ = calc_snr(arr_)
 
-        print(ii, snr_)
+            print(ii, jj, snr_)
 
-        if snr_ > snr_max:
-            snr_max = snr_
-            width_max = ii
+            if snr_ > snr_max:
+                snr_max = snr_
+                width_max = ii
 
     return snr_max, width_max
 
