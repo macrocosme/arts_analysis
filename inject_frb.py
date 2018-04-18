@@ -137,17 +137,14 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
             data_rb -= np.median(data_rb)
 
             snr_ = tools.calc_snr_widths(data_rb,
-                                          widths=None)
+                                         widths=range(1, 100))
 
-            data_filobj.downsample(downsamp)
-
-            data_ts = data_filobj.data.mean(0)[:-end_pix_ds]
-            data_ts -= np.median(data_ts)
-
-            #snr_ = tools.calc_snr(data_ts)
+            # data_filobj.downsample(downsamp)
+            # data_ts = data_filobj.data.mean(0)[:-end_pix_ds]
+            # data_ts -= np.median(data_ts)
+            # snr_ = tools.calc_snr(data_ts)
 
             print("S/N: %.2f" % snr_)
-            print(snr_2)
         else:
             snr_ = 10.0
         
