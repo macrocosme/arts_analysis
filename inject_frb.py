@@ -142,7 +142,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
             data_ts_2 = data_ts.copy()
             snr_2 = tools.calc_snr(data_ts_2)
 
-            snr_3 = data_ts / sig3
+            snr_3 = data_ts.max() / sig3
 
             ntime = len(data_ts)
             std_chunk = scipy.signal.detrend(data_ts, type='linear')
