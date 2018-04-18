@@ -131,7 +131,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
             end_t = abs(4.14e3*dm_*(freq[0]**-2 - freq[1]**-2))
             end_pix = int(end_t / dt)
 
-            data_filobj.data = data_filobj.data[:-end_pix]
+            #data_filobj.data = data_filobj.data[:-end_pix]
 
             print(data_filobj.data.mean(0), data_filobj.data.mean(0).sum())
             snr_2 = tools.calc_snr_widths(data_filobj.data.mean(0), widths=None)
