@@ -139,7 +139,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
             stds = 1.148*np.sqrt((std_chunk[ntime/40:-ntime/40]**2.0).sum() /
                                    (0.95*ntime))
             snr_ = std_chunk[-1]/stds
-            snr_2 = tools.calc_snr(dm_arr)
+            snr_2 = tools.calc_snr(data_ts)
             print("S/N: %.2f %.2f" % (snr_, snr_2))
         else:
             snr_ = 10.0
