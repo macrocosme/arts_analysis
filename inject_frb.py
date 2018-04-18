@@ -3,7 +3,7 @@ import time
 import random
 import numpy as np
 import glob
-from scipy import signal
+import scipy
 import optparse
 
 try:
@@ -16,65 +16,33 @@ import simulate_frb
 import reader
 #import rfi_test
 
-def inject_in_filterbank_background(fn_fil):
-    """ Inject an FRB in each chunk of data 
-        at random times. Default params are for Apertif data.
-    """
+# width / downsample bug
 
-    chunksize = 5e5
-    ii=0
+def test_writer():
+    fn_fil = '/data/03/Triggers/B0329+54/1_dish_B0329+54.fil'
+    fn_out = '/data/03/Triggers/B0329+54/1_dish_B0329+54_output.fil'
+    NFREQ = 1536
+    chunksize = 5e4
 
-    data_full =[]
-    nchunks = 250
-    nfrb_chunk = 8
-    chunksize = 2**16
+    for ii in range(146):
+        data_filobj, freq, delta_t, header = reader.read_fil_data(fn_fil,
+                                 start=ii*chunksize, stop=chunksize)
+        data = data_filobj.data
 
-    for ii in range(nchunks):
-        downsamp = 2**((np.random.rand(nfrb_chunk)*6).astype(int))
+        if ii==0:
+            fn_rfi_clean = reader.write_to_fil(np.zeros([NFREQ, 0]),
+                                               header, fn_out)
 
-        try:
-            # drop FRB in random location in data chunk
-            rawdatafile = filterbank.filterbank(fn_fil)
-            dt = rawdatafile.header['tsamp']
-            freq_up = rawdatafile.header['fch1']
-            nfreq = rawdatafile.header['nchans']
-            freq_low = freq_up + nfreq*rawdatafile.header['foff']
-            data = rawdatafile.get_spectra(ii*chunksize, chunksize)
-        except:
-            continue
-    
+        fil_obj = reader.filterbank.FilterbankFile(fn_out, mode='readwrite')
+        fil_obj.append_spectra(data.transpose())
 
-        #dms = np.random.uniform(50, 750, nfrb_chunk)
-        dm0 = np.random.uniform(90, 750)
-        end_width = abs(4e3 * dm0 * (freq_up**-2 - freq_low**-2))
-        data.dedisperse(dm0)
-        NFREQ, NT = data.data.shape
-
-        print("Chunk %d with DM=%.1f" % (ii, dm0))
-        for jj in xrange(nfrb_chunk):
-            if 8192*(jj+1) > (NT - end_width):
-                print("Skipping at ", 8192*(jj+1))
-                continue
-            data_event = data.data[:, jj*8192:(jj+1)*8192]
-            data_event = data_event.reshape(NFREQ, -1, downsamp[jj]).mean(-1)
-            print(data_event.shape)
-            data_event = data_event.reshape(32, 48, -1).mean(1)
-
-            NTIME = data_event.shape[-1]
-            data_event = data_event[..., NTIME//2-125:NTIME//2+125]
-            data_event -= np.mean(data_event, axis=-1, keepdims=True)
-            data_full.append(data_event)
-
-    data_full = np.concatenate(data_full)
-    data_full = data_full.reshape(-1, 32, 250)
-
-    np.save('data_250.npy', data_full)
+        print('wrote %d' % ii)
 
 
 def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1, 
                          NFREQ=1536, NTIME=2**15, rfi_clean=False,
-                         dm=2500.0, freq=(1250, 1550), dt=0.00004096,
-                         chunksize=5e4):
+                         dm=250.0, freq=(1550, 1250), dt=0.00004096,
+                         chunksize=5e4, calc_snr=False, start=0):
     """ Inject an FRB in each chunk of data 
         at random times. Default params are for Apertif data.
     """
@@ -86,11 +54,14 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
 
     t_delay_max = abs(4.14e3*max_dm*(freq[0]**-2 - freq[1]**-2))
     t_delay_max_pix = int(t_delay_max / dt)
-    
-    while chunksize <= t_delay_max_pix:
+
+    # ensure that dispersion sweep is not too large 
+    # for chunksize
+    f_edge = 0.3    
+    while chunksize <= t_delay_max_pix/f_edge:
         chunksize *= 2
         NTIME *= 2
-        print(NTIME, chunksize)
+        print('Increasing to NTIME:%d, chunksize:%d' % (NTIME, chunksize))
 
     ii=0
     params_full_arr = []
@@ -103,12 +74,11 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
     f_params_out.write('# DM      Sigma      Time (s)     Sample    Downfact\n')
 
     for ii in xrange(N_FRBs):
-        start, stop = chunksize*ii, chunksize*(ii+1)
         # drop FRB in random location in data chunk
-        offset = int(np.random.uniform(0.1*chunksize, 0.9*chunksize)) 
+        offset = int(np.random.uniform(0.1*chunksize, (1-f_edge)*chunksize)) 
 
-        data_filobj, freq, delta_t, header = reader.read_fil_data(fn_fil, 
-                                                start=start, stop=stop)
+        data_filobj, freq_arr, delta_t, header = reader.read_fil_data(fn_fil, 
+                                            start=start + chunksize*ii, stop=chunksize)
 
         if ii==0:
             fn_rfi_clean = reader.write_to_fil(np.zeros([NFREQ, 0]), 
@@ -134,10 +104,10 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
                                                freq=freq, 
                                                FREQ_REF=1400., scintillate=False)
 
-
+        dm_ = params[0]
         params.append(offset)
         print("%d/%d Injecting with DM:%d width: %.2f offset: %d" % 
-                                (ii, N_FRBs, params[0], params[2], offset))
+                                (ii, N_FRBs, dm_, params[2], offset))
         
         data[:, offset:offset+NTIME] = data_event
 
@@ -155,20 +125,25 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
             fil_obj.append_spectra(data.transpose())
 
         if calc_snr is True:
-            data_filobj.dedisperse(params[0])
+            data_filobj.data = data
+            data_filobj.dedisperse(dm_)
+            end_t = abs(4.14e3*dm_*(freq[0]**-2 - freq[1]**-2))
+            end_pix = int(end_t / dt / downsamp)
             data_filobj.downsample(downsamp)
             data_ts = data_filobj.data.mean(0)
+            data_ts = data_ts[:-end_pix]
             ntime = len(data_ts)
             std_chunk = scipy.signal.detrend(data_ts, type='linear')
             std_chunk.sort()
             stds = 1.148*np.sqrt((std_chunk[ntime/40:-ntime/40]**2.0).sum() /
                                    (0.95*ntime))
             snr_ = std_chunk[-1]/stds
-            print(snr_)
+            print("S/N: %.2f" % snr_)
         else:
             snr_ = 10.0
         
-        f_params_out.write('%.2f %.2f %.5f %d %d\n' % (params[0], snr_, t0, t0_ind, downsamp))
+        f_params_out.write('%.2f     %.2f     %.5f     %d     %d\n' % 
+                           (params[0], snr_, t0, t0_ind, downsamp))
 
         del data, data_event
 
@@ -200,6 +175,10 @@ if __name__=='__main__':
                         help="max dms to use, either float or tuple", 
                       type='float')
 
+    parser.add_option('--calc_snr', action='store_true',
+                        help="calculate S/N of injected pulse", 
+                      )
+
 
     options, args = parser.parse_args()
     fn_fil = args[0]
@@ -219,6 +198,6 @@ if __name__=='__main__':
 
     params = inject_in_filterbank(fn_fil, fn_fil_out, N_FRBs=options.nfrb, 
                                   NTIME=2**15, rfi_clean=options.rfi_clean, 
-                                  dm=dm)
+                                  dm=dm, calc_snr=options.calc_snr, start=0)
 
  

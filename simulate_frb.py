@@ -132,6 +132,7 @@ class Event(object):
         NFREQ = data.shape[0]
         NTIME = data.shape[1]
         tmid = NTIME//2
+        freq_mid = freq[len(freq)//2]
 
         scint_amp = self.scintillation(freq)
         self._fluence /= np.sqrt(NFREQ)
@@ -164,9 +165,13 @@ class Event(object):
 
             if scintillate is True:
                 val = (0.1 + scint_amp[ii]) * val 
-
+                
 #            data[ii, NTIME//2+tpix:NTIME//2+tpix+10] += np.std(data[ii])
             data[ii] += val
+            if f == freq_mid:
+                width_eff = width_
+
+        return width_eff
 
     def add_to_data_sigmas(self, delta_t, freq, data, snr, 
                     scintillate=True, bandwidth=300.):
@@ -378,8 +383,9 @@ def gen_simulated_frb(NFREQ=16, NTIME=250, sim=True, fluence=(0.03,0.3),
     # Create event class with those parameters 
     E = Event(t_ref, FREQ_REF, dm, 10e-4*fluence, 
               width, spec_ind, disp_ind, scat_factor)
+
     # Add FRB to data array 
-    E.add_to_data(delta_t, freq, data, scintillate=scintillate)
+    width_eff = E.add_to_data(delta_t, freq, data, scintillate=scintillate)
 
     if plot_burst:
         subplot(211)
@@ -388,7 +394,8 @@ def gen_simulated_frb(NFREQ=16, NTIME=250, sim=True, fluence=(0.03,0.3),
         subplot(313)
         plot(data.reshape(-1, ntime).mean(0))
 
-    return data, [dm, fluence, width, spec_ind, disp_ind, scat_factor]
+
+    return data, [dm, fluence, width_eff, spec_ind, disp_ind, scat_factor]
 
 
 

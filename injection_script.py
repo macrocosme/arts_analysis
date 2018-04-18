@@ -4,20 +4,19 @@ import glob
 
 outdir = '/data/03/Triggers/'
 infile = '/data/03/Triggers/CB_random.fil'
-infile = '/data2/output/20180402/2018-04-02-09:40:11.M31/filterbank/CB22.fil'
-outdir = '/data2/'
-NFRB = 100
+#infile = '/data2/output/20180402/2018-04-02-09:40:11.M31/filterbank/CB22.fil'
+#outdir = '/data2/'
+NFRB = 10
 
 fn250 = 'dm250_%sfrbs' % NFRB
 fn500 = 'dm500_%sfrbs' % NFRB
 fn1000 = 'dm1000_%sfrbs' % NFRB
 fn2500 = 'dm2500_%sfrbs' % NFRB
 
-os.system('python inject_frb.py %s %s/%s --nfrb %d --dm_high 250.0' % (infile, outdir, fn250, NFRB))
-os.system('python inject_frb.py %s %s/%s --nfrb %d --dm_high 500.0' % (infile, outdir, fn500, NFRB))
-os.system('python inject_frb.py %s %s/%s --nfrb %d --dm_high 1000.0' % (infile, outdir, fn1000, NFRB))
-os.system('python inject_frb.py %s %s/%s --nfrb %d --dm_high 2500.0' % (infile, outdir, fn2500, NFRB))
-
+os.system('python inject_frb.py %s %s/%s --nfrb %d --dm_high 250.0 --calc_snr True' % (infile, outdir, fn250, NFRB))
+#os.system('python inject_frb.py %s %s/%s --nfrb %d --dm_high 500.0' % (infile, outdir, fn500, NFRB))
+#os.system('python inject_frb.py %s %s/%s --nfrb %d --dm_high 1000.0' % (infile, outdir, fn1000, NFRB))
+#os.system('python inject_frb.py %s %s/%s --nfrb %d --dm_high 2500.0' % (infile, outdir, fn2500, NFRB))
 
 try:
     outfile_250 = glob.glob('%s/%s*fil' % (outdir, fn250))[-1]
