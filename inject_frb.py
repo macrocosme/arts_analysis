@@ -133,11 +133,16 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
             data_filobj.downsample(downsamp)
 
             data_ts = data_filobj.data.mean(0)
+
+            sig3 = np.std(data_ts[end_pix:])
+
             data_ts = data_ts[:-end_pix]
             data_ts -= np.median(data_ts)
 
             data_ts_2 = data_ts.copy()
             snr_2 = tools.calc_snr(data_ts_2)
+
+            snr_3 = data_ts / sig3
 
             ntime = len(data_ts)
             std_chunk = scipy.signal.detrend(data_ts, type='linear')
@@ -145,7 +150,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
             stds = 1.148*np.sqrt((std_chunk[ntime/40:-ntime/40]**2.0).sum() /
                                    (0.95*ntime))
             snr_ = std_chunk[-1]/stds
-            print("S/N: %.2f %.2f" % (snr_, snr_2))
+            print("S/N: %.2f %.2f %.2f" % (snr_, snr_2, snr_3))
         else:
             snr_ = 10.0
         
