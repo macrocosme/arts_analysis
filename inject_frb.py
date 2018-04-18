@@ -130,15 +130,15 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
             data_filobj.dedisperse(dm_)
             end_t = abs(4.14e3*dm_*(freq[0]**-2 - freq[1]**-2))
             end_pix = int(end_t / dt)
+            end_pix_ds = int(end_t / dt / downsamp)
 
-            #data_filobj.data = data_filobj.data[:-end_pix]
 
-            print(data_filobj.data.mean(0), data_filobj.data.mean(0).sum())
-            snr_2 = tools.calc_snr_widths(data_filobj.data.mean(0), widths=None)
+            snr_2 = tools.calc_snr_widths(data_filobj.data[:-end_pix].mean(0), 
+                                          widths=None)
 
             data_filobj.downsample(downsamp)
 
-            data_ts = data_filobj.data.mean(0)
+            data_ts = data_filobj.data.mean(0)[:end_pix_ds]
             data_ts -= np.median(data_ts)
 
             if False:
