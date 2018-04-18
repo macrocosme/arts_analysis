@@ -57,7 +57,7 @@ def calc_snr_widths(data, widths=None):
             snr_max = snr_
             width_max = ii
 
-    return snr_max
+    return snr_max, width_max
 
 
 
