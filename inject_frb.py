@@ -138,7 +138,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
             data_ts = data_filobj.data.mean(0)
             data_ts -= np.median(data_ts)
 
-            snr_2 = tools.calc_snr_widths(data, widths=None)
+            snr_2 = tools.calc_snr_widths(data_ts, widths=None)
 
             if False:
                 sig3 = np.std(data_ts[:int(0.1*len(data_ts)/downsamp)])
