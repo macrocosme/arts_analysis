@@ -6,7 +6,6 @@ def calc_snr(data):
     after excluding 0.05 at tails
     """
     std_chunk = scipy.signal.detrend(data, type='linear')
-    std_chunk = data.copy()
     std_chunk.sort()
     ntime_r = len(std_chunk)
     stds = 1.148*np.sqrt((std_chunk[ntime_r//40:-ntime_r//40]**2.0).sum() /
