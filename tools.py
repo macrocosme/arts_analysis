@@ -52,8 +52,6 @@ def calc_snr_widths(data, widths=None):
 
             snr_ = calc_snr(arr_)
 
-            print(ii, jj, snr_)
-
             if snr_ > snr_max:
                 snr_max = snr_
                 width_max = ii
