@@ -144,7 +144,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
             # data_ts -= np.median(data_ts)
             # snr_ = tools.calc_snr(data_ts)
 
-            print("S/N: %.2f" % snr_)
+            print("S/N: %.2f" % snr_max)
         else:
             snr_max = 10.0
         
