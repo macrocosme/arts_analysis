@@ -55,7 +55,6 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
         max_dm = max(dm)
 
     t_delay_max = abs(4.14e3*max_dm*(freq[0]**-2 - freq[1]**-2))
-    t_delay_mid = 4.14e3*max_dm*freq_ref
     t_delay_max_pix = int(t_delay_max / dt)
 
     # ensure that dispersion sweep is not too large 
@@ -89,8 +88,9 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
 
         data = data_filobj.data
         # injected pulse time in seconds since start of file
+
         t0_ind = offset+NTIME//2+chunksize*ii
-        t0_ind = offset+chunksize*ii+t_delay_mid   # hack because needs to agree with presto   
+        t0_ind = offset+chunksize*ii   # hack because needs to agree with presto   
         t0 = t0_ind * delta_t
 
         if len(data)==0:
@@ -118,6 +118,8 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
         #params_full_arr.append(params)
         width = params[2]
         downsamp = max(1, int(width/delta_t))
+        t_delay_mid = 4.14e3*dm_*freq_ref**-2
+        t0 += t_delay_mid
 
         if rfi_clean is True:
             data = rfi_test.apply_rfi_filters(data.astype(np.float32), delta_t)
