@@ -116,7 +116,6 @@ def get_triggers(fn, sig_thresh=5.0, t_window=0.5):
                 # step through windows of 2 seconds, starting from tt.min()
                 t0, tm = t_window*ii + tt_start, t_window*(ii+1) + tt_start
                 ind = np.where((dm<dms[1]) & (dm>dms[0]) & (tt<tm) & (tt>t0))[0]
-                print(ii, t0, tm, len(ind))
                 sig_cut.append(np.amax(sig[ind]))
                 dm_cut.append(dm[ind][np.argmax(sig[ind])])
                 tt_cut.append(tt[ind][np.argmax(sig[ind])]) 
