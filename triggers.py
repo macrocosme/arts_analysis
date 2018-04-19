@@ -326,8 +326,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     full_freq_arr_downsamp /= np.std(full_freq_arr_downsamp)
     full_dm_arr_downsamp /= np.std(full_dm_arr_downsamp)
 
-    suptitle = "beam%s snr%d dm%d t0%d" %\
-                 (beamno, sig_cut, dms[dm_max_jj], t0)
+    suptitle = "beam%s snr%d dm%d t0%d width%d" %\
+                 (beamno, sig_cut, dms[dm_max_jj], t0, downsamp)
 
     fn_fig_out = './plots/train_data_beam%s_snr%d_dm%d_t0%d.pdf' % \
                      (beamno, sig_cut, dms[dm_max_jj], t0)
@@ -472,7 +472,6 @@ if __name__=='__main__':
                         ntime_plot=options.ntime_plot, cmap=options.cmap,
                         fn_mask=options.maskfile)
 
-        basedir = '/data/03/Triggers/2017.11.07-01:27:36.B0531+21/CB21/'
         basedir = './'
 
         if options.save_data != '0':

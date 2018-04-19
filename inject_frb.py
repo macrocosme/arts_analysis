@@ -90,8 +90,8 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
         # injected pulse time in seconds since start of file
 
         t0_ind = offset+NTIME//2+chunksize*ii
-        t0_ind = offset+chunksize*ii   # hack because needs to agree with presto   
-        t0 = t0_ind * delta_t
+        t0_ind = start + chunksize*ii + offset   # hack because needs to agree with presto  
+        t0 = t0_ind*delta_t
 
         if len(data)==0:
             break             
@@ -101,7 +101,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
         data_event, params = simulate_frb.gen_simulated_frb(NFREQ=NFREQ, 
                                                NTIME=NTIME, sim=True, 
                                                fluence=1000*(1+ii),
-                                               spec_ind=(0), width=(0.01*delta_t), 
+                                                            spec_ind=(-4, 4), width=(0.01*delta_t), 
                                                dm=dm, scat_factor=(-4, -3.5), 
                                                background_noise=data_event, 
                                                delta_t=delta_t, plot_burst=False, 
@@ -119,8 +119,9 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
         width = params[2]
         downsamp = max(1, int(width/delta_t))
         t_delay_mid = 4.14e3*dm_*freq_ref**-2
+        print(t0)
         t0 += t_delay_mid
-
+        print(t0)
         if rfi_clean is True:
             data = rfi_test.apply_rfi_filters(data.astype(np.float32), delta_t)
 
