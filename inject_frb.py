@@ -90,7 +90,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
         data = data_filobj.data
         # injected pulse time in seconds since start of file
         t0_ind = offset+NTIME//2+chunksize*ii
-        t0_ind = offset+chunksize*ii+   # hack because needs to agree with presto   
+        t0_ind = offset+chunksize*ii+t_delay_mid   # hack because needs to agree with presto   
         t0 = t0_ind * delta_t
 
         if len(data)==0:
