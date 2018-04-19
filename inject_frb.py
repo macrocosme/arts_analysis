@@ -106,7 +106,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
                                                background_noise=data_event, 
                                                delta_t=delta_t, plot_burst=False, 
                                                freq=freq, 
-                                               FREQ_REF=freq_mid., scintillate=False)
+                                               FREQ_REF=freq_ref, scintillate=False)
 
         dm_ = params[0]
         params.append(offset)
