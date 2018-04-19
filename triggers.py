@@ -47,6 +47,22 @@ def dm_range(dm_max, dm_min=2., frac=0.2):
 
     return dm_list
 
+def read_singlepulse(fn):
+    if fn.split('.')[-1] in ('singlepulse', 'txt'):
+        A = np.loadtxt(fn)
+        dm, sig, tt, downsample = A[:,0], A[:,1], A[:,2], A[:,4]
+    elif fn.split('.')[-1]=='trigger':
+        A = np.loadtxt(fn)
+        dm, sig, tt, downsample = A[:,-2], A[:,-1], A[:, -3], A[:, 3]
+    else:
+        print("Didn't recognize singlepulse file")
+        return 
+
+    if len(A)==0:
+        return 0, 0, 0, 0
+
+    return dm, sig, tt, downsample
+
 def get_triggers(fn, sig_thresh=5.0, t_window=0.5):
     """ Get brightest trigger in each 10s chunk.
 
@@ -70,23 +86,14 @@ def get_triggers(fn, sig_thresh=5.0, t_window=0.5):
     ds_cut : ndarray 
         downsample factor array of brightest trigger in each DM/T window 
     """
-    if fn.split('.')[-1]=='npy':
-        A = np.load(fn)
-        dm, sig, tt, downs = A[:,0],A[:,1],A[:,2],A[:,4]
-    elif fn.split('.')[-1]=='singlepulse':
-        A = np.loadtxt(fn)
-        dm, sig, tt, downs = A[:,0],A[:,1],A[:,2],A[:,4]
-    elif fn.split('.')[-1]=='trigger':
-        A = np.loadtxt(fn)
-        dm, sig, tt, downs = A[:, -2],A[:, -1],A[:, -3],A[:, 3]
-    if len(A)==0:
-        return 0, 0, 0, 0
+
+    dm, sig, tt, downsample = read_singlepulse(fn)
 
     low_sig_ind = np.where(sig < sig_thresh)[0]
     sig = np.delete(sig, low_sig_ind)
     tt = np.delete(tt, low_sig_ind)
     dm = np.delete(dm, low_sig_ind)
-    downs = np.delete(downs, low_sig_ind)
+    downsample = np.delete(downsample, low_sig_ind)
 
     sig_cut, dm_cut, tt_cut, ds_cut = [],[],[],[]
     
@@ -100,18 +107,20 @@ def get_triggers(fn, sig_thresh=5.0, t_window=0.5):
     print("Grouping in window of %.2f sec" % np.round(t_window,2))
     print("DMs:", dm_list)
 
+    tt_start = tt.min() - .5*t_window
+
     # might wanna make this a search in (dm,t,width) cubes
     for dms in dm_list:
-        for ii in xrange(ntime+1):
+        for ii in xrange(ntime + 2):
             try:    
                 # step through windows of 2 seconds, starting from tt.min()
-                t0, tm = t_window*ii+tt.min(), t_window*(ii+1)+tt.min()
+                t0, tm = t_window*ii + tt_start, t_window*(ii+1) + tt_start
                 ind = np.where((dm<dms[1]) & (dm>dms[0]) & (tt<tm) & (tt>t0))[0]
-
+                print(ii, t0, tm, len(ind))
                 sig_cut.append(np.amax(sig[ind]))
                 dm_cut.append(dm[ind][np.argmax(sig[ind])])
                 tt_cut.append(tt[ind][np.argmax(sig[ind])]) 
-                ds_cut.append(downs[ind][np.argmax(sig[ind])])
+                ds_cut.append(downsample[ind][np.argmax(sig[ind])])
             except:
                 continue
 
