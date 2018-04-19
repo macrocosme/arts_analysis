@@ -97,7 +97,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
 
         data_event, params = simulate_frb.gen_simulated_frb(NFREQ=NFREQ, 
                                                NTIME=NTIME, sim=True, 
-                                               fluence=5000,
+                                               fluence=1000*(1+ii),
                                                spec_ind=(0), width=(0.01*delta_t), 
                                                dm=dm, scat_factor=(-4, -3.5), 
                                                background_noise=data_event, 
