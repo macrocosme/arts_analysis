@@ -43,7 +43,8 @@ def test_writer():
 def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1, 
                          NFREQ=1536, NTIME=2**15, rfi_clean=False,
                          dm=250.0, freq=(1550, 1250), dt=0.00004096,
-                         chunksize=5e4, calc_snr=False, start=0):
+                         chunksize=5e4, calc_snr=False, start=0, 
+                         freq_ref=1400.):
     """ Inject an FRB in each chunk of data 
         at random times. Default params are for Apertif data.
     """
@@ -54,6 +55,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
         max_dm = max(dm)
 
     t_delay_max = abs(4.14e3*max_dm*(freq[0]**-2 - freq[1]**-2))
+    t_delay_mid = 4.14e3*max_dm*freq_ref
     t_delay_max_pix = int(t_delay_max / dt)
 
     # ensure that dispersion sweep is not too large 
@@ -88,7 +90,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
         data = data_filobj.data
         # injected pulse time in seconds since start of file
         t0_ind = offset+NTIME//2+chunksize*ii
-        t0_ind = offset+chunksize*ii   # hack because needs to agree with presto   
+        t0_ind = offset+chunksize*ii+   # hack because needs to agree with presto   
         t0 = t0_ind * delta_t
 
         if len(data)==0:
@@ -104,7 +106,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
                                                background_noise=data_event, 
                                                delta_t=delta_t, plot_burst=False, 
                                                freq=freq, 
-                                               FREQ_REF=1400., scintillate=False)
+                                               FREQ_REF=freq_mid., scintillate=False)
 
         dm_ = params[0]
         params.append(offset)
