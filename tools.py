@@ -4,7 +4,7 @@ import scipy.signal
 # should there maybe be a clustering class
 # and a S/N calculation class?
 
-def dm_range(dm_max, dm_min=2., frac=0.2):
+def dm_range(dm_max, dm_min=5., frac=0.2):
     """ Generate list of DM-windows in which 
     to search for single pulse groups. 
 
@@ -98,7 +98,9 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf, t_window=0.5):
     if dm_max > 1.1*dm.max():
         dm_max = 1.1*dm.max()
 
-    dm_list = dm_range(dm_max, dm_min=dm_min)
+    # Can either do the DM selection here, or after the loop
+#    dm_list = dm_range(dm_max, dm_min=dm_min)
+    dm_list = dm_range(1.1*dm.max(), dm_min=0.9*dm.min())
 
     print("Grouping in window of %.2f sec" % np.round(t_window,2))
     print("DMs:", dm_list)
@@ -119,13 +121,15 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf, t_window=0.5):
             except:
                 continue
 
-    # now remove the low DM candidates
-#    ind = np.where((np.array(dm_cut) >= dm_thresh) & (np.array(dm_cut) <= dm_max))
-
-    sig_cut = np.array(sig_cut)
     dm_cut = np.array(dm_cut)
-    tt_cut = np.array(tt_cut)
-    ds_cut = np.array(ds_cut)
+    # now remove the low DM candidates
+    ind = np.where((dm_cut >= dm_min) & (dm_cut <= dm_max))[0]
+
+    dm_cut = dm_cut[ind]
+
+    sig_cut = np.array(sig_cut)[ind]
+    tt_cut = np.array(tt_cut)[ind]
+    ds_cut = np.array(ds_cut)[ind]
 
     return sig_cut, dm_cut, tt_cut, ds_cut
 
