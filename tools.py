@@ -28,7 +28,9 @@ def dm_range(dm_max, dm_min=2., frac=0.2):
     prefac = (1-frac)/(1+frac)
 
     while dm_max>dm_min:
-        if dm_max < 20.:
+        if dm_max < 100.:
+            prefac = (1-2*frac)/(1+2*frac)
+        if dm_max < 50.:
             prefac = 0.0 
 
         dm_list.append((int(prefac*dm_max), dm_max))
@@ -52,7 +54,7 @@ def read_singlepulse(fn):
 
     return dm, sig, tt, downsample
 
-def get_triggers(fn, sig_thresh=5.0, t_window=0.5):
+def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf, t_window=0.5):
     """ Get brightest trigger in each 10s chunk.
 
     Parameters
@@ -91,7 +93,12 @@ def get_triggers(fn, sig_thresh=5.0, t_window=0.5):
 
     # Make dm windows between 90% of the lowest trigger and 
     # 10% of the largest trigger
-    dm_list = dm_range(1.1*dm.max(), dm_min=0.9*dm.min())
+    if dm_min==0:
+        dm_min = 0.9*dm.min()
+    if dm_max > 1.1*dm.max():
+        dm_max = 1.1*dm.max()
+
+    dm_list = dm_range(dm_max, dm_min=dm_min)
 
     print("Grouping in window of %.2f sec" % np.round(t_window,2))
     print("DMs:", dm_list)
@@ -111,6 +118,9 @@ def get_triggers(fn, sig_thresh=5.0, t_window=0.5):
                 ds_cut.append(downsample[ind][np.argmax(sig[ind])])
             except:
                 continue
+
+    # now remove the low DM candidates
+#    ind = np.where((np.array(dm_cut) >= dm_thresh) & (np.array(dm_cut) <= dm_max))
 
     sig_cut = np.array(sig_cut)
     dm_cut = np.array(dm_cut)
@@ -176,5 +186,10 @@ def calc_snr_widths(data, widths=None):
 
     return snr_max, width_max
 
-
-
+A = get_triggers('/home/arts/test/amber.trigger', sig_thresh=10.0)
+print('')
+print('S/N:',A[0].astype(int))
+print('')
+print('DM:', A[1].astype(int))
+print('')
+print(len(A[0]))

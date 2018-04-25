@@ -63,7 +63,7 @@ def read_singlepulse(fn):
 
     return dm, sig, tt, downsample
 
-def get_triggers(fn, sig_thresh=5.0, t_window=0.5):
+def get_triggers(fn, sig_thresh=5.0, t_window=0.5, dm_min=0, dm_max=np.inf):
     """ Get brightest trigger in each 10s chunk.
 
     Parameters
@@ -104,7 +104,7 @@ def get_triggers(fn, sig_thresh=5.0, t_window=0.5):
     # 10% of the largest trigger
     dm_list = dm_range(1.1*dm.max(), dm_min=0.9*dm.min())
 
-    print("Grouping in window of %.2f sec" % np.round(t_window,2))
+    print("Grouping in window of %.2f sec" % t_window)
     print("DMs:", dm_list)
 
     tt_start = tt.min() - .5*t_window
@@ -122,6 +122,8 @@ def get_triggers(fn, sig_thresh=5.0, t_window=0.5):
                 ds_cut.append(downsample[ind][np.argmax(sig[ind])])
             except:
                 continue
+    # now remove the low DM candidates 
+    ind = np.where((np.array(dm_cut) >= dm_min) & (np.array(dm_cut) <= dm_max))
 
     sig_cut = np.array(sig_cut)
     dm_cut = np.array(dm_cut)
@@ -241,7 +243,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     # Read in 5 disp delays
     width = 5 * abs(4e3 * dm0 * (freq_up**-2 - freq_low**-2))
     
-    print("Using width %f" % width)
+    print("Using width %0.2f" % width)
 
     tdisp = width / dt
     tplot = ntime_plot * downsamp 
@@ -271,6 +273,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     full_arr = np.empty([int(ndm), int(ntime)])   
 
     snr_max = 0
+
     data = rawdatafile.get_spectra(start_bin, chunksize)
     data.data -= np.median(data.data, axis=-1)[:, None]
     data.data[mask] = 0.
@@ -281,8 +284,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         data = data.masked(mask, maskval='median-mid80')
 
     for jj, dm_ in enumerate(dms):
-        print("Dedispersing to dm=%f starting at t=%d sec" % 
-                    (np.round(dm_, 2), start_bin*dt))
+        print("Dedispersing to dm=%0.1f starting at t=%0.1f sec" % 
+                    (dm_, start_bin*dt))
         data_copy = copy.deepcopy(data)
         data_copy.dedisperse(dm_)
         dm_arr = data_copy.data[:, t_min:t_max].mean(0)
@@ -406,7 +409,7 @@ if __name__=='__main__':
 
     parser.add_option('--ndm', dest='ndm', type='int', \
                         help="Number of DMs to use in DM transform (Default: 50).", \
-                        default=50)
+                        default=1)
 
     parser.add_option('--mask', dest='maskfile', type='string', \
                         help="Mask file produced by rfifind. (Default: No Mask).", \
@@ -438,6 +441,16 @@ if __name__=='__main__':
                         help="imshow colourmap", 
                         default='RdBu')
 
+    parser.add_option('--dm_min', dest='dm_min', type='int',
+                        help="", 
+                        default=10.0)
+
+    parser.add_option('--dm_max', dest='dm_max', type='int',
+                        help="", 
+                        default=np.inf)
+
+
+
     options, args = parser.parse_args()
     fn_fil = args[0]
     fn_sp = args[1]
@@ -447,9 +460,10 @@ if __name__=='__main__':
         data_freq_time_full = []
         params_full = []
 
-    sig_cut, dm_cut, tt_cut, ds_cut = get_triggers(fn_sp, 
-                                sig_thresh=options.sig_thresh)
-    
+    sig_cut, dm_cut, tt_cut, ds_cut = tools.get_triggers(fn_sp, 
+                                                         sig_thresh=options.sig_thresh,
+                                                         dm_min=options.dm_min,
+                                                         dm_max=options.dm_max)
     ntrig_grouped = len(sig_cut)
     print("-----------------------------")
     print("Grouped down to %d triggers" % ntrig_grouped)
@@ -464,7 +478,7 @@ if __name__=='__main__':
     np.savetxt('grouped_pulses.singlepulse', grouped_triggers)
 
     for ii, t0 in enumerate(tt_cut[:options.ntrig]):
-        print("Starting DM=%f" % dm_cut[ii])
+        print("Starting DM=%0.2f" % dm_cut[ii])
         data_dm_time, data_freq_time, time_res = \
                         proc_trigger(fn_fil, dm_cut[ii], t0, sig_cut[ii],
                         mk_plot=options.mk_plot, ndm=options.ndm, 
