@@ -1,3 +1,5 @@
+#!/usr/bin/env/ python
+
 import time
 
 import random
@@ -40,7 +42,7 @@ def test_writer():
         print('wrote %d' % ii)
 
 
-def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1, 
+def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1, 
                          NFREQ=1536, NTIME=2**15, rfi_clean=False,
                          dm=250.0, freq=(1550, 1250), dt=0.00004096,
                          chunksize=5e4, calc_snr=False, start=0, 
@@ -68,14 +70,15 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
     ii=0
     params_full_arr = []
 
-    timestr = time.strftime("%Y%m%d-%H%M%S")
-    fn_fil_out = fn_out_dir + timestr + '.fil'
+    timestr = time.strftime("%Y%m%d-%H%M")
+    fn_fil_out = '%s/dm%s_nfrb%d_%s.fil' % (fn_out_dir, dm, N_FRB, timestr)
+#    fn_fil_out = fn_out_dir + timestr + '.fil'
     params_out = fn_out_dir + timestr + '.txt'
 
     f_params_out = open(params_out, 'w+')
     f_params_out.write('# DM      Sigma      Time (s)     Sample    Downfact\n')
 
-    for ii in xrange(N_FRBs):
+    for ii in xrange(N_FRB):
         # drop FRB in random location in data chunk
         offset = int(np.random.uniform(0.1*chunksize, (1-f_edge)*chunksize)) 
 
@@ -101,7 +104,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
         data_event, params = simulate_frb.gen_simulated_frb(NFREQ=NFREQ, 
                                                NTIME=NTIME, sim=True, 
                                                fluence=3000*(1+0.1*ii),
-                                                            spec_ind=0, width=(delta_t,50*delta_t), 
+                                               spec_ind=0, width=(20*delta_t), 
                                                dm=dm, scat_factor=(-4, -3.5), 
                                                background_noise=data_event, 
                                                delta_t=delta_t, plot_burst=False, 
@@ -111,7 +114,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
         dm_ = params[0]
         params.append(offset)
         print("%d/%d Injecting with DM:%d width: %.2f offset: %d" % 
-                                (ii, N_FRBs, dm_, params[2], offset))
+                                (ii, N_FRB, dm_, params[2], offset))
         
         data[:, offset:offset+NTIME] = data_event
 
@@ -163,6 +166,10 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRBs=1,
     params_full_arr = np.array(params_full_arr)
 
 if __name__=='__main__':
+
+    def foo_callback(option, opt, value, parser):
+        setattr(parser.values, option.dest, value.split(','))
+
     parser = optparse.OptionParser(prog="inject_frb.py", \
                         version="", \
                         usage="%prog FN_FILTERBANK FN_FILTERBANK_OUT [OPTIONS]", \
@@ -190,12 +197,16 @@ if __name__=='__main__':
     parser.add_option('--calc_snr', action='store_true',
                         help="calculate S/N of injected pulse", 
                       )
+    
+    parser.add_option('--dm_list', type='string', action='callback', callback=foo_callback)
 
 
     options, args = parser.parse_args()
     fn_fil = args[0]
     fn_fil_out = args[1]
  
+    print(options.dm_list)
+
     if options.dm_low is None:
         if options.dm_high is None:
             dm = 500.
@@ -212,8 +223,8 @@ if __name__=='__main__':
     from joblib import Parallel, delayed
 
     ncpu = multiprocessing.cpu_count() - 1 
-    Parallel(n_jobs=ncpu)(delayed(inject_in_filterbank)(fn_fil, fn_fil_out, N_FRBs=options.nfrb, 
-                                                        dm=x) for x in [250, 500])
+    Parallel(n_jobs=ncpu)(delayed(inject_in_filterbank)(fn_fil, fn_fil_out, N_FRB=options.nfrb, 
+                                                        dm=float(x)) for x in options.dm_list)
 
 #    params = inject_in_filterbank(fn_fil, fn_fil_out, N_FRBs=options.nfrb, 
 #                                  NTIME=2**15, rfi_clean=options.rfi_clean, 
