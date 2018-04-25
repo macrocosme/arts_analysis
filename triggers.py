@@ -242,8 +242,6 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 
     # Read in 5 disp delays
     width = 5 * abs(4e3 * dm0 * (freq_up**-2 - freq_low**-2))
-    
-    print("Using width %0.2f" % width)
 
     tdisp = width / dt
     tplot = ntime_plot * downsamp 
@@ -284,8 +282,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         data = data.masked(mask, maskval='median-mid80')
 
     for jj, dm_ in enumerate(dms):
-        print("Dedispersing to dm=%0.1f starting at t=%0.1f sec" % 
-                    (dm_, start_bin*dt))
+        print("Dedispersing to dm=%0.1f at t=%0.1f sec with width=%.2f" % 
+                    (dm_, start_bin*dt, downsamp))
         data_copy = copy.deepcopy(data)
         data_copy.dedisperse(dm_)
         dm_arr = data_copy.data[:, t_min:t_max].mean(0)
@@ -416,8 +414,8 @@ if __name__=='__main__':
                         default=None)
 
     parser.add_option('--save_data', dest='save_data', type='str',
-                        help="save each trigger's data. 0 = don't save. \
-                        hdf5 = save to hdf5. npy = save to npy. concat to \
+                        help="save each trigger's data. 0=don't save. \
+                        hdf5 = save to hdf5. npy=save to npy. concat to \
                         save all triggers into one file",
                         default='hdf5')
 
@@ -441,11 +439,11 @@ if __name__=='__main__':
                         help="imshow colourmap", 
                         default='RdBu')
 
-    parser.add_option('--dm_min', dest='dm_min', type='int',
+    parser.add_option('--dm_min', dest='dm_min', type='float',
                         help="", 
                         default=10.0)
 
-    parser.add_option('--dm_max', dest='dm_max', type='int',
+    parser.add_option('--dm_max', dest='dm_max', type='float',
                         help="", 
                         default=np.inf)
 
@@ -478,7 +476,7 @@ if __name__=='__main__':
     np.savetxt('grouped_pulses.singlepulse', grouped_triggers)
 
     for ii, t0 in enumerate(tt_cut[:options.ntrig]):
-        print("Starting DM=%0.2f" % dm_cut[ii])
+        print("\nStarting DM=%0.2f" % dm_cut[ii])
         data_dm_time, data_freq_time, time_res = \
                         proc_trigger(fn_fil, dm_cut[ii], t0, sig_cut[ii],
                         mk_plot=options.mk_plot, ndm=options.ndm, 

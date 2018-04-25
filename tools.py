@@ -33,7 +33,7 @@ def dm_range(dm_max, dm_min=2., frac=0.2):
         if dm_max < 50.:
             prefac = 0.0 
 
-        dm_list.append((int(prefac*dm_max), dm_max))
+        dm_list.append((int(prefac*dm_max), int(dm_max)))
         dm_max = int(prefac*dm_max)
 
     return dm_list
@@ -185,11 +185,3 @@ def calc_snr_widths(data, widths=None):
                 width_max = ii
 
     return snr_max, width_max
-
-A = get_triggers('/home/arts/test/amber.trigger', sig_thresh=10.0)
-print('')
-print('S/N:',A[0].astype(int))
-print('')
-print('DM:', A[1].astype(int))
-print('')
-print(len(A[0]))
