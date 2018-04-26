@@ -36,8 +36,12 @@ for fn_fil in fil_list:
         os.system('prepdata -start 0 -dm %d -o %s -ncpus 10 %s' % (DM, fn_base, fn_fil))        
         os.system('single_pulse_search.py %s.dat -t %d -b' % (fn_base, SNR_MIN))
         fn_trigger = '%s.singlepulse' % fn_base
+    else:
+        print("Incorrect backend. Must be either PRESTO or AMBER")
+        pass
 
-    os.system('python triggers.py %s %s --ntrig 500 --ndm 1 --save_data 0 --ntime_plot 750 --sig_thresh 15.' % (fn_fil, fn_trigger))
+    os.system('python triggers.py %s %s --ntrig 500 --ndm 1 --save_data 0 --ntime_plot 250 --sig_thresh 15.' % (fn_fil, fn_trigger))
+
 exit()
 try:
     outfile_250 = glob.glob('%s/%s*fil' % (outdir, fn250))[-1]
