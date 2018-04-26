@@ -46,7 +46,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
                          NFREQ=1536, NTIME=2**15, rfi_clean=False,
                          dm=250.0, freq=(1550, 1250), dt=0.00004096,
                          chunksize=5e4, calc_snr=False, start=0, 
-                         freq_ref=1400.):
+                         freq_ref=1400., subtract_zero=False, clipping=None):
     """ Inject an FRB in each chunk of data 
         at random times. Default params are for Apertif data.
     """
@@ -126,6 +126,20 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
         if rfi_clean is True:
             data = rfi_test.apply_rfi_filters(data.astype(np.float32), delta_t)
+
+        if subtract_zero is True:
+            print("Subtracting zero DM")
+            data_ts_zerodm = data.mean(0)
+            data -= data_ts_zerodm[None]
+
+        if clipping is not None:
+            # Find tsamples > 8sigma and replace them with median
+            assert type(clipping) in (float, int), 'clipping must be int or float'
+
+            data_ts_zerodm = data.mean(0)
+            stds, med = sigma_from_mad(data_ts_zerodm)
+            ind = np.where(np.absolute(data_ts_zerodm - med) > 8.0*stds)[0]
+            data[:, ind] = np.median(data, axis=-1, keepdims=True)
 
         if ii<0:
             fn_rfi_clean = reader.write_to_fil(data.transpose(), header, fn_fil_out)

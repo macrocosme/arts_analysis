@@ -133,6 +133,17 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf, t_window=0.5):
 
     return sig_cut, dm_cut, tt_cut, ds_cut
 
+def sigma_from_mad(data):
+    """ Get gaussian std from median 
+    aboslute deviation (MAD)
+    """
+    assert len(data.shape)==1, 'data should be one dimensional'
+
+    med = np.median(data)
+    mad = np.median(np.absolute(data - med))
+
+    return 1.4826*mad, med
+
 def calc_snr(data):
     """ Calculate S/N of 1D input array (data)
     after excluding 0.05 at tails
