@@ -17,11 +17,11 @@ infile = '/data/03/Triggers/CB_random.fil'
 #outdir = '/data2/snr_tests_liam'
 
 timestr = time.strftime("%Y%m%d-%H%M")
-#os.system('python inject_frb.py %s %s --nfrb %d \
-#          --dm_list 100.0,250.0,500.0,750.0,1000.0,1500.0' \
-#          % (infile, outdir, N_FRB))
+os.system('python inject_frb.py %s %s --nfrb %d \
+          --dm_list 100.0,250.0,500.0,750.0,1000.0,1500.0' \
+          % (infile, outdir, N_FRB))
 
-timestr = '20180425-1742'
+#timestr = '20180425-1742'
 # note this assumes tstr is the same in both inject_frb and glob
 fil_list = glob.glob('%s/*%s.fil' % (outdir, timestr))
 
