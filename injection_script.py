@@ -3,22 +3,26 @@ import time
 
 import glob
 
-N_FRB = 5
+N_FRB = 50
 SNR_MIN = 8
 backend = 'PRESTO'
 AMBER_PATH = '~/test/amber_arg.sh'
 
-outdir = '/data/03/Triggers/'
-infile = '/data/03/Triggers/CB_random.fil'
+outdir = '/data/03/Triggers/injection/%s' % time.strftime("%Y%m%d")
+infile = '/data/03/Triggers/injection/sky_data_nofrb.fil'
 #infile = '/data2/output/20180402/2018-04-02-09:40:11.M31/filterbank/CB22.fil'
 #infile = '/data2/output/20180328/2018-03-28-13:01:20.J0248+6021/filterbank/CB21.fil'
 #infile = '/data1/output/20180425/2018-04-25-03\:02\:05.RA20DEC57/filterbank/CB21.fil'
 #infile = '/data2/output/snr_tests_liam/CB21.fil'
 #outdir = '/data2/snr_tests_liam'
 
+if not os.path.isdir(outdir):
+    os.mkdir(outdir)
+
 timestr = time.strftime("%Y%m%d-%H%M")
 os.system('python inject_frb.py %s %s --nfrb %d \
-          --dm_list 100.0,250.0,500.0,750.0,1000.0,1500.0' \
+          --dm_list 100.0,250.0,500.0,750.0,1000.0,1250.0,1500.0\
+          --calc_snr True' \
           % (infile, outdir, N_FRB))
 
 #timestr = '20180425-1742'
@@ -33,15 +37,16 @@ for fn_fil in fil_list:
         os.system('%s %s' % (AMBER_PATH, fn))
         fn_trigger = '%s.trigger' % fn_base
     elif backend is 'PRESTO':
-        os.system('prepdata -start 0 -dm %d -o %s -ncpus 10 %s' % (DM, fn_base, fn_fil))        
+        os.system('prepdata -start 0 -dm %d -o %s -ncpus 5 %s' % (DM, fn_base, fn_fil))        
         os.system('single_pulse_search.py %s.dat -t %d -b' % (fn_base, SNR_MIN))
         fn_trigger = '%s.singlepulse' % fn_base
     else:
         print("Incorrect backend. Must be either PRESTO or AMBER")
         pass
 
-    os.system('python triggers.py %s %s --ntrig 500 --ndm 1 --save_data 0 --ntime_plot 250 --sig_thresh 15.' % (fn_fil, fn_trigger))
-
+    os.system('python triggers.py %s %s --ntrig 500 \
+               --ndm 1 --save_data 0 --ntime_plot 250 \
+               --sig_thresh 8.' % (fn_fil, fn_trigger))
 exit()
 try:
     outfile_250 = glob.glob('%s/%s*fil' % (outdir, fn250))[-1]
