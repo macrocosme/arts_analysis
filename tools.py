@@ -199,27 +199,44 @@ def calc_snr_widths(data, widths=None):
 
     return snr_max, width_max
 
-def compare_snr(fn_1, fn_2, dm_min=0, dm_max=np.inf):
+def compare_snr(fn_1, fn_2, dm_min=0, dm_max=np.inf, save_data=False):
     snr_1, dm_1, t_1, ds_1 = get_triggers(fn_1, sig_thresh=5.0, 
                                           dm_min=0, dm_max=np.inf, t_window=0.5)
 
     snr_2, dm_2, t_2, ds_2 = get_triggers(fn_2, sig_thresh=9.0, 
                                           dm_min=dm_min, dm_max=dm_max, t_window=1.0)
 
-    for ii in range(50):
-        print(t_1[ii], dm_1[ii], snr_1[ii])
-        print(t_2[ii], dm_2[ii], snr_2[ii])
-        print('')
+    snr_2_reorder = []
+    dm_2_reorder = []
+    t_2_reorder = []
+    for ii in range(len(snr_1)):
+        ind = np.argmin(abs(t_1[ii] - t_2))
 
-    print(dm_1)
-    print(snr_1)
+        if np.abs(t_1[ii]-t_2[ind])<1.0:
+            snr_2_reorder.append(snr_2[ind])
+            dm_2_reorder.append(dm_2[ind])
+            t_2_reorder.append(t_2[ind])
 
-    print('')
-    print(dm_2)
-    print(snr_2)
+    snr_2_reorder = np.array(snr_2_reorder)
+    dm_2_reorder = np.array(dm_2_reorder)
+    t_2_reorder = np.array(t_2_reorder)
 
-    print(len(dm_1), len(dm_2))
+    if save_data is True:
+        nsnr = min(len(snr_1), len(snr_2))
+        snr_1 = snr_1[:nsnr]
+        snr_2 = snr_2_reorder[:nsnr]
 
-#fn1 = '/data2/output/snr_tests_liam/20180430/dm250.0_nfrb50_20180430-0840.txt'
-#fn2 = '/home/arts/test/amber.trigger'
-#compare_snr(fn1, fn2, dm_max=300.0, dm_min=200.0)
+        np.save(fn_1+'_snr', snr_1)
+        np.save(fn_2+'_snr', snr_2)
+
+    return snr_1, dm_1, t_1, snr_2_reorder, dm_2_reorder, t_2_reorder
+
+fn1 = '/data2/output/snr_tests_liam/20180430/dm250.0_nfrb50_20180430-0840.txt'
+fn2 = '/data2/output/snr_tests_liam/20180430/amber.trigger'
+fn3 = '/data2/output/snr_tests_liam/20180430/dm250.0_nfrb50_20180430-0840.singlepulse'
+
+snr_1, dm_1, t_1, snr_2, dm_2, t_2 = compare_snr(fn1, fn2, dm_max=300.0, dm_min=200.0, save_data=True)
+nsnr = min(len(snr_1), len(snr_2))
+
+snr_1, dm_1, t_1, snr_2, dm_2, t_2 = compare_snr(fn1, fn3, dm_max=300.0, dm_min=200.0, save_data=True)
+nsnr = min(len(snr_1), len(snr_2))
