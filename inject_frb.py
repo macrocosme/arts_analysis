@@ -72,10 +72,9 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
     timestr = time.strftime("%Y%m%d-%H%M")
     fn_fil_out = '%s/dm%s_nfrb%d_%s.fil' % (fn_out_dir, dm, N_FRB, timestr)
-#    fn_fil_out = fn_out_dir + timestr + '.fil'
-    params_out = fn_out_dir + timestr + '.txt'
+    fn_params_out = fn_fil_out.strip('.fil') + '.txt'
 
-    f_params_out = open(params_out, 'w+')
+    f_params_out = open(fn_params_out, 'w+')
     f_params_out.write('# DM      Sigma      Time (s)     Sample    Downfact\n')
 
     for ii in xrange(N_FRB):
@@ -159,12 +158,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             data_rb -= np.median(data_rb)
 
             snr_max, width_max = tools.calc_snr_widths(data_rb,
-                                         widths=None)#range(1, 100))
-
-            # data_filobj.downsample(downsamp)
-            # data_ts = data_filobj.data.mean(0)[:-end_pix_ds]
-            # data_ts -= np.median(data_ts)
-            # snr_ = tools.calc_snr(data_ts)
+                                         widths=range(1, 100))
 
             print("S/N: %.2f" % snr_max)
         else:
@@ -237,7 +231,9 @@ if __name__=='__main__':
     from joblib import Parallel, delayed
 
     ncpu = multiprocessing.cpu_count() - 1 
-    Parallel(n_jobs=ncpu)(delayed(inject_in_filterbank)(fn_fil, fn_fil_out, N_FRB=options.nfrb, 
+    Parallel(n_jobs=ncpu)(delayed(inject_in_filterbank)(fn_fil, fn_fil_out, N_FRB=options.nfrb,
+                                                        NTIME=2**15, rfi_clean=options.rfi_clean,
+                                                        calc_snr=options.calc_snr, start=0,
                                                         dm=float(x)) for x in options.dm_list)
 
 #    params = inject_in_filterbank(fn_fil, fn_fil_out, N_FRBs=options.nfrb, 
