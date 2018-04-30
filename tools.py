@@ -199,11 +199,27 @@ def calc_snr_widths(data, widths=None):
 
     return snr_max, width_max
 
-def compare_snr(fn_1, fn_2):
+def compare_snr(fn_1, fn_2, dm_min=0, dm_max=np.inf):
     snr_1, dm_1, t_1, ds_1 = get_triggers(fn_1, sig_thresh=5.0, 
                                           dm_min=0, dm_max=np.inf, t_window=0.5)
 
-    snr_2, dm_2, t_2, ds_2 = get_triggers(fn_2, sig_thresh=5.0, 
-                                          dm_min=0, dm_max=np.inf, t_window=0.5)
+    snr_2, dm_2, t_2, ds_2 = get_triggers(fn_2, sig_thresh=9.0, 
+                                          dm_min=dm_min, dm_max=dm_max, t_window=1.0)
 
-    print(snr_1, snr_2)    
+    for ii in range(50):
+        print(t_1[ii], dm_1[ii], snr_1[ii])
+        print(t_2[ii], dm_2[ii], snr_2[ii])
+        print('')
+
+    print(dm_1)
+    print(snr_1)
+
+    print('')
+    print(dm_2)
+    print(snr_2)
+
+    print(len(dm_1), len(dm_2))
+
+#fn1 = '/data2/output/snr_tests_liam/20180430/dm250.0_nfrb50_20180430-0840.txt'
+#fn2 = '/home/arts/test/amber.trigger'
+#compare_snr(fn1, fn2, dm_max=300.0, dm_min=200.0)

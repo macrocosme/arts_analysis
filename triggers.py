@@ -423,8 +423,8 @@ if __name__=='__main__':
                         help="Only process this many triggers",
                         default=None)
 
-    parser.add_option('--mk_plot', dest='mk_plot', action='store_false', \
-                        help="make plot if True",)
+    parser.add_option('--mk_plot', dest='mk_plot', action='store_true', \
+                        help="make plot if True", default=False)
 
     parser.add_option('--nfreq_plot', dest='nfreq_plot', type='int',
                         help="make plot with this number of freq channels",
