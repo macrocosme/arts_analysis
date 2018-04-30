@@ -174,8 +174,6 @@ def calc_snr_widths(data, widths=None):
     assert len(data.shape)==1
     
     ntime = len(data)
-    print(ntime)
-    print(data.sum())
     snr_max = 0
     data -= np.median(data)
 
@@ -200,3 +198,12 @@ def calc_snr_widths(data, widths=None):
                 width_max = ii
 
     return snr_max, width_max
+
+def compare_snr(fn_1, fn_2):
+    snr_1, dm_1, t_1, ds_1 = get_triggers(fn_1, sig_thresh=5.0, 
+                                          dm_min=0, dm_max=np.inf, t_window=0.5)
+
+    snr_2, dm_2, t_2, ds_2 = get_triggers(fn_2, sig_thresh=5.0, 
+                                          dm_min=0, dm_max=np.inf, t_window=0.5)
+
+    print(snr_1, snr_2)    
