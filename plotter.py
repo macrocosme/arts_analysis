@@ -11,7 +11,8 @@ matplotlib.use('pdf')
 import matplotlib.pyplot as plt
 
 def plot_two_panel(data_freq_time, params, cb=None, prob=None, 
-                freq_low=1250.09765625, freq_up=1549.90234375, cand_no=1):
+                   freq_low=1250.09765625, freq_up=1549.90234375, 
+                   cand_no=1):
     """ Plot data in two panels
     """
     snr, dm, bin_width, t0 = params
@@ -60,7 +61,8 @@ def plot_two_panel(data_freq_time, params, cb=None, prob=None,
 
 def plot_three_panel(data_freq_time, data_dm_time, times, dms, 
                      freq_up=1549.90234375, freq_low=1250.09765625,
-                     cmap="RdBu", suptitle="", fnout="out.pdf"):
+                     cmap="RdBu", suptitle="", fnout="out.pdf", 
+                     cand_no=1):
     figure = plt.figure()
     ax1 = plt.subplot(311)
 
