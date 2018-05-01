@@ -228,7 +228,7 @@ def compare_snr(fn_1, fn_2, dm_min=0, dm_max=np.inf, save_data=False,
     Function returns four parameter arrays for 
     each fn_1 and fn_2, which should be ordered so 
     that they can be compared directly:
-    
+
     snr_1, dm_1, t_1, w_1, snr_2_reorder, 
             dm_2_reorder, t_2_reorder, w_2_reorder
     """
@@ -265,7 +265,7 @@ def compare_snr(fn_1, fn_2, dm_min=0, dm_max=np.inf, save_data=False,
         np.save(fn_1+'_snr', snr_1)
         np.save(fn_2+'_snr', snr_2)
 
-    return snr_1, dm_1, t_1, w_1, snr_2_reorder, 
+    return snr_1, dm_1, t_1, w_1, snr_2_reorder, \
             dm_2_reorder, t_2_reorder, w_2_reorder
 
 #fn1 = '/data2/output/snr_tests_liam/20180430/dm250.0_nfrb50_20180430-0840.txt'
