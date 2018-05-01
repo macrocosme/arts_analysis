@@ -11,7 +11,7 @@ matplotlib.use('pdf')
 import matplotlib.pyplot as plt
 
 
-def plot_two_panel(data_freq_time, params, prob=None, 
+def plot_two_panel(data_freq_time, params, cb=None, prob=None, 
                 freq_low=1250.09765625, freq_up=1549.90234375):
     """ Plot data in two panels
     """
@@ -84,7 +84,7 @@ def plot_from_h5(fn, cb, freq_low=1250.09765625, freq_up=1549.90234375,
     for i, cand in enumerate(data_frb_candidate):
         data_freq_time = cand[:, :, 0]
 
-        plot_2panel(data_freq_time, params[i], freq_low=freq_low, 
+        plot_2panel(data_freq_time, params[i], cb=cb, freq_low=freq_low, 
                     freq_up=freq_up, prob=probability[i])
 
 
