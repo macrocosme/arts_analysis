@@ -287,7 +287,6 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
                     (dm_, start_bin*dt, downsamp))
         data_copy = copy.deepcopy(data)
         data_copy.dedisperse(dm_)
-        np.save('./data_trainsnr10_dm1834_t05970.npy', data_copy.data)
         dm_arr = data_copy.data[:, t_min:t_max].mean(0)
 
         # Taken from PRESTO's single_pulse_search:
