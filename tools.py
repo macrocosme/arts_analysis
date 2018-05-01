@@ -199,16 +199,50 @@ def calc_snr_widths(data, widths=None):
 
     return snr_max, width_max
 
-def compare_snr(fn_1, fn_2, dm_min=0, dm_max=np.inf, save_data=False):
-    snr_1, dm_1, t_1, ds_1 = get_triggers(fn_1, sig_thresh=5.0, 
-                                          dm_min=0, dm_max=np.inf, t_window=0.5)
+def compare_snr(fn_1, fn_2, dm_min=0, dm_max=np.inf, save_data=False,
+                sig_thresh=5.0, t_window=0.5):
+    """ Read in two files with single-pulse candidates
+    and compare triggers.
 
-    snr_2, dm_2, t_2, ds_2 = get_triggers(fn_2, sig_thresh=9.0, 
-                                          dm_min=dm_min, dm_max=dm_max, t_window=1.0)
+    Parameters:
+    ----------
+    fn_1 : str 
+        name of input triggers text file
+        (must be .trigger, .singlepulse, or .txt)
+    fn_2 : str
+        name of input triggers text file for comparison 
+    dm_min : float
+        do not process triggers below this DM 
+    dm_max : float 
+        do not process triggers above this DM 
+    save_data : bool 
+        if True save to np.array
+    sig_thresh : float 
+        do not process triggers below this S/N 
+    t_window : float 
+        time window within which triggers in 
+        fn_1 and fn_2 will be considered the same 
+
+    Return:
+    -------
+    Function returns four parameter arrays for 
+    each fn_1 and fn_2, which should be ordered so 
+    that they can be compared directly:
+    
+    snr_1, dm_1, t_1, w_1, snr_2_reorder, 
+            dm_2_reorder, t_2_reorder, w_2_reorder
+    """
+    snr_1, dm_1, t_1, w_1 = get_triggers(fn_1, sig_thresh=sig_thresh, 
+                                dm_min=0, dm_max=np.inf, t_window=t_window)
+
+    snr_2, dm_2, t_2, w_2 = get_triggers(fn_2, sig_thresh=sig_thresh, 
+                                dm_min=dm_min, dm_max=dm_max, t_window=t_window)
 
     snr_2_reorder = []
     dm_2_reorder = []
     t_2_reorder = []
+    w_2_reorder = []
+
     for ii in range(len(snr_1)):
         ind = np.argmin(abs(t_1[ii] - t_2))
 
@@ -216,10 +250,12 @@ def compare_snr(fn_1, fn_2, dm_min=0, dm_max=np.inf, save_data=False):
             snr_2_reorder.append(snr_2[ind])
             dm_2_reorder.append(dm_2[ind])
             t_2_reorder.append(t_2[ind])
+            w_2_reorder.append(w_2[ind])
 
     snr_2_reorder = np.array(snr_2_reorder)
     dm_2_reorder = np.array(dm_2_reorder)
     t_2_reorder = np.array(t_2_reorder)
+    w_2_reorder = np.array(t_2_reorder)
 
     if save_data is True:
         nsnr = min(len(snr_1), len(snr_2))
@@ -229,7 +265,8 @@ def compare_snr(fn_1, fn_2, dm_min=0, dm_max=np.inf, save_data=False):
         np.save(fn_1+'_snr', snr_1)
         np.save(fn_2+'_snr', snr_2)
 
-    return snr_1, dm_1, t_1, snr_2_reorder, dm_2_reorder, t_2_reorder
+    return snr_1, dm_1, t_1, w_1, snr_2_reorder, 
+            dm_2_reorder, t_2_reorder, w_2_reorder
 
 #fn1 = '/data2/output/snr_tests_liam/20180430/dm250.0_nfrb50_20180430-0840.txt'
 #fn2 = '/data2/output/snr_tests_liam/20180430/amber.trigger'
