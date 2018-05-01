@@ -155,32 +155,32 @@ def get_mask(rfimask, startsamp, N):
         mask[blocknums==blocknum] = blockmask
     return mask.T[::-1]
 
-def plot_three_panel(data_freq_time, data_dm_time, times, dms, 
-                     freq_up=1550, freq_low=1250,
-                     cmap="RdBu", suptitle="", fnout="out.pdf"):
-    figure = plt.figure()
-    ax1 = plt.subplot(311)
+# def plot_three_panel(data_freq_time, data_dm_time, times, dms, 
+#                      freq_up=1550, freq_low=1250,
+#                      cmap="RdBu", suptitle="", fnout="out.pdf"):
+#     figure = plt.figure()
+#     ax1 = plt.subplot(311)
 
-    plt.imshow(data_freq_time, aspect='auto', vmax=4, vmin=-4, 
-               extent=[0, times[-1], freq_low, freq_up], 
-               interpolation='nearest', cmap=cmap)
-    plt.ylabel('Freq [MHz]')
+#     plt.imshow(data_freq_time, aspect='auto', vmax=4, vmin=-4, 
+#                extent=[0, times[-1], freq_low, freq_up], 
+#                interpolation='nearest', cmap=cmap)
+#     plt.ylabel('Freq [MHz]')
 
-    plt.subplot(312, sharex=ax1)
-    plt.plot(times, data_freq_time.mean(0), color='k')
-    plt.ylabel('Flux')
+#     plt.subplot(312, sharex=ax1)
+#     plt.plot(times, data_freq_time.mean(0), color='k')
+#     plt.ylabel('Flux')
 
-    plt.subplot(313, sharex=ax1)
-    plt.imshow(data_dm_time, aspect='auto', 
-               extent=[0, times[-1], dms[0], dms[-1]], 
-               interpolation='nearest', cmap=cmap)
-    plt.xlabel('Time [s]')
-    plt.ylabel('DM')
+#     plt.subplot(313, sharex=ax1)
+#     plt.imshow(data_dm_time, aspect='auto', 
+#                extent=[0, times[-1], dms[0], dms[-1]], 
+#                interpolation='nearest', cmap=cmap)
+#     plt.xlabel('Time [s]')
+#     plt.ylabel('DM')
 
-    plt.suptitle(suptitle)
+#     plt.suptitle(suptitle)
 
-    plt.show()
-    plt.savefig(fnout)
+#     plt.show()
+#     plt.savefig(fnout)
 
 def proc_trigger(fn_fil, dm0, t0, sig_cut, 
                  ndm=50, mk_plot=False, downsamp=1, 
