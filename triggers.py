@@ -337,7 +337,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     if mk_plot is True:
         if ndm == 1:
             params = snr_, dm_, downsamp, t0
-            plotter.plot_two_panel(data_freq_time, params, prob=None, 
+            plotter.plot_two_panel(full_freq_arr_downsamp, params, prob=None, 
                 freq_low=1250.09765625, freq_up=1549.90234375)
         else:
             plotter.plot_three_panel(full_freq_arr_downsamp, 
