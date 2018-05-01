@@ -41,13 +41,20 @@ def plot_two_panel(data_freq_time, params, cb=None, prob=None,
 
     ax2.set_xlabel('Time (ms)')
     ax2.set_ylabel('Freq (MHz)')
-    fig.suptitle("p: {:.2f}, S/N: {:.0f}, DM: {:.2f}, \
+    try:
+        fig.suptitle("p: {:.2f}, S/N: {:.0f}, DM: {:.2f}, \
                   T0: {:.2f}, CB: {:02d}".format(prob, snr, dm, t0, cb))
-    plt.savefig("plots/cand_{:04d}_snr{:.0f}_dm{:.0f}.pdf".format(i, snr, dm))
+        figname = "plots/cand_{:04d}_snr{:.0f}_dm{:.0f}.pdf".format(i, snr, dm)
+    except:
+        fig.suptitle("p: %.2f, S/N: %.0f, DM: %.2f, \
+                  T0: %.2f, CB: %02d" % (prob, snr, dm, t0, cb))
+        figname = "plots/cand_%04d_snr%.0f_dm%.0f.pdf" % (i, snr, dm)
+
+    plt.savefig(figname)
     plt.close(fig)
 
 def plot_three_panel(data_freq_time, data_dm_time, times, dms, 
-                     freq_up=1550, freq_low=1250,
+                     freq_up=1549.90234375, freq_low=1250.09765625,
                      cmap="RdBu", suptitle="", fnout="out.pdf"):
     figure = plt.figure()
     ax1 = plt.subplot(311)
