@@ -186,7 +186,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
                  ndm=50, mk_plot=False, downsamp=1, 
                  beamno='', fn_mask=None, nfreq_plot=32,
                  ntime_plot=250,
-                 cmap='RdBu'):
+                 cmap='RdBu', cand_no=1):
     """ Locate data within filterbank file (fn_fi)
     at some time t0, and dedisperse to dm0, generating 
     plots 
@@ -338,13 +338,14 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         if ndm == 1:
             params = snr_, dm_, downsamp, t0
             plotter.plot_two_panel(full_freq_arr_downsamp, params, prob=None, 
-                freq_low=1250.09765625, freq_up=1549.90234375)
+                freq_low=1250.09765625, freq_up=1549.90234375, cand_no=cand_no)
         else:
             plotter.plot_three_panel(full_freq_arr_downsamp, 
                                      full_dm_arr_downsamp, 
                                      times, dms, freq_low=freq_low, 
                                      freq_up=freq_up, 
-                                     suptitle=suptitle, fnout=fn_fig_out)
+                                     suptitle=suptitle, fnout=fn_fig_out, 
+                                     cand_no=cand_no)
     
     return full_dm_arr_downsamp, full_freq_arr_downsamp, time_res
 
@@ -490,7 +491,7 @@ if __name__=='__main__':
                         mk_plot=options.mk_plot, ndm=options.ndm, 
                         downsamp=ds_cut[ii], nfreq_plot=options.nfreq_plot,
                         ntime_plot=options.ntime_plot, cmap=options.cmap,
-                        fn_mask=options.maskfile)
+                        fn_mask=options.maskfile, cand_no=ii)
 
         basedir = './'
 

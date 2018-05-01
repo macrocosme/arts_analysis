@@ -51,8 +51,8 @@ def plot_two_panel(data_freq_time, params, cb=None, prob=None,
                   T0: {:.2f}, CB: {:02d}".format(prob, snr, dm, t0, cb))
         figname = "plots/cand_{:04d}_snr{:.0f}_dm{:.0f}.pdf".format(cand_no, snr, dm)
     except:
-        fig.suptitle("p: %.2f, S/N: %.0f, DM: %.2f, \
-                  T0: %.2f, CB: %02d" % (prob, snr, dm, t0, cb))
+        fig.suptitle("p: %.2f, S/N: %.0f, DM: %.2f, T0: %.2f, CB: %02d" \
+                     % (prob, snr, dm, t0, cb))
         figname = "plots/cand_%04d_snr%.0f_dm%.0f.pdf" % (cand_no, snr, dm)
 
     plt.savefig(figname)
