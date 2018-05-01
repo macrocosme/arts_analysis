@@ -241,7 +241,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     dms[0] = max(0, dms[0])
 
     # Read in 5 disp delays
-    width = 5 * abs(4e3 * dm0 * (freq_up**-2 - freq_low**-2))
+    width = 5 * abs(4.14e3 * dm0 * (freq_up**-2 - freq_low**-2))
 
     tdisp = width / dt
     tplot = ntime_plot * downsamp 
@@ -334,9 +334,16 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
                      (beamno, sig_cut, dms[dm_max_jj], t0)
 
     if mk_plot is True:
-        plot_three_panel(full_freq_arr_downsamp, full_dm_arr_downsamp, 
-                         times, dms, freq_low=freq_low, freq_up=freq_up, 
-                         suptitle=suptitle, fnout=fn_fig_out)
+        if ndm == 1:
+            params = snr_, dm_, downsamp, t0
+            plotter.plot_2_panel(data_freq_time, params, prob=None, 
+                freq_low=1250.09765625, freq_up=1549.90234375)
+        else:
+            plotter.plot_three_panel(full_freq_arr_downsamp, 
+                                     full_dm_arr_downsamp, 
+                                     times, dms, freq_low=freq_low, 
+                                     freq_up=freq_up, 
+                                     suptitle=suptitle, fnout=fn_fig_out)
     
     return full_dm_arr_downsamp, full_freq_arr_downsamp, time_res
 
