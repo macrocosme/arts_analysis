@@ -456,9 +456,7 @@ if __name__=='__main__':
                         default=np.inf)
 
 
-
     options, args = parser.parse_args()
-    print(options.mk_plot)
     fn_fil = args[0]
     fn_sp = args[1]
 
