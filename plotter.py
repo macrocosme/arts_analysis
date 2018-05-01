@@ -41,6 +41,12 @@ def plot_two_panel(data_freq_time, params, cb=None, prob=None,
 
     ax2.set_xlabel('Time (ms)')
     ax2.set_ylabel('Freq (MHz)')
+
+    if cb is None:
+        cb = -1
+    if prob is None:
+        prob = -1
+
     try:
         fig.suptitle("p: {:.2f}, S/N: {:.0f}, DM: {:.2f}, \
                   T0: {:.2f}, CB: {:02d}".format(prob, snr, dm, t0, cb))
