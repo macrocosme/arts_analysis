@@ -10,9 +10,8 @@ import matplotlib
 matplotlib.use('pdf')
 import matplotlib.pyplot as plt
 
-
 def plot_two_panel(data_freq_time, params, cb=None, prob=None, 
-                freq_low=1250.09765625, freq_up=1549.90234375):
+                freq_low=1250.09765625, freq_up=1549.90234375, cand_no=1):
     """ Plot data in two panels
     """
     snr, dm, bin_width, t0 = params
@@ -50,11 +49,11 @@ def plot_two_panel(data_freq_time, params, cb=None, prob=None,
     try:
         fig.suptitle("p: {:.2f}, S/N: {:.0f}, DM: {:.2f}, \
                   T0: {:.2f}, CB: {:02d}".format(prob, snr, dm, t0, cb))
-        figname = "plots/cand_{:04d}_snr{:.0f}_dm{:.0f}.pdf".format(i, snr, dm)
+        figname = "plots/cand_{:04d}_snr{:.0f}_dm{:.0f}.pdf".format(cand_no, snr, dm)
     except:
         fig.suptitle("p: %.2f, S/N: %.0f, DM: %.2f, \
                   T0: %.2f, CB: %02d" % (prob, snr, dm, t0, cb))
-        figname = "plots/cand_%04d_snr%.0f_dm%.0f.pdf" % (i, snr, dm)
+        figname = "plots/cand_%04d_snr%.0f_dm%.0f.pdf" % (cand_no, snr, dm)
 
     plt.savefig(figname)
     plt.close(fig)
@@ -98,7 +97,7 @@ def plot_from_h5(fn, cb, freq_low=1250.09765625, freq_up=1549.90234375,
         data_freq_time = cand[:, :, 0]
 
         plot_2panel(data_freq_time, params[i], cb=cb, freq_low=freq_low, 
-                    freq_up=freq_up, prob=probability[i])
+                    freq_up=freq_up, prob=probability[i], cand_no=i)
 
 
 # if __name__ == '__main__':
