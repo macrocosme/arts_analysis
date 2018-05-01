@@ -500,9 +500,9 @@ if __name__=='__main__':
                           beamno='', basedir=basedir, time_res=time_res)
             elif options.save_data == 'npy':
 
-                fnout_freq_time = '%s/data_trainsnr%d_dm%d_t0%f_freq.npy'\
+                fnout_freq_time = '%s/data_snr%d_dm%d_t0%f_freq.npy'\
                          % (basedir, sig_cut[ii], dm_cut[ii], np.round(t0, 2))
-                fnout_dm_time = '%s/data_trainsnr%d_dm%d_t0%f_dm.npy'\
+                fnout_dm_time = '%s/data_snr%d_dm%d_t0%f_dm.npy'\
                          % (basedir, sig_cut[ii], dm_cut[ii], np.round(t0, 2))
 
                 np.save(fnout_freq_time, data_freqtime)
@@ -519,7 +519,7 @@ if __name__=='__main__':
     if options.save_data == 'concat':
         data_dm_time_full = np.concatenate(data_dm_time_full)
         data_freq_time_full = np.concatenate(data_freq_time_full)
-        fnout = '%s/data_training_full.hdf5' % basedir
+        fnout = '%s/data_full.hdf5' % basedir
 
         f = h5py.File(fnout, 'w')
         f.create_dataset('data_freq_time', data=data_freq_time_full)
