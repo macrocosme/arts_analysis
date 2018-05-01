@@ -11,9 +11,10 @@ import glob
 import copy
 import optparse
 
-import tools
 from pypulsar.formats import filterbank
-from pypulsar.formats import spectra
+
+import tools
+import plotter 
 
 def dm_range(dm_max, dm_min=2., frac=0.2):
     """ Generate list of DM-windows in which 
