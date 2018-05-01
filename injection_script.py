@@ -21,7 +21,7 @@ if not os.path.isdir(outdir):
 
 timestr = time.strftime("%Y%m%d-%H%M")
 os.system('python inject_frb.py %s %s --nfrb %d \
-          --dm_list 100.0,250.0,500.0,750.0,1000.0,1250.0,1500.0\
+          --dm_list 100.0,250.0,500.0,750.0,1000.0\
           --calc_snr True' \
           % (infile, outdir, N_FRB))
 

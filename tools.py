@@ -231,12 +231,12 @@ def compare_snr(fn_1, fn_2, dm_min=0, dm_max=np.inf, save_data=False):
 
     return snr_1, dm_1, t_1, snr_2_reorder, dm_2_reorder, t_2_reorder
 
-fn1 = '/data2/output/snr_tests_liam/20180430/dm250.0_nfrb50_20180430-0840.txt'
-fn2 = '/data2/output/snr_tests_liam/20180430/amber.trigger'
-fn3 = '/data2/output/snr_tests_liam/20180430/dm250.0_nfrb50_20180430-0840.singlepulse'
+#fn1 = '/data2/output/snr_tests_liam/20180430/dm250.0_nfrb50_20180430-0840.txt'
+#fn2 = '/data2/output/snr_tests_liam/20180430/amber.trigger'
+#fn3 = '/data2/output/snr_tests_liam/20180430/dm250.0_nfrb50_20180430-0840.singlepulse'
 
-snr_1, dm_1, t_1, snr_2, dm_2, t_2 = compare_snr(fn1, fn2, dm_max=300.0, dm_min=200.0, save_data=True)
-nsnr = min(len(snr_1), len(snr_2))
+#snr_1, dm_1, t_1, snr_2, dm_2, t_2 = compare_snr(fn1, fn2, dm_max=300.0, dm_min=200.0, save_data=True)
+#nsnr = min(len(snr_1), len(snr_2))
 
-snr_1, dm_1, t_1, snr_2, dm_2, t_2 = compare_snr(fn1, fn3, dm_max=300.0, dm_min=200.0, save_data=True)
-nsnr = min(len(snr_1), len(snr_2))
+#snr_1, dm_1, t_1, snr_2, dm_2, t_2 = compare_snr(fn1, fn3, dm_max=300.0, dm_min=200.0, save_data=True)
+#nsnr = min(len(snr_1), len(snr_2))

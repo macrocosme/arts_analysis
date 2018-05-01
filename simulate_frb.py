@@ -314,7 +314,8 @@ class EventSimulator():
         scat_factor = np.exp(np.random.uniform(*self._scat_factor))
         # change width from uniform to lognormal
         width = np.random.lognormal(np.log(self._width[0]), self._width[1])
-        width = max(min(width, 100*self._width[0]), 0.5*self._width[0])
+        width = np.random.uniform(self._width[0], self._width[1])
+        width = max(min(width, 1000*self._width[0]), 0.5*self._width[0])
         return dm, fluence, width, spec_ind, disp_ind, scat_factor
 
 def uniform_range(min_, max_):

@@ -102,8 +102,9 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
         data_event, params = simulate_frb.gen_simulated_frb(NFREQ=NFREQ, 
                                                NTIME=NTIME, sim=True, 
-                                               fluence=3000*(1+0.1*ii),
-                                               spec_ind=0, width=(20*delta_t), 
+#                                               fluence=3000*(1+0.1*ii),
+                                               fluence=(1500, 10000),
+                                               spec_ind=0, width=(delta_t, delta_t*10), 
                                                dm=dm, scat_factor=(-4, -3.5), 
                                                background_noise=data_event, 
                                                delta_t=delta_t, plot_burst=False, 
@@ -160,7 +161,11 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             snr_max, width_max = tools.calc_snr_widths(data_rb,
                                          widths=range(1, 100))
 
-            print("S/N: %.2f" % snr_max)
+            snr_max2, width_max2 = tools.calc_snr_widths(data_rb,
+                                         )
+            print(width)
+            print("S/N: %.2f width: %.3f" % (snr_max, width_max))
+            print("S/N: %.2f width: %.3f" % (snr_max2, width_max2))
         else:
             snr_max = 10.0
             width_max = int(width/dt)
