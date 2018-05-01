@@ -11,11 +11,11 @@ matplotlib.use('pdf')
 import matplotlib.pyplot as plt
 
 
-def plot_2panel(data_freq_time, params, prob=None, 
+def plot_two_panel(data_freq_time, params, prob=None, 
                 freq_low=1250.09765625, freq_up=1549.90234375):
     """ Plot data in two panels
     """
-    snr, dm, bin_width, t0 = params[i]
+    snr, dm, bin_width, t0 = params
     nfreq, ntime = data_freq_time.shape
 
     times = np.arange(ntime) * bin_width * 1E3  # ms
@@ -46,7 +46,7 @@ def plot_2panel(data_freq_time, params, prob=None,
     plt.savefig("plots/cand_{:04d}_snr{:.0f}_dm{:.0f}.pdf".format(i, snr, dm))
     plt.close(fig)
 
-def plot_3_panel(data_freq_time, data_dm_time, times, dms, 
+def plot_three_panel(data_freq_time, data_dm_time, times, dms, 
                      freq_up=1550, freq_low=1250,
                      cmap="RdBu", suptitle="", fnout="out.pdf"):
     figure = plt.figure()
@@ -84,7 +84,7 @@ def plot_from_h5(fn, cb, freq_low=1250.09765625, freq_up=1549.90234375,
     for i, cand in enumerate(data_frb_candidate):
         data_freq_time = cand[:, :, 0]
 
-        plot_2panel(data_freq_time, params, freq_low=freq_low, 
+        plot_2panel(data_freq_time, params[i], freq_low=freq_low, 
                     freq_up=freq_up, prob=probability[i])
 
 
