@@ -96,14 +96,15 @@ def plot_from_h5(fn, cb, freq_low=1250.09765625, freq_up=1549.90234375,
     for i, cand in enumerate(data_frb_candidate):
         data_freq_time = cand[:, :, 0]
 
-        plot_2panel(data_freq_time, params[i], cb=cb, freq_low=freq_low, 
+        plot_two_panel(data_freq_time, params[i], cb=cb, freq_low=freq_low, 
                     freq_up=freq_up, prob=probability[i], cand_no=i)
 
 
-# if __name__ == '__main__':
+if __name__ == '__main__':
 #     # input hdf5 file
-#     fname = sys.argv[1]
-#     cb = int(sys.argv[2])
+    fn = sys.argv[1]
+    cb = int(sys.argv[2])
+    plot_from_h5(fn, cb, freq_low=1250.09765625, freq_up=1549.90234375)
 
 #     # read dataset 
 #     with h5py.File(fname, 'r') as f:
