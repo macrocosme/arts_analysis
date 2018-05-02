@@ -298,7 +298,6 @@ def compare_snr(fn_1, fn_2, dm_min=0, dm_max=np.inf, save_data=False,
     return par_1, par_2, par_match_arr
 
 if __name__=='__main__':
-    pass
 
     import sys
 
@@ -310,7 +309,9 @@ if __name__=='__main__':
 
     print('\nFound %d common triggers' % par_match_arr.shape[1])
 
+    snr_1 = par_match_arr[:, 1, 0]
+    snr_2 = par_match_arr[:, 1, 1]
 
-
+    print('File 1 has %f times higher S/N than file 2' % np.mean(snr_1/snr_2))
 
 
