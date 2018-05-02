@@ -312,6 +312,9 @@ if __name__=='__main__':
     snr_1 = par_match_arr[1, :, 0]
     snr_2 = par_match_arr[1, :, 1]
 
+    print(snr_1)
+    print(snr_2)
+
     print('File 1 has %f times higher S/N than file 2' % np.mean(snr_1/snr_2))
 
 
