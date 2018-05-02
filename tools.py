@@ -304,7 +304,7 @@ if __name__=='__main__':
 
     import sys
 
-    fn1, fn2 = sys.argv[1], sys.argv[2]
+    fn_1, fn_2 = sys.argv[1], sys.argv[2]
 
     par_1, par_2, par_match_arr = compare_snr(fn_1, fn_2, dm_min=0, 
                                         dm_max=np.inf, save_data=False,
