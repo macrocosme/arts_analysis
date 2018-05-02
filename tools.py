@@ -241,8 +241,7 @@ def compare_snr(fn_1, fn_2, dm_min=0, dm_max=np.inf, save_data=False,
     each fn_1 and fn_2, which should be ordered so 
     that they can be compared directly:
 
-    snr_1, dm_1, t_1, w_1, snr_2_reorder, 
-            dm_2_reorder, t_2_reorder, w_2_reorder
+    grouped_params1, grouped_params2, matched_params
     """
     snr_1, dm_1, t_1, w_1 = get_triggers(fn_1, sig_thresh=sig_thresh, 
                                 dm_min=dm_min, dm_max=np.inf, t_window=t_window)
@@ -283,7 +282,7 @@ def compare_snr(fn_1, fn_2, dm_min=0, dm_max=np.inf, save_data=False,
                                      t_1[ii], t_2[ind],
                                      w_1[ii], w_2[ind]])
 
-            par_match_1.append(params_match)
+            par_match_arr.append(params_match)
 
     # concatenate list and reshape to (nparam, nmatch, 2 files)
     par_match_arr = np.concatenate(par_match_arr).reshape(-1, 4, 2)
@@ -294,10 +293,26 @@ def compare_snr(fn_1, fn_2, dm_min=0, dm_max=np.inf, save_data=False,
         snr_1 = snr_1[:nsnr]
         snr_2 = snr_2_reorder[:nsnr]
 
-        np.save(fn_1+'_snr', par_1)
-        np.save(fn_2+'_snr', par_2)
-        np.save(fn_2+'_snr', par_match_1)
+        np.save(fn_1+'_params_grouped', par_1)
+        np.save(fn_2+'_params_grouped', par_2)
+        np.save('params_matched', par_match_1)
 
-    return par_1, par_2, par_match_1
+    return par_1, par_2, par_match_arr
+
+if __name__=='__main__':
+    pass
+
+    import sys
+
+    fn1, fn2 = sys.argv[1], sys.argv[2]
+
+    par_1, par_2, par_match_arr = compare_snr(fn_1, fn_2, dm_min=0, 
+                                        dm_max=np.inf, save_data=False,
+                                        sig_thresh=5.0, t_window=0.5)
+
+    print('Found %d common triggers' % par_match_arr.shape[1])
+
+
+
 
 
