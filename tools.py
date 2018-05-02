@@ -44,7 +44,14 @@ def read_singlepulse(fn):
         dm, sig, tt, downsample = A[:,0], A[:,1], A[:,2], A[:,4]
     elif fn.split('.')[-1]=='trigger':
         A = np.loadtxt(fn)
-        dm, sig, tt, downsample = A[:,-2], A[:,-1], A[:, -3], A[:, 3]
+        # Check if amber has compacted, in which case 
+        # there are two extra rows
+        if len(A[0]) > 7: 
+            # beam batch sample integration_step compacted_integration_steps time DM compacted_DMs SNR
+            dm, sig, tt, downsample = A[:,-3], A[:,-1], A[:, -4], A[:, 3]
+        else:
+            # beam batch sample integration_step time DM SNR
+            dm, sig, tt, downsample = A[:,-2], A[:,-1], A[:, -3], A[:, 3]
     else:
         print("Didn't recognize singlepulse file")
         return 
@@ -79,6 +86,7 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf, t_window=0.5):
     """
 
     dm, sig, tt, downsample = read_singlepulse(fn)
+    ntrig_orig = len(dm)
 
     low_sig_ind = np.where(sig < sig_thresh)[0]
     sig = np.delete(sig, low_sig_ind)
@@ -130,6 +138,10 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf, t_window=0.5):
     sig_cut = np.array(sig_cut)[ind]
     tt_cut = np.array(tt_cut)[ind]
     ds_cut = np.array(ds_cut)[ind]
+
+    ntrig_group = len(dm_cut)
+
+    print("Grouped down to %d triggers from %d" % (ntrig_group, ntrig_orig))
 
     return sig_cut, dm_cut, tt_cut, ds_cut
 
@@ -233,7 +245,7 @@ def compare_snr(fn_1, fn_2, dm_min=0, dm_max=np.inf, save_data=False,
             dm_2_reorder, t_2_reorder, w_2_reorder
     """
     snr_1, dm_1, t_1, w_1 = get_triggers(fn_1, sig_thresh=sig_thresh, 
-                                dm_min=0, dm_max=np.inf, t_window=t_window)
+                                dm_min=dm_min, dm_max=np.inf, t_window=t_window)
 
     snr_2, dm_2, t_2, w_2 = get_triggers(fn_2, sig_thresh=sig_thresh, 
                                 dm_min=dm_min, dm_max=dm_max, t_window=t_window)
@@ -243,37 +255,49 @@ def compare_snr(fn_1, fn_2, dm_min=0, dm_max=np.inf, save_data=False,
     t_2_reorder = []
     w_2_reorder = []
 
+    ntrig_1 = len(snr_1)
+    ntrig_2 = len(snr_2)    
+
+    par_1 = np.concatenate([snr_1, dm_1, t_1, w_1]).reshape(4, -1)
+    par_2 = np.concatenate([snr_2, dm_2, t_2, w_2]).reshape(4, -1)
+
+    # Make arrays for the matching parameters
+    par_match_arr = []
+
     for ii in range(len(snr_1)):
-        ind = np.argmin(abs(t_1[ii] - t_2))
+        tdiff = np.abs(t_1[ii] - t_2)
+        ind = np.where(tdiff == tdiff.min())[0]
 
-        if np.abs(t_1[ii]-t_2[ind])<1.0:
-            snr_2_reorder.append(snr_2[ind])
-            dm_2_reorder.append(dm_2[ind])
-            t_2_reorder.append(t_2[ind])
-            w_2_reorder.append(w_2[ind])
+        # make sure you are getting correct trigger in dm/time space
+        if len(ind) > 1:
+            ind = ind[np.argmin(np.abs(dm_1[ii]-dm_2[ind]))]
+        else:
+            ind = ind[0]
 
-    snr_2_reorder = np.array(snr_2_reorder)
-    dm_2_reorder = np.array(dm_2_reorder)
-    t_2_reorder = np.array(t_2_reorder)
-    w_2_reorder = np.array(t_2_reorder)
+        print(ii, ind)
+
+        # check for triggers that are within 1.0 seconds and 20% in dm
+        if (tdiff[ind]<1.0) and (np.abs(dm_1[ii]-dm_2[ind])/dm_1[ii])<0.2:
+            params_match = np.array([snr_1[ii], snr_2[ind], 
+                                     dm_1[ii], dm_2[ind],
+                                     t_1[ii], t_2[ind],
+                                     w_1[ii], w_2[ind]])
+
+            par_match_1.append(params_match)
+
+    # concatenate list and reshape to (nparam, nmatch, 2 files)
+    par_match_arr = np.concatenate(par_match_arr).reshape(-1, 4, 2)
+    par_match_arr = par_match_arr.transpose((1, 0, 2))
 
     if save_data is True:
         nsnr = min(len(snr_1), len(snr_2))
         snr_1 = snr_1[:nsnr]
         snr_2 = snr_2_reorder[:nsnr]
 
-        np.save(fn_1+'_snr', snr_1)
-        np.save(fn_2+'_snr', snr_2)
+        np.save(fn_1+'_snr', par_1)
+        np.save(fn_2+'_snr', par_2)
+        np.save(fn_2+'_snr', par_match_1)
 
-    return snr_1, dm_1, t_1, w_1, snr_2_reorder, \
-            dm_2_reorder, t_2_reorder, w_2_reorder
+    return par_1, par_2, par_match_1
 
-#fn1 = '/data2/output/snr_tests_liam/20180430/dm250.0_nfrb50_20180430-0840.txt'
-#fn2 = '/data2/output/snr_tests_liam/20180430/amber.trigger'
-#fn3 = '/data2/output/snr_tests_liam/20180430/dm250.0_nfrb50_20180430-0840.singlepulse'
 
-#snr_1, dm_1, t_1, snr_2, dm_2, t_2 = compare_snr(fn1, fn2, dm_max=300.0, dm_min=200.0, save_data=True)
-#nsnr = min(len(snr_1), len(snr_2))
-
-#snr_1, dm_1, t_1, snr_2, dm_2, t_2 = compare_snr(fn1, fn3, dm_max=300.0, dm_min=200.0, save_data=True)
-#nsnr = min(len(snr_1), len(snr_2))
