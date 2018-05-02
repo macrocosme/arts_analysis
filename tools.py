@@ -110,7 +110,7 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf, t_window=0.5):
 #    dm_list = dm_range(dm_max, dm_min=dm_min)
     dm_list = dm_range(1.1*dm.max(), dm_min=0.9*dm.min())
 
-    print("Grouping in window of %.2f sec" % np.round(t_window,2))
+    print("\nGrouping in window of %.2f sec" % np.round(t_window,2))
     print("DMs:", dm_list)
 
     tt_start = tt.min() - .5*t_window
@@ -141,7 +141,7 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf, t_window=0.5):
 
     ntrig_group = len(dm_cut)
 
-    print("Grouped down to %d triggers from %d" % (ntrig_group, ntrig_orig))
+    print("Grouped down to %d triggers from %d\n" % (ntrig_group, ntrig_orig))
 
     return sig_cut, dm_cut, tt_cut, ds_cut
 
@@ -308,7 +308,7 @@ if __name__=='__main__':
                                         dm_max=np.inf, save_data=False,
                                         sig_thresh=5.0, t_window=0.5)
 
-    print('Found %d common triggers' % par_match_arr.shape[1])
+    print('\nFound %d common triggers' % par_match_arr.shape[1])
 
 
 
