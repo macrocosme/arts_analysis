@@ -309,8 +309,8 @@ if __name__=='__main__':
 
     print('\nFound %d common triggers' % par_match_arr.shape[1])
 
-    snr_1 = par_match_arr[1, :, 0]
-    snr_2 = par_match_arr[1, :, 1]
+    snr_1 = par_match_arr[0, :, 0]
+    snr_2 = par_match_arr[0, :, 1]
 
     print(snr_1)
     print(snr_2)
