@@ -284,7 +284,6 @@ def compare_snr(fn_1, fn_2, dm_min=0, dm_max=np.inf, save_data=False,
 
     # concatenate list and reshape to (nparam, nmatch, 2 files)
     par_match_arr = np.concatenate(par_match_arr).reshape(-1, 4, 2)
-    print(par_match_arr.shape)
     par_match_arr = par_match_arr.transpose((1, 0, 2))
 
     if save_data is True:
@@ -310,8 +309,8 @@ if __name__=='__main__':
 
     print('\nFound %d common triggers' % par_match_arr.shape[1])
 
-    snr_1 = par_match_arr[:, 1, 0]
-    snr_2 = par_match_arr[:, 1, 1]
+    snr_1 = par_match_arr[1, :, 0]
+    snr_2 = par_match_arr[1, :, 1]
 
     print('File 1 has %f times higher S/N than file 2' % np.mean(snr_1/snr_2))
 
