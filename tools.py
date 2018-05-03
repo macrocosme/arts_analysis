@@ -284,6 +284,10 @@ def compare_snr(fn_1, fn_2, dm_min=0, dm_max=np.inf, save_data=False,
 
             par_match_arr.append(params_match)
 
+    if len(par_match_arr)==0:
+        print("No matches found")
+        return 
+
     # concatenate list and reshape to (nparam, nmatch, 2 files)
     par_match_arr = np.concatenate(par_match_arr).reshape(-1, 4, 2)
     par_match_arr = par_match_arr.transpose((1, 0, 2))
