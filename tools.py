@@ -273,8 +273,11 @@ def compare_snr(fn_1, fn_2, dm_min=0, dm_max=np.inf, save_data=False,
         else:
             ind = ind[0]
 
+        print(tdiff[ind], dm_1[ii], dm_2[ind])
+
         # check for triggers that are within 1.0 seconds and 20% in dm
-        if (tdiff[ind]<1.5) and (np.abs(dm_1[ii]-dm_2[ind])/dm_1[ii])<0.2:
+        if (tdiff[ind]<2.0) and (np.abs(dm_1[ii]-dm_2[ind])/dm_1[ii])<0.2:
+            print(tdiff[ind], dm_1[ii], dm_2[ind])
             params_match = np.array([snr_1[ii], snr_2[ind], 
                                      dm_1[ii], dm_2[ind],
                                      t_1[ii], t_2[ind],
@@ -303,8 +306,18 @@ if __name__=='__main__':
 
     fn_1, fn_2 = sys.argv[1], sys.argv[2]
 
-    par_1, par_2, par_match_arr = compare_snr(fn_1, fn_2, dm_min=0, 
-                                        dm_max=np.inf, save_data=False,
+    try:
+        dm_min = np.float(sys.argv[3])
+    except:
+        dm_min = 0.0
+
+    try:
+        dm_max = np.float(sys.argv[4])
+    except:
+        dm_max = np.inf
+
+    par_1, par_2, par_match_arr = compare_snr(fn_1, fn_2, dm_min=dm_min, 
+                                        dm_max=dm_max, save_data=False,
                                         sig_thresh=5.0, t_window=0.5)
 
     print('\nFound %d common trigger(s)' % par_match_arr.shape[1])
