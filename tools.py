@@ -273,7 +273,7 @@ def compare_snr(fn_1, fn_2, dm_min=0, dm_max=np.inf, save_data=False,
         else:
             ind = ind[0]
 
-        print(tdiff[ind], dm_1[ii], dm_2[ind])
+        print("%.3f %.1f %.1f" % (tdiff[ind], dm_1[ii], dm_2[ind]))
 
         # check for triggers that are within 1.0 seconds and 20% in dm
         if (tdiff[ind]<2.0) and (np.abs(dm_1[ii]-dm_2[ind])/dm_1[ii])<0.2:
