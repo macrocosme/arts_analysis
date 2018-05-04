@@ -93,7 +93,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
         t0_ind = offset+NTIME//2+chunksize*ii
         t0_ind = start + chunksize*ii + offset   # hack because needs to agree with presto  
-        t0 = t0_ind*delta_t
+        t0 = t0_ind*delta_t 
 
         if len(data)==0:
             break             
@@ -105,14 +105,15 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 #                                               fluence=3000*(1+0.1*ii),
                                                fluence=(1500, 10000),
                                                spec_ind=0, width=(delta_t, delta_t*10), 
-                                               dm=dm, scat_factor=(-4, -3.5), 
+                                                            dm=dm, scat_factor=(-4, -3.5), 
                                                background_noise=data_event, 
                                                delta_t=delta_t, plot_burst=False, 
-                                               freq=freq, 
+                                               freq=(freq_arr[0], freq_arr[-1]), 
                                                FREQ_REF=freq_ref, scintillate=False)
 
         dm_ = params[0]
         params.append(offset)
+
         print("%d/%d Injecting with DM:%d width: %.2f offset: %d" % 
                                 (ii, N_FRB, dm_, params[2], offset))
         
@@ -121,8 +122,13 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         #params_full_arr.append(params)
         width = params[2]
         downsamp = max(1, int(width/delta_t))
-        t_delay_mid = 4.14e3*dm_*freq_ref**-2
-        t0 += t_delay_mid
+        t_delay_mid = 4.15e3*dm_*(freq_ref**-2-freq_arr[0]**-2)
+        
+        # this is an empirical hack. I do not know why 
+        # the PRESTO arrival times are different from t0 
+        # by the dispersion delay between the reference and 
+        # upper frequency
+        t0 -= t_delay_mid
 
         if rfi_clean is True:
             data = rfi_test.apply_rfi_filters(data.astype(np.float32), delta_t)
@@ -150,7 +156,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         if calc_snr is True:
             data_filobj.data = data
             data_filobj.dedisperse(dm_)
-            end_t = abs(4.14e3*dm_*(freq[0]**-2 - freq[1]**-2))
+            end_t = abs(4.15e3*dm_*(freq[0]**-2 - freq[1]**-2))
             end_pix = int(end_t / dt)
             end_pix_ds = int(end_t / dt / downsamp)
 
@@ -159,13 +165,12 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             data_rb -= np.median(data_rb)
 
             snr_max, width_max = tools.calc_snr_widths(data_rb,
-                                         widths=range(1, 100))
+                                                       widths=[1])
 
-            snr_max2, width_max2 = tools.calc_snr_widths(data_rb,
-                                         )
-            print(width)
-            print("S/N: %.2f width: %.3f" % (snr_max, width_max))
-            print("S/N: %.2f width: %.3f" % (snr_max2, width_max2))
+#            snr_max2, width_max2 = tools.calc_snr_widths(data_rb,
+#                                         )
+            print("S/N: %.2f width_used: %.3f width_tru: %.3f DM: %.1f" % (snr_max, width_max, width/delta_t, dm_))
+#            print("S/N: %.2f width: %.3f" % (snr_max2, width_max2))
         else:
             snr_max = 10.0
             width_max = int(width/dt)
