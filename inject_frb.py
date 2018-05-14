@@ -103,9 +103,9 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         data_event, params = simulate_frb.gen_simulated_frb(NFREQ=NFREQ, 
                                                NTIME=NTIME, sim=True, 
 #                                               fluence=3000*(1+0.1*ii),
-                                               fluence=(1500, 10000),
+                                                            fluence=(2000, 12000),
                                                spec_ind=0, width=(delta_t, delta_t*10), 
-                                                            dm=dm, scat_factor=(-4, -3.5), 
+                                                            dm=dm*(1+dm/100.0*ii), scat_factor=(-4, -3.5), 
                                                background_noise=data_event, 
                                                delta_t=delta_t, plot_burst=False, 
                                                freq=(freq_arr[0], freq_arr[-1]), 
@@ -147,6 +147,11 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             ind = np.where(np.absolute(data_ts_zerodm - med) > 8.0*stds)[0]
             data[:, ind] = np.median(data, axis=-1, keepdims=True)
 
+        # Zero out NaNs
+        ind_nan = np.isnan(data.data)
+        print("NaNs: %d" % ind_nan.sum())
+        data.data[ind_nan] = 0.0
+
         if ii<0:
             fn_rfi_clean = reader.write_to_fil(data.transpose(), header, fn_fil_out)
         elif ii>=0:
@@ -165,7 +170,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             data_rb -= np.median(data_rb)
 
             snr_max, width_max = tools.calc_snr_widths(data_rb,
-                                                       widths=[1])
+                                                       widths=range(100))
 
 #            snr_max2, width_max2 = tools.calc_snr_widths(data_rb,
 #                                         )

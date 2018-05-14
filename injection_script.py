@@ -3,8 +3,8 @@ import time
 
 import glob
 
-N_FRB = 50
-SNR_MIN = 8
+N_FRB = 100
+SNR_MIN = 7
 backend = 'PRESTO'
 AMBER_PATH = '~/test/amber_arg.sh'
 
@@ -20,12 +20,8 @@ if not os.path.isdir(outdir):
     os.mkdir(outdir)
 
 timestr = time.strftime("%Y%m%d-%H%M")
-os.system('python inject_frb.py %s %s --nfrb %d \
-          --dm_list 100.0,250.0,500.0,750.0,1000.0\
-          --calc_snr True' \
-          % (infile, outdir, N_FRB))
+os.system('python inject_frb.py %s %s --nfrb %d --dm_list 25.0,100.0,400.0,800.0 --calc_snr True'% (infile, outdir, N_FRB))
 
-#timestr = '20180425-1742'
 # note this assumes tstr is the same in both inject_frb and glob
 fil_list = glob.glob('%s/*%s.fil' % (outdir, timestr))
 
@@ -40,45 +36,13 @@ for fn_fil in fil_list:
         os.system('prepdata -start 0 -dm %d -o %s -ncpus 5 %s' % (DM, fn_base, fn_fil))        
         os.system('single_pulse_search.py %s.dat -t %d -b' % (fn_base, SNR_MIN))
         fn_trigger = '%s.singlepulse' % fn_base
+        os.system('python tools.py %s.txt %s.singlepulse' % (fn_base, fn_base))
+
     else:
         print("Incorrect backend. Must be either PRESTO or AMBER")
         pass
 
-    os.system('python triggers.py %s %s --ntrig 500 \
-               --ndm 1 --save_data 0 --ntime_plot 250 \
-               --sig_thresh 8.' % (fn_fil, fn_trigger))
+#    os.system('python triggers.py %s %s --ntrig 500 \
+#               --ndm 1 --save_data 0 --ntime_plot 250 \
+#               --sig_thresh 8.' % (fn_fil, fn_trigger))
 exit()
-try:
-    outfile_250 = glob.glob('%s/%s*fil' % (outdir, fn250))[-1]
-    outfile_250_dat = outfile_250.strip('.fil')
-#    os.system('prepdata -start 0 -dm 250.0 -o %s -ncpus 10 %s' % (outfile_250_dat, outfile_250))
-#    os.system('single_pulse_search.py %s.dat -t 8 -b' % outfile_250_dat)
-    os.system('python triggers.py %s /home/arts/test/amber_step1.trigger --ntrig 500 --ndm 1 --save_data 0 --ntime_plot 750 --sig_thresh 15.' \
-              % (outfile_250))
-except:
-    pass
-try:
-    outfile_500 = glob.glob('%s/dm500_100frbs* XX.fil' % outdir)[-1]
-    outfile_500_dat = outfile_500.strip('.fil')
-    os.system('prepdata -start 0 -dm 500.0 -o %s -ncpus 10 %s' % (outfile_500_dat, outfile_500))
-    os.system('single_pulse_search.py %s.dat -t 8 -b' % outfile_500_dat)
-except:
-    pass
-try:
-    outfile_1000 = glob.glob('%s/%s*fil' % (outdir, fn1000))[-1]
-    outfile_1000_dat = outfile_1000.strip('.fil')
-    os.system('prepdata -start 0 -dm 1000.0 -o %s -ncpus 10 %s' % (outfile_1000_dat, outfile_1000))
-    os.system('single_pulse_search.py %s.dat -t 8 -b' % outfile_1000_dat)
-    os.system('python triggers.py %s %s.singlepulse \
-          --ntrig 500 --ndm 1 --save_data 0' 
-          % (outfile_1000, outfile_1000_dat))    
-except:
-    pass
-try:
-    outfile_2500 = glob.glob('%s/dm2500_100frbs*.fil' % outdir)[-1]
-    outfile_2500_dat = outfile_2500.strip('.fil')
-    os.system('prepdata -start 0 -dm 2500.0 -o %s -ncpus 10 %s' % (outfile_2500_dat, outfile_2500))
-    os.system('single_pulse_search.py %s.dat -t 8 -b' % outfile_2500_dat)
-except:
-    pass
-

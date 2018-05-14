@@ -319,9 +319,14 @@ if __name__=='__main__':
     except:
         dm_max = np.inf
 
-    par_1, par_2, par_match_arr = compare_snr(fn_1, fn_2, dm_min=dm_min, 
+    try:
+        par_1, par_2, par_match_arr = compare_snr(fn_1, fn_2, dm_min=dm_min, 
                                         dm_max=dm_max, save_data=False,
                                         sig_thresh=5.0, t_window=0.5)
+    except TypeError:
+        print("No matches, exiting")
+        exit()
+        
 
     print('\nFound %d common trigger(s)' % par_match_arr.shape[1])
 
