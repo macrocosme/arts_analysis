@@ -54,7 +54,10 @@ def read_whole_filterbank(fn, chunksize=1e6, t_res=1):
 	while True:
 		print(chunksize*ii, chunksize)
 		data, freq, delta_t, header = read_fil_data(fn, start=chunksize*ii, stop=chunksize)
-		print(np.isnan(data.data).sum())
+
+		if len(data.data[0])==0:
+			break
+
 		nt_rebin = np.int(t_res/delta_t)
 		nt_rebin = min(nt_rebin, data.numspectra)
 		data.downsample(nt_rebin)
