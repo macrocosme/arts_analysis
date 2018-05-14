@@ -5,6 +5,7 @@ import glob
 from scipy import signal
 
 import reader
+import tools
 
 class Event(object):
     """ Class to generate a realistic fast radio burst and 
@@ -136,7 +137,8 @@ class Event(object):
 
         scint_amp = self.scintillation(freq)
         self._fluence /= np.sqrt(NFREQ)
-        stds = np.std(data)
+#        stds_perchan = np.std(data)#*np.sqrt(NFREQ)
+        stds_perchan, med = tools.sigma_from_mad(data.flatten())
 
         for ii, f in enumerate(freq):
             # Do not add FRB to missing channels
@@ -158,16 +160,20 @@ class Event(object):
                                     tau=self._scat_factor, t0=tpix)
 
             val = pp.copy()
-            val /= (val.max()*stds)
-            val *= self._fluence
-            val /= (width_ / delta_t)
+            val /= val.max()
+#            val *= self._fluence
+
+            val *= (100.0 / stds_perchan) # hack
+#            val /= (width_ / delta_t) 
             val = val * (f / self._f_ref) ** self._spec_ind 
 
             if scintillate is True:
                 val = (0.1 + scint_amp[ii]) * val 
                 
-#            data[ii, NTIME//2+tpix:NTIME//2+tpix+10] += np.std(data[ii])
-            data[ii] += val
+#            data[ii] += val
+
+            data[ii, tpix] += 5*np.std(data[ii])
+            
             if f == freq_mid:
                 width_eff = width_
 

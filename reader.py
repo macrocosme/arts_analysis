@@ -29,7 +29,7 @@ def read_fil_data(fn, start=0, stop=1e7):
 	print("Reading filterbank file %s \n" % fn)
 	fil_obj = filterbank.FilterbankFile(fn)
 	header = fil_obj.header
-	delta_t = fil_obj.header['tsamp'] # delta_t in milliseconds
+	delta_t = fil_obj.header['tsamp'] # delta_t in seconds
 	fch1 = header['fch1']
 	nchans = header['nchans']
 	foff = header['foff']
