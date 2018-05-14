@@ -70,6 +70,8 @@ def read_whole_filterbank(fn, chunksize=1e6, t_res=1):
 
 	data_full = np.concatenate(data_full)
 
+	return data_full
+
 def rebin_arr(data, n0_f=1, n1_f=1):
 	""" Rebin 2d array data to have shape 
 		(n0_f, n1_f)
