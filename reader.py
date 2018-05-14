@@ -45,6 +45,28 @@ def read_fil_data(fn, start=0, stop=1e7):
 
 	return data, freq, delta_t, header
 
+def read_whole_filterbank(fn, chunksize=1e6, t_res=1):
+	""" t_res = time resolution in seconds
+	"""
+	data_full = []
+
+	ii=0
+	while True:
+		print(chunksize*ii, chunksize)
+		data, freq, delta_t, header = read_fil_data(fn, start=chunksize*ii, stop=chunksize)
+		print(np.isnan(data.data).sum())
+		nt_rebin = np.int(t_res/delta_t)
+		nt_rebin = min(nt_rebin, data.numspectra)
+		data.downsample(nt_rebin)
+
+		data_full.append(data.data)
+		delta_t_full = data.dt
+
+		print(ii, data.data.shape)
+		ii+=1 
+
+	data_full = np.concatenate(data_full)
+
 def rebin_arr(data, n0_f=1, n1_f=1):
 	""" Rebin 2d array data to have shape 
 		(n0_f, n1_f)
