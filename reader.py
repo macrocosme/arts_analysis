@@ -67,7 +67,7 @@ def read_whole_filterbank(fn, chunksize=1e6, t_res=1):
 
 		ii+=1 
 
-	data_full = np.concatenate(data_full, axis=0)
+	data_full = np.concatenate(data_full, axis=-1)
 
 	return data_full
 
