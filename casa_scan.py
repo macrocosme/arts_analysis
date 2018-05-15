@@ -350,7 +350,7 @@ if __name__=='__main__':
     CalTools = CalibrationTools(t_res=options.t_res, Ndish=options.Ndish, 
                                 IAB=options.IAB)
 
-    tsys_rms = CalTools.tsys_onoff_allfreq(data, off_samp=(0, 5000), src='CasA')
+    tsys_rms = CalTools.tsys_rms_allfreq(data, off_samp=(0, 5000), src='CasA')
     tsys_onoff = CalTools.tsys_onoff_allfreq(data, off_samp=(0, 5000), src='CasA')
     sefd_rms = CalTools.tsys_to_sefd(tsys_rms)
     snr = CalTools.snr_allfreq(data, off_samp=(0, 5000))
@@ -359,7 +359,7 @@ if __name__=='__main__':
     data_rb = data[:, :data.shape[1]//100*100].reshape(nfreq, -1, 100).mean(-1)
 
     Plotter = Plotter(t_res=options.t_res*100)
-    Plotter.plot_all(data_rb, CalTools.tsys_to_sefd(tsys_rms), snr)
+    Plotter.plot_all(data_rb, sefd_rms, snr)
 
 
 # if __name__=='__main__':
