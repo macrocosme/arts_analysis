@@ -88,7 +88,7 @@ class CalibrationTools:
         and aperture efficiency.
         """
 
-        snr = self.calculate_snr_rms(data_ts, off_samp=off_samp, src=src)
+        snr = self.calculate_snr_rms(data_ts, off_samp=off_samp)
 
         # Get source flux at this frequency
         Snu = self.source_flux(freq, src=src)
