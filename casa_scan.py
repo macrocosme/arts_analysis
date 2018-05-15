@@ -1,3 +1,4 @@
+import time
 import numpy as np
 
 import matplotlib as mpl
@@ -185,7 +186,9 @@ class Plotter:
 
         plt.suptitle('CasA Transit', fontsize=30)
 
-        plt.show()
+        t0 = time.time()
+        plt.savefig('/home/arts/software/arts-analysis/arts-analysis/bing%f' % t0)
+#        plt.show()
 
 
 def source_flux(nu_MHz, src=None):
