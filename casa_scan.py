@@ -359,7 +359,7 @@ if __name__=='__main__':
     data_rb = data[:, :data.shape[1]//100*100].reshape(nfreq, -1, 100).mean(-1)
 
     Plotter = Plotter(t_res=options.t_res*100)
-    Plotter.plot_all(data_rb, snr, C.tsys_to_sefd(tsys))
+    Plotter.plot_all(data_rb, snr, CalTools.tsys_to_sefd(tsys))
 
 
 # if __name__=='__main__':
