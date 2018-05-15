@@ -332,8 +332,6 @@ if __name__=='__main__':
                       type='float')
 
     
-    parser.add_option('--dm_list', type='string', action='callback', callback=foo_callback)
-
     options, args = parser.parse_args()
     fn = args[0]
 
