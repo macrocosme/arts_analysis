@@ -9,6 +9,149 @@ import psrchive
 from APERTIFparams import *
 APERTIFparams = APERTIFparams()
 
+class CalibrationTools:
+
+    def __init__(self, t_res=0.01, freq_up=1520., 
+                 freq_low=1220., bw=300.0, 
+                 nfreq=1536, Ndish=10, IAB=True):
+
+        self.chan_width = bw / nfreq * 1e6
+        self.t_res = t_res
+        self.freq_up = freq_up
+        self.freq_low = freq_low
+        self.freq = np.linspace(freq_up, freq_low, nfreq)
+        self.Ndish = Ndish
+        self.IAB = IAB
+
+    def calc_gain(self):
+        gain_parkes = 0.7 # gain of Parkes K Jy**-1
+        gain = (25./64.)**2*self.Ndish*gain_parkes
+
+        if self.IAB is True:
+            gain /= np.sqrt(self.Ndish)
+
+        return gain
+
+    def source_flux(self, freqMHz, src='CasA'):
+        """ Give a frequency in MHz, return 
+            a CasA flux in Jy.
+
+            Based on https://arxiv.org/pdf/1609.05940.pdf
+        """
+        if src is None:
+            print("No source name given")
+            return 1.0
+        elif src is 'CasA':
+            return 5000.0 * (freqMHz / 340.0)**-0.804
+        elif src is 'TauA':
+            return 1000.0 * (freqMHz / 600.0)**-0.2389
+
+
+    def calculate_snr_rms(self, data_ts, off_samp=(0, 500), src='CasA'):
+        """ Calculate S/N at transit of source src
+        """
+
+        assert len(data_ts.shape)==1
+
+        off_samp = slice(off_samp[0], off_samp[1])
+
+        # Assume source is not in beam for last 30 samples
+        snr = (data_ts.max() - np.median(data_ts[off_samp])) / np.std(data_ts[off_samp])
+
+        return snr
+
+    def calculate_tsys_onoff(self, data_ts, freq, off_samp=(0, 500), src='CasA'):
+        """ Take ratio of on/off point source data to determine 
+        system temperature of instrument. Assume some forward gain 
+        and aperture efficiency.
+        """
+
+        assert len(data_ts.shape)==1
+
+        off_samp = slice(off_samp[0], off_samp[1])
+
+        # Assume source is not in beam for last 30 samples
+        fractional_tsys = data_ts.max() / np.median(data_ts[off_samp])
+        # Get source flux at this frequency
+        Snu = self.source_flux(freq, src=src)
+
+        G = self.calc_gain()
+        Tsys = G * Snu / (fractional_tsys - 1)
+        print "%s is %f Jy" % (src, Snu)
+
+        return Tsys
+
+
+    def calculate_tsys_rms(self, data_ts, freq, off_samp=(0, 500), src='CasA'):
+        """ Take ratio of on/off point source data to determine 
+        system temperature of instrument. Assume some forward gain 
+        and aperture efficiency.
+        """
+
+        snr = self.calculate_snr_rms(data_ts, off_samp=off_samp, src=src)
+
+        # Get source flux at this frequency
+        Snu = self.source_flux(freq, src=src)
+
+        G = self.calc_gain()
+        Tsys = G * Snu * np.sqrt(self.chan_width*self.t_res) / snr
+
+        print "%s is %f Jy" % (src, Snu)
+
+        return Tsys
+
+    def tsys_to_sefd(self, Tsys):
+        G = self.calc_gain()
+
+        return Tsys / G
+
+
+class Plotter:
+
+    def __init__(self, t_res=0.01, freq_up=1520., freq_low=1220., nfreq=1536):
+        self.t_res = t_res
+        self.freq_up = freq_up
+        self.freq_low = freq_low
+        self.freq = np.linspace(freq_up, freq_low, nfreq)
+    
+    def dyn_spec(self, data):
+        tmax = len(data[0])*self.t_res
+        plt.imshow(data, aspect='auto', extent=[0, tmax, self.freq_up, self.freq_low])
+        plt.xlabel('Time [s]')
+        plt.ylabel('Freq [MHz]')
+
+    def plot_ts(self, data, freq_ind):
+        ntime = len(data[0])
+        times = np.linspace(0, self.t_res*ntime, ntime)
+        plt.plot(times, data[freq_ind])
+        plt.xlabel('Time [s]')
+
+    def plot_sefd(self, sefd):
+        plt.plot(self.freq, sefd)
+        plt.xlabel('Freq [MHz]', fontsize=15)
+        plt.ylabel('SEFD [Jy]', fontsize=15)
+
+    def plot_snr(self, SNR):
+        plt.plot(self.freq, SNR, color='orange')
+        plt.xlabel('Freq [MHz]', fontsize=15)
+        plt.ylabel('S/N', fontsize=15)
+
+    def plot_all(self, data, sefd, SNR):
+        fig = plt.figure(figsize=(12,12))
+
+        fig.add_subplot(221)
+        self.dyn_spec(data)
+
+        fig.add_subplot(222)
+        self.plot_ts(data, 300)
+
+        fig.add_subplot(223)
+        self.plot_sefd(sefd)
+
+        fig.add_subplot(224)
+        self.plot_snr(SNR)
+
+
 def source_flux(nu_MHz, src=None):
     """ Give a frequency in MHz, return 
         a CasA flux in Jy.
@@ -65,6 +208,8 @@ def calculate_tsys(data_arr, freq, src='CasA'):
     Tsys = G * Snu / (fractional_tsys - 1)
     print "%s is %f Jy" % (src, Snu)
     return Tsys
+
+
 
 def calculate_tsys_allfreq(date, folder, sband=1, eband=16, src='CasA'):
     """ Loop over bands from sband to eband, combine 
@@ -147,31 +292,34 @@ def plotter(data, outfile):
     plt.show()
     plt.savefig(outfile)
 
-if __name__=='__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument("date", help="date of observation in yyyymmdd format")
-    parser.add_argument("folder", help="subfolder of data/*/Timing/yyyymmdd/\
-                                        that contains folded profiles")                                         
-    parser.add_argument("-sband", help="start band number", default="1", type=int)  
-    parser.add_argument("-eband", help="end band number", default="16", type=int)
-    parser.add_argument("-subints", 
-           help="only process subints starting with parameter. e.g. 012\
-           would analyze only *_012*.ar files", 
-           default="")
-    parser.add_argument("-manual_dd", help="dedisperse manually", type=int, default=0)
-    parser.add_argument("-dm", help="dm for manual dedispersion", type=float, default=0)
-    parser.add_argument("-F0", help="pulsar rotation frequency in Hz", type=float, default=1)
-    parser.add_argument("-o", help="name of output file name", default="all")
-    parser.add_argument("src", help="source name", default="CasA")
 
-    args = parser.parse_args()
 
-    # Unpack arguments
-    date, folder = args.date, args.folder
-    sband, eband, outname, subints, src = args.sband, args.eband, args.o, args.subints, args.src
 
-    tsys_arr, data_full = calculate_tsys_allfreq(date, folder, sband=2, eband=16, src=src)
-    np.save('tsyscasa', tsys_arr)
-    np.save('full_data_arr', data_full)
+# if __name__=='__main__':
+#     parser = argparse.ArgumentParser()
+#     parser.add_argument("date", help="date of observation in yyyymmdd format")
+#     parser.add_argument("folder", help="subfolder of data/*/Timing/yyyymmdd/\
+#                                         that contains folded profiles")                                         
+#     parser.add_argument("-sband", help="start band number", default="1", type=int)  
+#     parser.add_argument("-eband", help="end band number", default="16", type=int)
+#     parser.add_argument("-subints", 
+#            help="only process subints starting with parameter. e.g. 012\
+#            would analyze only *_012*.ar files", 
+#            default="")
+#     parser.add_argument("-manual_dd", help="dedisperse manually", type=int, default=0)
+#     parser.add_argument("-dm", help="dm for manual dedispersion", type=float, default=0)
+#     parser.add_argument("-F0", help="pulsar rotation frequency in Hz", type=float, default=1)
+#     parser.add_argument("-o", help="name of output file name", default="all")
+#     parser.add_argument("src", help="source name", default="CasA")
+
+#     args = parser.parse_args()
+
+#     # Unpack arguments
+#     date, folder = args.date, args.folder
+#     sband, eband, outname, subints, src = args.sband, args.eband, args.o, args.subints, args.src
+
+#     tsys_arr, data_full = calculate_tsys_allfreq(date, folder, sband=2, eband=16, src=src)
+#     np.save('tsyscasa', tsys_arr)
+#     np.save('full_data_arr', data_full)
 
 
