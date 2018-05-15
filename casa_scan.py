@@ -29,8 +29,6 @@ class CalibrationTools:
 
         if self.IAB is True:
             gain /= np.sqrt(self.Ndish)
-            print('0',gain)
-        print(gain)
 
         return gain
 
@@ -355,7 +353,7 @@ if __name__=='__main__':
     tsys_rms = CalTools.tsys_onoff_allfreq(data, off_samp=(0, 5000), src='CasA')
     tsys_onoff = CalTools.tsys_onoff_allfreq(data, off_samp=(0, 5000), src='CasA')
     sefd_rms = CalTools.tsys_to_sefd(tsys_rms)
-    snr = CalTools.snr_allfreq(data, off_samp=(0, 5000), src='CasA')
+    snr = CalTools.snr_allfreq(data, off_samp=(0, 5000))
 
     # Rebin in time by x100 before plotting
     data_rb = data[:, :data.shape[1]//100*100].reshape(nfreq, -1, 100).mean(-1)
