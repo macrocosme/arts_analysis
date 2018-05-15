@@ -187,7 +187,7 @@ class Plotter:
         plt.suptitle('CasA Transit', fontsize=30)
 
         t0 = time.time()
-        plt.savefig('/home/arts/software/arts-analysis/arts-analysis/bing%f.png' % t0)
+        plt.savefig('/home/arts/software/arts-analysis/arts-analysis/bing%f.pdf' % t0)
 #        plt.show()
 
 
