@@ -1,10 +1,13 @@
 import numpy as np
-import matplotlib.pylab as plt
+
+import matplotlib as mpl
+mpl.use('Agg')
+import matplotlib.pyplot as plt
 
 import argparse
 import glob
 
-import psrchive
+#import psrchive
 
 from APERTIFparams import *
 APERTIFparams = APERTIFparams()
@@ -180,7 +183,7 @@ class Plotter:
         fig.add_subplot(224)
         self.plot_snr(SNR)
 
-        plt.suptitle('CasA Transit')
+        plt.suptitle('CasA Transit', fontsize=30)
 
         plt.show()
 
