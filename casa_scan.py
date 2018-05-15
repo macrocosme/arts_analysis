@@ -321,8 +321,7 @@ if __name__=='__main__':
                         description="Create diagnostic plots for individual triggers")
 
     parser.add_option('--t_res', dest='t_res', type='float', \
-                      help="Time resolution in seconds", \
-                                "(Default: .01)", default=0.01)
+                      help="Time resolution in seconds (Default: .01)", default=0.01)
 
     parser.add_option('--IAB', dest='IAB', default=True,\
                       help="Data were taken with incoherent beamforming")
