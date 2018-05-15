@@ -157,11 +157,13 @@ class Plotter:
         plt.plot(self.freq, sefd)
         plt.xlabel('Freq [MHz]', fontsize=15)
         plt.ylabel('SEFD [Jy]', fontsize=15)
+        plt.ylim(.3*np.median(sefd), 3*np.median(sefd))
 
     def plot_snr(self, SNR):
         plt.plot(self.freq, SNR, color='orange')
         plt.xlabel('Freq [MHz]', fontsize=15)
         plt.ylabel('S/N', fontsize=15)
+        plt.ylim(.3*np.median(SNR), 3*np.median(SNR))
 
     def plot_all(self, data, sefd, SNR):
         fig = plt.figure(figsize=(12,12))
