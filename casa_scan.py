@@ -105,6 +105,24 @@ class CalibrationTools:
 
         return Tsys / G
 
+    def tsys_rms_allfreq(self, data, off_samp=(0, 500), src='CasA'):
+
+        tsys_rms = []
+
+        for ii, ff in enumerate(self.freq):
+            tsys_rms.append(self.calculate_tsys_rms(data[ii], ff, off_samp=off_samp, src=src))
+
+        return np.array(tsys_rms)
+
+    def tsys_onoff_allfreq(self, data, off_samp=(0, 500), src='CasA'):
+
+        tsys_onoff = []
+
+        for ii, ff in enumerate(self.freq):
+            tsys_onoff.append(self.calculate_tsys_onoff(data[ii], ff, off_samp=off_samp, src=src))
+
+        return np.array(tsys_onoff)
+
 
 class Plotter:
 
@@ -150,6 +168,8 @@ class Plotter:
 
         fig.add_subplot(224)
         self.plot_snr(SNR)
+
+        plt.show()
 
 
 def source_flux(nu_MHz, src=None):
@@ -293,6 +313,45 @@ def plotter(data, outfile):
     plt.savefig(outfile)
 
 
+if __name__=='__main__':
+
+    parser = optparse.OptionParser(prog="inject_frb.py", \
+                        version="", \
+                        usage="%prog FN_FILTERBANK FN_FILTERBANK_OUT [OPTIONS]", \
+                        description="Create diagnostic plots for individual triggers")
+
+    parser.add_option('--t_res', dest='t_res', type='float', \
+                      help="Time resolution in seconds",
+                                "(Default: .01)", default=0.01)
+
+    parser.add_option('--IAB', dest='IAB', default=True,\
+                      help="Data were taken with incoherent beamforming")
+
+    parser.add_option('--Ndish', dest='Ndish', default=10.0,\
+                      help="Number of dishes",
+                      type='float')
+
+    
+    parser.add_option('--dm_list', type='string', action='callback', callback=foo_callback)
+
+    options, args = parser.parse_args()
+    fn = args[0]
+
+    data = np.load(fn)
+    nfreq = data.shape[0]
+
+    CalTools = CalibrationTools(t_res=options.t_res, Ndish=options.Ndish, 
+                                IAB=options.IAB)
+
+    tsys_rms = CalibrationTools.tsys_onoff_allfreq(data, off_samp=(0, 5000), src='CasA')
+    tsys_onoff = CalibrationTools.tsys_onoff_allfreq(data, off_samp=(0, 5000), src='CasA')
+    sefd_rms = CalibrationTools.tsys_to_sefd(tsys_rms)
+
+    # Rebin in time by x100 before plotting
+    data_rb = data[:, :data.shape[1]//100*100].reshape(nfreq, -1, 100).mean(-1)
+
+    Plotter = Plotter(t_res=options.t_res*100)
+    Plotter.plot_all(data_rb, snr, C.tsys_to_sefd(tsys))
 
 
 # if __name__=='__main__':
