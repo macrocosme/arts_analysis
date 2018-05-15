@@ -29,6 +29,8 @@ class CalibrationTools:
 
         if self.IAB is True:
             gain /= np.sqrt(self.Ndish)
+            print('0',gain)
+        print(gain)
 
         return gain
 
@@ -128,7 +130,7 @@ class CalibrationTools:
         snr = []
 
         for ii, ff in enumerate(self.freq):
-            snr.append(self.calculate_snr_rms(data[ii], off_samp=off_samp)
+            snr.append(self.calculate_snr_rms(data[ii], off_samp=off_samp))
 
         return np.array(snr)
 
