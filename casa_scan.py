@@ -341,9 +341,9 @@ if __name__=='__main__':
     CalTools = CalibrationTools(t_res=options.t_res, Ndish=options.Ndish, 
                                 IAB=options.IAB)
 
-    tsys_rms = CalibrationTools.tsys_onoff_allfreq(data, off_samp=(0, 5000), src='CasA')
-    tsys_onoff = CalibrationTools.tsys_onoff_allfreq(data, off_samp=(0, 5000), src='CasA')
-    sefd_rms = CalibrationTools.tsys_to_sefd(tsys_rms)
+    tsys_rms = CalTools.tsys_onoff_allfreq(data, off_samp=(0, 5000), src='CasA')
+    tsys_onoff = CalTools.tsys_onoff_allfreq(data, off_samp=(0, 5000), src='CasA')
+    sefd_rms = CalTools.tsys_to_sefd(tsys_rms)
 
     # Rebin in time by x100 before plotting
     data_rb = data[:, :data.shape[1]//100*100].reshape(nfreq, -1, 100).mean(-1)
