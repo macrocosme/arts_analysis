@@ -47,7 +47,7 @@ class CalibrationTools:
             return 1000.0 * (freqMHz / 600.0)**-0.2389
 
 
-    def calculate_snr_rms(self, data_ts, off_samp=(0, 500), src='CasA'):
+    def calculate_snr_rms(self, data_ts, off_samp=(0, 500)):
         """ Calculate S/N at transit of source src
         """
 
@@ -123,12 +123,12 @@ class CalibrationTools:
 
         return np.array(tsys_onoff)
 
-    def snr_allfreq(self, data, off_samp=(0, 500), src='CasA'):
+    def snr_allfreq(self, data, off_samp=(0, 500)):
 
         snr = []
 
         for ii, ff in enumerate(self.freq):
-            snr.append(self.calculate_snr_rms(data[ii], off_samp=off_samp, src=src))
+            snr.append(self.calculate_snr_rms(data[ii], off_samp=off_samp)
 
         return np.array(snr)
 
@@ -359,7 +359,7 @@ if __name__=='__main__':
     data_rb = data[:, :data.shape[1]//100*100].reshape(nfreq, -1, 100).mean(-1)
 
     Plotter = Plotter(t_res=options.t_res*100)
-    Plotter.plot_all(data_rb, snr, CalTools.tsys_to_sefd(tsys_rms))
+    Plotter.plot_all(data_rb, CalTools.tsys_to_sefd(tsys_rms), snr)
 
 
 # if __name__=='__main__':
