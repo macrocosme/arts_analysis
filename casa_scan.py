@@ -314,6 +314,7 @@ def plotter(data, outfile):
 
 
 if __name__=='__main__':
+    import optparse
 
     parser = optparse.OptionParser(prog="inject_frb.py", \
                         version="", \
