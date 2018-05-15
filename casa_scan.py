@@ -144,23 +144,23 @@ class Plotter:
     def dyn_spec(self, data):
         tmax = len(data[0])*self.t_res
         plt.imshow(data, aspect='auto', extent=[0, tmax, self.freq_up, self.freq_low])
-        plt.xlabel('Time [s]')
-        plt.ylabel('Freq [MHz]')
+        plt.xlabel('Time [s]', fontsize=15)
+        plt.ylabel('Freq [MHz]', fontsize=15)
 
     def plot_ts(self, data, freq_ind):
         ntime = len(data[0])
         times = np.linspace(0, self.t_res*ntime, ntime)
         plt.plot(times, data[freq_ind])
-        plt.xlabel('Time [s]')
+        plt.xlabel('Time [s]', fontsize=15)
 
     def plot_sefd(self, sefd):
-        plt.plot(self.freq, sefd)
+        plt.plot(self.freq, sefd, '.')
         plt.xlabel('Freq [MHz]', fontsize=15)
         plt.ylabel('SEFD [Jy]', fontsize=15)
-        plt.ylim(.3*np.median(sefd), 3*np.median(sefd))
+        plt.ylim(.3*np.median(sefd), 2*np.median(sefd))
 
     def plot_snr(self, SNR):
-        plt.plot(self.freq, SNR, color='orange')
+        plt.plot(self.freq, SNR, '.', color='orange')
         plt.xlabel('Freq [MHz]', fontsize=15)
         plt.ylabel('S/N', fontsize=15)
         plt.ylim(.3*np.median(SNR), 3*np.median(SNR))
@@ -179,6 +179,8 @@ class Plotter:
 
         fig.add_subplot(224)
         self.plot_snr(SNR)
+
+        plt.suptitle('CasA Transit')
 
         plt.show()
 
