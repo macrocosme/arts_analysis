@@ -123,6 +123,15 @@ class CalibrationTools:
 
         return np.array(tsys_onoff)
 
+    def snr_allfreq(self, data, off_samp=(0, 500), src='CasA'):
+
+        snr = []
+
+        for ii, ff in enumerate(self.freq):
+            snr.append(self.calculate_snr_rms(data[ii], off_samp=off_samp, src=src))
+
+        return np.array(snr)
+
 
 class Plotter:
 
@@ -344,6 +353,7 @@ if __name__=='__main__':
     tsys_rms = CalTools.tsys_onoff_allfreq(data, off_samp=(0, 5000), src='CasA')
     tsys_onoff = CalTools.tsys_onoff_allfreq(data, off_samp=(0, 5000), src='CasA')
     sefd_rms = CalTools.tsys_to_sefd(tsys_rms)
+    snr = CalTools.snr_allfreq(data, off_samp=(0, 5000), src='CasA')
 
     # Rebin in time by x100 before plotting
     data_rb = data[:, :data.shape[1]//100*100].reshape(nfreq, -1, 100).mean(-1)
