@@ -45,10 +45,46 @@ def test_writer():
 def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1, 
                          NFREQ=1536, NTIME=2**15, rfi_clean=False,
                          dm=250.0, freq=(1550, 1250), dt=0.00004096,
-                         chunksize=5e4, calc_snr=False, start=0, 
+                         chunksize=5e4, calc_snr=True, start=0, 
                          freq_ref=1400., subtract_zero=False, clipping=None):
     """ Inject an FRB in each chunk of data 
         at random times. Default params are for Apertif data.
+
+    Parameters:
+    -----------
+
+    fn_fil : str
+        name of filterbank file 
+    fn_out_dir : str 
+        directory for output files 
+    N_FRB : int 
+        number of FRBs to inject 
+    NTIME : int 
+        number of time samples per data chunk 
+    rfi_clean : bool 
+        apply rfi filters 
+    dm : float / tuple 
+        dispersion measure(s) to inject FRB with 
+    freq : tuple 
+        (freq_bottom, freq_top) 
+    dt : float 
+        time resolution 
+    chunksize : int 
+        size of data in samples to read in 
+    calc_snr : bool 
+        calculates S/N of injected pulse 
+    start : int 
+        start sample 
+    freq_ref : float 
+        reference frequency for injection code 
+    subtract_zero : bool 
+        subtract zero DM timestream from data 
+    clipping : 
+        zero out bright events in zero-DM timestream 
+
+    Returns:
+    --------
+    None 
     """
 
     if type(dm) is not tuple:
@@ -70,8 +106,10 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
     ii=0
     params_full_arr = []
 
+    ttot = int(N_FRB*chunksize*delta_t)
+
     timestr = time.strftime("%Y%m%d-%H%M")
-    fn_fil_out = '%s/dm%s_nfrb%d_%s.fil' % (fn_out_dir, dm, N_FRB, timestr)
+    fn_fil_out = '%s/dm%s_nfrb%d_%s_sec_%s.fil' % (fn_out_dir, dm, N_FRB, ttot, timestr)
     fn_params_out = fn_fil_out.strip('.fil') + '.txt'
 
     f_params_out = open(fn_params_out, 'w+')
