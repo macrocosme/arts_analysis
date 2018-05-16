@@ -326,12 +326,16 @@ class SNR_Tools:
 
         snr_1, snr_2 = par_1[0], par_2[0]
         dm_1, dm_2 = par_1[1], par_2[1]
+        width_1, width_2 = par_1[3], par_2[3]
 
         snr_1_match = par_match_arr[0,:,0]
         snr_2_match = par_match_arr[0,:,1]
 
         dm_1_match = par_match_arr[1,:,0]
         dm_2_match = par_match_arr[1,:,1]
+
+        width_1_match = par_match_arr[3,:,0]
+        width_2_match = par_match_arr[3,:,1]
 
         fig.add_subplot(311)
         plt.plot(snr_1_match, snr_2_match, '.')
@@ -348,13 +352,22 @@ class SNR_Tools:
         plt.ylabel('Expected S/N : Detected S/N', fontsize=15)        
         plt.legend(['Detected events','Missed events'])
 
-        fig.add_subplot(313)
-        plt.plot(snr_1_match, snr_2_match, '.')
-        plt.plot(snr_1, snr_1, color='k')
-        plt.plot(snr_1[ind_missed], np.zeros([len(ind_missed)]))
-        plt.xlabel('Injected S/N', fontsize=15)
-        plt.ylabel('Detected S/N', fontsize=15)        
-        plt.legend(['Detected events','Expected S/N','Missed events'])
+        fig.add_subplot(337)
+        plt.hist(width_1)
+
+        fig.add_subplot(338)
+        plt.hist(width_1)
+
+        fig.add_subplot(339)
+        plt.hist(width_1)
+
+        # fig.add_subplot(313)
+        # plt.plot(width_1_match, width_2_match, '.')
+        # plt.plot(snr_1, snr_1, color='k')
+        # plt.plot(snr_1[ind_missed], np.zeros([len(ind_missed)]))
+        # plt.xlabel('Injected S/N', fontsize=15)
+        # plt.ylabel('Detected S/N', fontsize=15)        
+        # plt.legend(['Detected events','Expected S/N','Missed events'])
 
         plt.show()
 
