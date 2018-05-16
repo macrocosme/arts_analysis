@@ -263,7 +263,7 @@ def compare_snr(fn_1, fn_2, dm_min=0, dm_max=np.inf, save_data=False,
     # Make arrays for the matching parameters
     par_match_arr = []
 
-    print("t_diff  t_0  t_1  dm_0  dm_1")
+    print("t_diff  t_0  t_1  dm_0  dm_1  snr_1  snr_2")
     for ii in range(len(snr_1)):
         tdiff = np.abs(t_1[ii] - t_2)
         ind = np.where(tdiff == tdiff.min())[0]
@@ -324,7 +324,7 @@ if __name__=='__main__':
     try:
         par_1, par_2, par_match_arr = compare_snr(fn_1, fn_2, dm_min=dm_min, 
                                         dm_max=dm_max, save_data=False,
-                                        sig_thresh=5.0, t_window=0.1)
+                                        sig_thresh=5.0, t_window=0.13)
     except TypeError:
         print("No matches, exiting")
         exit()
