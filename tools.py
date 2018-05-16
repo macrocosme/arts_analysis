@@ -262,6 +262,7 @@ def compare_snr(fn_1, fn_2, dm_min=0, dm_max=np.inf, save_data=False,
 
     # Make arrays for the matching parameters
     par_match_arr = []
+    ind_missed = []
 
     print("t_diff   t_0   t_1   dm_0   dm_1  snr_1   snr_2")
     for ii in range(len(snr_1)):
@@ -285,6 +286,9 @@ def compare_snr(fn_1, fn_2, dm_min=0, dm_max=np.inf, save_data=False,
                                      w_1[ii], w_2[ind]])
 
             par_match_arr.append(params_match)
+        else:
+            # Keep track of missed triggers
+            ind_missed.append(ii)
 
     if len(par_match_arr)==0:
         print("No matches found")
@@ -303,7 +307,7 @@ def compare_snr(fn_1, fn_2, dm_min=0, dm_max=np.inf, save_data=False,
         np.save(fn_2+'_params_grouped', par_2)
         np.save('params_matched', par_match_1)
 
-    return par_1, par_2, par_match_arr
+    return par_1, par_2, par_match_arr, ind_missed
 
 if __name__=='__main__':
 
