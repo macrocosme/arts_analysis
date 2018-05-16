@@ -480,7 +480,8 @@ if __name__=='__main__':
     grouped_triggers[:,2] = tt_cut
     grouped_triggers[:,3] = ds_cut
 
-    np.savetxt('grouped_pulses.singlepulse', grouped_triggers)
+    np.savetxt('grouped_pulses.singlepulse', 
+                grouped_triggers, fmt='%0.2f %0.1f %0.3f %0.1f')
 
     for ii, t0 in enumerate(tt_cut[:options.ntrig]):
         print("\nStarting DM=%0.2f" % dm_cut[ii])
