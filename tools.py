@@ -321,170 +321,86 @@ class SNR_Tools:
 
         return par_1, par_2, par_match_arr, ind_missed    
 
-def sigma_from_mad(data):
-    """ Get gaussian std from median 
-    aboslute deviation (MAD)
-    """
-    assert len(data.shape)==1, 'data should be one dimensional'
+    def plot_comparison(self, par_1, par_2, par_match_arr, ind_missed):
+        fig = plt.figure()
 
-    med = np.median(data)
-    mad = np.median(np.absolute(data - med))
+        snr_1, snr_2 = par_1[0], par_2[0]
+        dm_1, dm_2 = par_1[1], par_2[1]
 
-    return 1.4826*mad, med
+        snr_1_match = par_match_arr[0,:,0]
+        snr_2_match = par_match_arr[0,:,1]
 
-def calc_snr(data):
-    """ Calculate S/N of 1D input array (data)
-    after excluding 0.05 at tails
-    """
-    std_chunk = scipy.signal.detrend(data, type='linear')
-    std_chunk.sort()
-    ntime_r = len(std_chunk)
-    stds = 1.148*np.sqrt((std_chunk[ntime_r//40:-ntime_r//40]**2.0).sum() /
-                          (0.95*ntime_r))
-    snr_ = std_chunk[-1] / stds 
+        dm_1_match = par_match_arr[1,:,0]
+        dm_2_match = par_match_arr[1,:,1]
 
-    return snr_
+        fig.add_subplot(131)
+        plt.plot(snr_1_match, snr_2_match, '.')
+        plt.plot(snr_1, snr_1, color='k')
+        plt.plot(snr_1[ind_missed], np.zeros([len(ind_missed)]), 'o', color='orange')
+        plt.xlabel('Injected S/N', fontsize=15)
+        plt.ylabel('Detected S/N', fontsize=15)        
+        plt.legend(['Detected events','Expected S/N','Missed events'])
 
-def calc_snr_widths(data, widths=None):
-    """ Calculate the S/N of pulse profile after 
-    trying 9 rebinnings.
+        fig.add_subplot(132)
+        plt.plot(dm_1_matched, snr_1_match/snr_2_match, '.')
+        plt.plot(dm_1[ind_missed], np.zeros([len(ind_missed)]), 'o', color='orange')
+        plt.xlabel('DM', fontsize=15)
+        plt.ylabel('Expected S/N : Detected S/N', fontsize=15)        
+        plt.legend(['Detected events','Missed events'])
 
-    Parameters
-    ----------
-    arr   : np.array
-        (ntime,) vector of pulse profile 
+        fig.add_subplot(133)
+        plt.plot(snr_1_match, snr_2_match, '.')
+        plt.plot(snr_1, snr_1, color='k')
+        plt.plot(snr_1[ind_missed], np.zeros([len(ind_missed)]))
+        plt.xlabel('Injected S/N', fontsize=15)
+        plt.ylabel('Detected S/N', fontsize=15)        
+        plt.legend(['Detected events','Expected S/N','Missed events'])
 
-    Returns
-    -------
-    snr : np.float 
-        S/N of pulse
-    """
-    assert len(data.shape)==1
-    
-    ntime = len(data)
-    snr_max = 0
-    data -= np.median(data)
+        plt.show()
 
-    if widths is None:
-        widths = [1, 2, 4, 8, 16, 32, 64, 128]
+    def dyn_spec(self, data):
+        tmax = len(data[0])*self.t_res
+        plt.imshow(data, aspect='auto', extent=[0, tmax, self.freq_up, self.freq_low])
+        plt.xlabel('Time [s]', fontsize=15)
+        plt.ylabel('Freq [MHz]', fontsize=15)
 
-#    for ii in range(1, 10):
-    for ii in widths:
-        for jj in range(ii):
-            # skip if boxcar width is greater than 1/4th ntime
-            if ii > ntime//8:
-                continue
-            
-            arr_copy = data.copy()
-            arr_copy = np.roll(arr_copy, jj)
-            arr_ = arr_copy[:ntime//ii*ii].reshape(-1, ii).mean(-1)
+    def plot_ts(self, data, freq_ind):
+        ntime = len(data[0])
+        times = np.linspace(0, self.t_res*ntime, ntime)
+        plt.plot(times, data[freq_ind])
+        plt.xlabel('Time [s]', fontsize=15)
 
-            snr_ = calc_snr(arr_)
+    def plot_sefd(self, sefd):
+        plt.plot(self.freq, sefd, '.')
+        plt.xlabel('Freq [MHz]', fontsize=15)
+        plt.ylabel('SEFD [Jy]', fontsize=15)
+        plt.ylim(.3*np.median(sefd), 2*np.median(sefd))
 
-            if snr_ > snr_max:
-                snr_max = snr_
-                width_max = ii
+    def plot_snr(self, SNR):
+        plt.plot(self.freq, SNR, '.', color='orange')
+        plt.xlabel('Freq [MHz]', fontsize=15)
+        plt.ylabel('S/N', fontsize=15)
+        plt.ylim(.3*np.median(SNR), 3*np.median(SNR))
 
-    return snr_max, width_max
+    def plot_all(self, data, sefd, SNR):
+        fig = plt.figure(figsize=(12,12))
 
-def compare_snr(fn_1, fn_2, dm_min=0, dm_max=np.inf, save_data=False,
-                sig_thresh=5.0, t_window=0.5):
-    """ Read in two files with single-pulse candidates
-    and compare triggers.
+        fig.add_subplot(221)
+        self.dyn_spec(data)
 
-    Parameters:
-    ----------
-    fn_1 : str 
-        name of input triggers text file
-        (must be .trigger, .singlepulse, or .txt)
-    fn_2 : str
-        name of input triggers text file for comparison 
-    dm_min : float
-        do not process triggers below this DM 
-    dm_max : float 
-        do not process triggers above this DM 
-    save_data : bool 
-        if True save to np.array
-    sig_thresh : float 
-        do not process triggers below this S/N 
-    t_window : float 
-        time window within which triggers in 
-        fn_1 and fn_2 will be considered the same 
+        fig.add_subplot(222)
+        self.plot_ts(data, 300)
 
-    Return:
-    -------
-    Function returns four parameter arrays for 
-    each fn_1 and fn_2, which should be ordered so 
-    that they can be compared directly:
+        fig.add_subplot(223)
+        self.plot_sefd(sefd)
 
-    grouped_params1, grouped_params2, matched_params
-    """
-    snr_1, dm_1, t_1, w_1 = get_triggers(fn_1, sig_thresh=sig_thresh, 
-                                dm_min=dm_min, dm_max=np.inf, t_window=t_window)
+        fig.add_subplot(224)
+        self.plot_snr(SNR)
 
-    snr_2, dm_2, t_2, w_2 = get_triggers(fn_2, sig_thresh=sig_thresh, 
-                                dm_min=dm_min, dm_max=dm_max, t_window=t_window)
+        plt.suptitle('CasA Transit', fontsize=30)
 
-    snr_2_reorder = []
-    dm_2_reorder = []
-    t_2_reorder = []
-    w_2_reorder = []
-
-    ntrig_1 = len(snr_1)
-    ntrig_2 = len(snr_2)    
-
-    par_1 = np.concatenate([snr_1, dm_1, t_1, w_1]).reshape(4, -1)
-    par_2 = np.concatenate([snr_2, dm_2, t_2, w_2]).reshape(4, -1)
-
-    # Make arrays for the matching parameters
-    par_match_arr = []
-    ind_missed = []
-
-    print("t_diff   t_0   t_1   dm_0   dm_1  snr_1   snr_2")
-    for ii in range(len(snr_1)):
-        tdiff = np.abs(t_1[ii] - t_2)
-        ind = np.where(tdiff == tdiff.min())[0]
-
-        # make sure you are getting correct trigger in dm/time space
-        if len(ind) > 1:
-            ind = ind[np.argmin(np.abs(dm_1[ii]-dm_2[ind]))]
-        else:
-            ind = ind[0]
-
-        # check for triggers that are within 1.0 seconds and 20% in dm
-        if (tdiff[ind]<1.0) and (np.abs(dm_1[ii]-dm_2[ind])/dm_1[ii])<0.2:
-            pparams = (tdiff[ind], t_1[ii], t_2[ind], dm_1[ii], dm_2[ind], snr_1[ii], snr_2[ind])
-            print("%1.4f  %5.1f  %5.1f  %5.1f  %5.1f %5.1f  %5.1f" % pparams)
-
-            params_match = np.array([snr_1[ii], snr_2[ind], 
-                                     dm_1[ii], dm_2[ind],
-                                     t_1[ii], t_2[ind],
-                                     w_1[ii], w_2[ind]])
-
-            par_match_arr.append(params_match)
-        else:
-            # Keep track of missed triggers
-            ind_missed.append(ii)
-
-    if len(par_match_arr)==0:
-        print("No matches found")
-        return 
-
-    # concatenate list and reshape to (nparam, nmatch, 2 files)
-    par_match_arr = np.concatenate(par_match_arr).reshape(-1, 4, 2)
-    par_match_arr = par_match_arr.transpose((1, 0, 2))
-
-    if save_data is True:
-        nsnr = min(len(snr_1), len(snr_2))
-        snr_1 = snr_1[:nsnr]
-        snr_2 = snr_2_reorder[:nsnr]
-
-        np.save(fn_1+'_params_grouped', par_1)
-        np.save(fn_2+'_params_grouped', par_2)
-        np.save('params_matched', par_match_1)
-
-    return par_1, par_2, par_match_arr, ind_missed
-
+        t0 = time.time()
+        plt.savefig('/home/arts/software/arts-analysis/arts-analysis/bing%f.pdf' % t0)
 
 
 if __name__=='__main__':
@@ -524,4 +440,5 @@ if __name__=='__main__':
 
     print('File 1 has %f times higher S/N than file 2' % np.mean(snr_1/snr_2))
 
+    SNRTools.plot_comparison(par_1, par_2, par_match_arr, ind_missed)
 
