@@ -333,7 +333,7 @@ class SNR_Tools:
         dm_1_match = par_match_arr[1,:,0]
         dm_2_match = par_match_arr[1,:,1]
 
-        fig.add_subplot(131)
+        fig.add_subplot(311)
         plt.plot(snr_1_match, snr_2_match, '.')
         plt.plot(snr_1, snr_1, color='k')
         plt.plot(snr_1[ind_missed], np.zeros([len(ind_missed)]), 'o', color='orange')
@@ -341,14 +341,14 @@ class SNR_Tools:
         plt.ylabel('Detected S/N', fontsize=15)        
         plt.legend(['Detected events','Expected S/N','Missed events'])
 
-        fig.add_subplot(132)
+        fig.add_subplot(312)
         plt.plot(dm_1_match, snr_1_match/snr_2_match, '.')
         plt.plot(dm_1[ind_missed], np.zeros([len(ind_missed)]), 'o', color='orange')
         plt.xlabel('DM', fontsize=15)
         plt.ylabel('Expected S/N : Detected S/N', fontsize=15)        
         plt.legend(['Detected events','Missed events'])
 
-        fig.add_subplot(133)
+        fig.add_subplot(313)
         plt.plot(snr_1_match, snr_2_match, '.')
         plt.plot(snr_1, snr_1, color='k')
         plt.plot(snr_1[ind_missed], np.zeros([len(ind_missed)]))
