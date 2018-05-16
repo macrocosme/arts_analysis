@@ -353,22 +353,25 @@ class SNR_Tools:
         plt.legend(['Detected events','Missed events'])
 
         fig.add_subplot(337)
-        plt.hist(width_1)
+        plt.hist(width_1, alpha=0.3)
+        plt.hist(width_2, alpha=0.3)
+        plt.hist(width_1[ind_missed], alpha=0.3)
+        plt.xlabel('Width [samples]', fontsize=15)
 
         fig.add_subplot(338)
-        plt.hist(width_1)
+        plt.plot(width_1_match, snr_1_match)
+        plt.plot(width_1_match, snr_2_match)
+        plt.plot(width_1, snr_1)
+        plt.xlabel('Width [samples]', fontsize=15)
+        plt.ylabel('S/N injected', fontsize=15)
 
         fig.add_subplot(339)
-        plt.hist(width_1)
-
-        # fig.add_subplot(313)
-        # plt.plot(width_1_match, width_2_match, '.')
-        # plt.plot(snr_1, snr_1, color='k')
-        # plt.plot(snr_1[ind_missed], np.zeros([len(ind_missed)]))
-        # plt.xlabel('Injected S/N', fontsize=15)
-        # plt.ylabel('Detected S/N', fontsize=15)        
-        # plt.legend(['Detected events','Expected S/N','Missed events'])
-
+        plt.plot(width_1_match, dm_1_match)
+        plt.plot(width_1_match, dm_2_match)
+        plt.plot(width_1, dm_1)
+        plt.xlabel('Width [samples]', fontsize=15)
+        plt.ylabel('DM', fontsize=15)
+        
         plt.show()
 
     def dyn_spec(self, data):
