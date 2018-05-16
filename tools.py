@@ -215,7 +215,7 @@ class SNR_Tools:
                 arr_copy = np.roll(arr_copy, jj)
                 arr_ = arr_copy[:ntime//ii*ii].reshape(-1, ii).mean(-1)
 
-                snr_ = calc_snr(arr_)
+                snr_ = self.calc_snr(arr_)
 
                 if snr_ > snr_max:
                     snr_max = snr_

@@ -138,7 +138,8 @@ class Event(object):
         scint_amp = self.scintillation(freq)
         self._fluence /= np.sqrt(NFREQ)
 #        stds_perchan = np.std(data)#*np.sqrt(NFREQ)
-        stds_perchan, med = tools.sigma_from_mad(data.flatten())
+        SNRTools = tools.SNR_Tools()
+        stds_perchan, med = SNRTools.sigma_from_mad(data.flatten())
 
         for ii, f in enumerate(freq):
             # Do not add FRB to missing channels
@@ -321,7 +322,11 @@ class EventSimulator():
         # change width from uniform to lognormal
         width = np.random.lognormal(np.log(self._width[0]), self._width[1])
         width = np.random.uniform(self._width[0], self._width[1])
+        np.random.seed(42)
+        print("")
+        print(width)
         width = max(min(width, 1000*self._width[0]), 0.5*self._width[0])
+        print(width)
         return dm, fluence, width, spec_ind, disp_ind, scat_factor
 
 def uniform_range(min_, max_):

@@ -106,7 +106,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
     ii=0
     params_full_arr = []
 
-    ttot = int(N_FRB*chunksize*delta_t)
+    ttot = int(N_FRB*chunksize*dt)
 
     timestr = time.strftime("%Y%m%d-%H%M")
     fn_fil_out = '%s/dm%s_nfrb%d_%s_sec_%s.fil' % (fn_out_dir, dm, N_FRB, ttot, timestr)
@@ -142,9 +142,9 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         data_event, params = simulate_frb.gen_simulated_frb(NFREQ=NFREQ, 
                                                NTIME=NTIME, sim=True, 
 #                                               fluence=3000*(1+0.1*ii),
-                                                            fluence=(2000, 12000),
-                                               spec_ind=0, width=(delta_t, delta_t*10), 
-                                               dm=dm + ii*dm/100.0, scat_factor=(-4, -3.5), 
+                                               fluence=(200, 500),
+                                               spec_ind=0, width=(delta_t, delta_t*100), 
+                                               dm=dm+10*ii, scat_factor=(-4, -3.5), 
                                                background_noise=data_event, 
                                                delta_t=delta_t, plot_burst=False, 
                                                freq=(freq_arr[0], freq_arr[-1]), 
@@ -203,7 +203,8 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             data_rb = data_rb[:, :-end_pix].mean(0)
             data_rb -= np.median(data_rb)
 
-            snr_max, width_max = tools.calc_snr_widths(data_rb,
+            SNRTools = tools.SNR_Tools()
+            snr_max, width_max = SNRTools.calc_snr_widths(data_rb,
                                                        widths=range(100))
 
 #            snr_max2, width_max2 = tools.calc_snr_widths(data_rb,

@@ -219,6 +219,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     full_freq_arr_downsamp : np.array
         data array with downsampled freq-time intensities 
     """
+    SNRtools = tools.SNR_Tools()
+
     rawdatafile = filterbank.filterbank(fn_fil)
 
     mask = np.array([ 5,   6,   9,  32,  35,  49,  75,  76,  78,  82,  83,  87,  92,
@@ -303,7 +305,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         #                            (0.95*ntime))
         # snr_ = std_chunk[-1]/stds 
 
-        snr_ = tools.calc_snr(dm_arr)
+        snr_ = SNRtools.calc_snr(dm_arr)
 
         full_arr[jj] = copy.copy(dm_arr)
 
@@ -465,7 +467,9 @@ if __name__=='__main__':
         data_freq_time_full = []
         params_full = []
 
-    sig_cut, dm_cut, tt_cut, ds_cut = tools.get_triggers(fn_sp, 
+    SNRTools = tools.SNR_tools()
+
+    sig_cut, dm_cut, tt_cut, ds_cut = SNRTools.get_triggers(fn_sp, 
                                                          sig_thresh=options.sig_thresh,
                                                          dm_min=options.dm_min,
                                                          dm_max=options.dm_max)
