@@ -324,6 +324,8 @@ class SNR_Tools:
     def plot_comparison(self, par_1, par_2, par_match_arr, ind_missed):
         fig = plt.figure()
 
+        frac_recovered = len(ind_missed)
+
         snr_1, snr_2 = par_1[0], par_2[0]
         dm_1, dm_2 = par_1[1], par_2[1]
         width_1, width_2 = par_1[3], par_2[3]
@@ -343,80 +345,37 @@ class SNR_Tools:
         plt.plot(snr_1[ind_missed], np.zeros([len(ind_missed)]), 'o', color='orange')
         plt.xlabel('Injected S/N', fontsize=15)
         plt.ylabel('Detected S/N', fontsize=15)        
-        plt.legend(['Detected events','Expected S/N','Missed events'])
+        plt.legend(['Detected events','Expected S/N','Missed events'], fontsize=15)
 
         fig.add_subplot(312)
         plt.plot(dm_1_match, snr_1_match/snr_2_match, '.')
         plt.plot(dm_1[ind_missed], np.zeros([len(ind_missed)]), 'o', color='orange')
         plt.xlabel('DM', fontsize=15)
         plt.ylabel('Expected S/N : Detected S/N', fontsize=15)        
-        plt.legend(['Detected events','Missed events'])
+        plt.legend(['Detected events','Missed events'], fontsize=15)
 
         fig.add_subplot(337)
-        plt.hist(width_1, alpha=0.3)
-        plt.hist(width_2, alpha=0.3)
-        plt.hist(width_1[ind_missed], alpha=0.3)
+        plt.hist(width_1, bins=50, alpha=0.3, normed=True)
+        plt.hist(width_2, bins=50, alpha=0.3, normed=True)
+        plt.hist(width_1[ind_missed], bins=50, alpha=0.3, normed=True)
         plt.xlabel('Width [samples]', fontsize=15)
 
         fig.add_subplot(338)
-        plt.plot(width_1_match, snr_1_match)
-        plt.plot(width_1_match, snr_2_match)
-        plt.plot(width_1, snr_1)
+        plt.plot(width_1_match, snr_1_match,'.')
+        plt.plot(width_1_match, snr_2_match,'.')
+        plt.plot(width_1, snr_1, '.')
         plt.xlabel('Width [samples]', fontsize=15)
         plt.ylabel('S/N injected', fontsize=15)
 
         fig.add_subplot(339)
-        plt.plot(width_1_match, dm_1_match)
-        plt.plot(width_1_match, dm_2_match)
-        plt.plot(width_1, dm_1)
+        plt.plot(width_1_match, dm_1_match,'.')
+        plt.plot(width_1_match, dm_2_match,'.')
+        plt.plot(width_1, dm_1,'.')
         plt.xlabel('Width [samples]', fontsize=15)
         plt.ylabel('DM', fontsize=15)
-        
+
         plt.show()
 
-    def dyn_spec(self, data):
-        tmax = len(data[0])*self.t_res
-        plt.imshow(data, aspect='auto', extent=[0, tmax, self.freq_up, self.freq_low])
-        plt.xlabel('Time [s]', fontsize=15)
-        plt.ylabel('Freq [MHz]', fontsize=15)
-
-    def plot_ts(self, data, freq_ind):
-        ntime = len(data[0])
-        times = np.linspace(0, self.t_res*ntime, ntime)
-        plt.plot(times, data[freq_ind])
-        plt.xlabel('Time [s]', fontsize=15)
-
-    def plot_sefd(self, sefd):
-        plt.plot(self.freq, sefd, '.')
-        plt.xlabel('Freq [MHz]', fontsize=15)
-        plt.ylabel('SEFD [Jy]', fontsize=15)
-        plt.ylim(.3*np.median(sefd), 2*np.median(sefd))
-
-    def plot_snr(self, SNR):
-        plt.plot(self.freq, SNR, '.', color='orange')
-        plt.xlabel('Freq [MHz]', fontsize=15)
-        plt.ylabel('S/N', fontsize=15)
-        plt.ylim(.3*np.median(SNR), 3*np.median(SNR))
-
-    def plot_all(self, data, sefd, SNR):
-        fig = plt.figure(figsize=(12,12))
-
-        fig.add_subplot(221)
-        self.dyn_spec(data)
-
-        fig.add_subplot(222)
-        self.plot_ts(data, 300)
-
-        fig.add_subplot(223)
-        self.plot_sefd(sefd)
-
-        fig.add_subplot(224)
-        self.plot_snr(SNR)
-
-        plt.suptitle('CasA Transit', fontsize=30)
-
-        t0 = time.time()
-        plt.savefig('/home/arts/software/arts-analysis/arts-analysis/bing%f.pdf' % t0)
 
 
 if __name__=='__main__':
