@@ -342,7 +342,7 @@ class SNR_Tools:
         plt.legend(['Detected events','Expected S/N','Missed events'])
 
         fig.add_subplot(132)
-        plt.plot(dm_1_matched, snr_1_match/snr_2_match, '.')
+        plt.plot(dm_1_match, snr_1_match/snr_2_match, '.')
         plt.plot(dm_1[ind_missed], np.zeros([len(ind_missed)]), 'o', color='orange')
         plt.xlabel('DM', fontsize=15)
         plt.ylabel('Expected S/N : Detected S/N', fontsize=15)        
