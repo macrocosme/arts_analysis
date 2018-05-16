@@ -40,10 +40,10 @@ def dm_range(dm_max, dm_min=5., frac=0.2):
 
 def read_singlepulse(fn):
     if fn.split('.')[-1] in ('singlepulse', 'txt'):
-        A = np.loadtxt(fn)
+        A = np.genfromtxt(fn)
         dm, sig, tt, downsample = A[:,0], A[:,1], A[:,2], A[:,4]
     elif fn.split('.')[-1]=='trigger':
-        A = np.loadtxt(fn)
+        A = np.genfromtxt(fn)
         # Check if amber has compacted, in which case 
         # there are two extra rows
         if len(A[0]) > 7: 
