@@ -324,7 +324,7 @@ if __name__=='__main__':
     try:
         par_1, par_2, par_match_arr = compare_snr(fn_1, fn_2, dm_min=dm_min, 
                                         dm_max=dm_max, save_data=False,
-                                        sig_thresh=5.0, t_window=0.5)
+                                        sig_thresh=5.0, t_window=0.1)
     except TypeError:
         print("No matches, exiting")
         exit()
