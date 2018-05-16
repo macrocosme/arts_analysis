@@ -440,5 +440,9 @@ if __name__=='__main__':
 
     print('File 1 has %f times higher S/N than file 2' % np.mean(snr_1/snr_2))
 
-    SNRTools.plot_comparison(par_1, par_2, par_match_arr, ind_missed)
+    mk_plot = True
+
+    if mk_plot is True:
+        import matplotlib.pyplot as plt
+        SNRTools.plot_comparison(par_1, par_2, par_match_arr, ind_missed)
 
