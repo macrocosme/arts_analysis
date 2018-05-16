@@ -76,6 +76,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
     f_params_out = open(fn_params_out, 'w+')
     f_params_out.write('# DM      Sigma      Time (s)     Sample    Downfact\n')
+    f_params_out.close()
 
     for ii in xrange(N_FRB):
         # drop FRB in random location in data chunk
@@ -105,7 +106,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 #                                               fluence=3000*(1+0.1*ii),
                                                             fluence=(2000, 12000),
                                                spec_ind=0, width=(delta_t, delta_t*10), 
-                                                            dm=dm*(1+dm/100.0*ii), scat_factor=(-4, -3.5), 
+                                               dm=dm + ii*dm/100.0, scat_factor=(-4, -3.5), 
                                                background_noise=data_event, 
                                                delta_t=delta_t, plot_burst=False, 
                                                freq=(freq_arr[0], freq_arr[-1]), 
@@ -147,11 +148,6 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             ind = np.where(np.absolute(data_ts_zerodm - med) > 8.0*stds)[0]
             data[:, ind] = np.median(data, axis=-1, keepdims=True)
 
-        # Zero out NaNs
-        ind_nan = np.isnan(data.data)
-        print("NaNs: %d" % ind_nan.sum())
-        data.data[ind_nan] = 0.0
-
         if ii<0:
             fn_rfi_clean = reader.write_to_fil(data.transpose(), header, fn_fil_out)
         elif ii>=0:
@@ -175,17 +171,18 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 #            snr_max2, width_max2 = tools.calc_snr_widths(data_rb,
 #                                         )
             print("S/N: %.2f width_used: %.3f width_tru: %.3f DM: %.1f" % (snr_max, width_max, width/delta_t, dm_))
-#            print("S/N: %.2f width: %.3f" % (snr_max2, width_max2))
+
         else:
             snr_max = 10.0
             width_max = int(width/dt)
 
+        f_params_out = open(fn_params_out, 'a+')
         f_params_out.write('%2f   %2f   %5f   %7d   %d\n' % 
                            (params[0], snr_max, t0, t0_ind, width_max))
 
+        f_params_out.close()
         del data, data_event
 
-    f_params_out.close()
     params_full_arr = np.array(params_full_arr)
 
 if __name__=='__main__':
@@ -227,8 +224,6 @@ if __name__=='__main__':
     options, args = parser.parse_args()
     fn_fil = args[0]
     fn_fil_out = args[1]
- 
-    print(options.dm_list)
 
     if options.dm_low is None:
         if options.dm_high is None:
@@ -240,7 +235,12 @@ if __name__=='__main__':
     else:
         dm = (options.dm_low, options.dm_high)
 
-    print("Simulating with DM:", dm)
+    if len(options.dm_list)==1:
+        inject_in_filterbank(fn_fil, fn_fil_out, N_FRB=options.nfrb,
+                                                        NTIME=2**15, rfi_clean=options.rfi_clean,
+                                                        calc_snr=options.calc_snr, start=0,
+                                                        dm=float(options.dm_list[0]))
+        exit()
 
     import multiprocessing
     from joblib import Parallel, delayed

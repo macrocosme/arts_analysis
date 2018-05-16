@@ -161,18 +161,18 @@ class Event(object):
 
             val = pp.copy()
             val /= val.max()
-#            val *= self._fluence
+            val *= self._fluence
 
-            val *= (100.0 / stds_perchan) # hack
-#            val /= (width_ / delta_t) 
+#            val *= (100.0 / stds_perchan) # hack
+            val /= (width_ / delta_t) 
             val = val * (f / self._f_ref) ** self._spec_ind 
 
             if scintillate is True:
                 val = (0.1 + scint_amp[ii]) * val 
                 
-#            data[ii] += val
+            data[ii] += val
 
-            data[ii, tpix] += 5*np.std(data[ii])
+#            data[ii, tpix] += 5*np.std(data[ii])
             
             if f == freq_mid:
                 width_eff = width_

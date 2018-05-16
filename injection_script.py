@@ -20,7 +20,7 @@ if not os.path.isdir(outdir):
     os.mkdir(outdir)
 
 timestr = time.strftime("%Y%m%d-%H%M")
-os.system('python inject_frb.py %s %s --nfrb %d --dm_list 25.0,100.0,400.0,800.0 --calc_snr True'% (infile, outdir, N_FRB))
+os.system('python inject_frb.py %s %s --nfrb %d --dm_list 300.0,400.0,600.0,800.0 --calc_snr True'% (infile, outdir, N_FRB))
 
 # note this assumes tstr is the same in both inject_frb and glob
 fil_list = glob.glob('%s/*%s.fil' % (outdir, timestr))
