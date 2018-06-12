@@ -27,7 +27,7 @@ def plot_two_panel(data_freq_time, params, cb=None, prob=None,
     # timeseries
     ax1.plot(times, np.sum(data_freq_time, axis=0)/
             np.sqrt(data_freq_time.shape[0]), c='k')
-    ax1.set_ylabel('S/N')
+    ax1.set_ylabel('S/N', labelpad=10)
     # add what a DM=0 signal would look like
     DM0_delays = dm * 4.15E6 * (freq_low**-2 - freqs**-2)
     ax2.plot(DM0_delays, freqs, c='r', lw='2')
@@ -40,7 +40,7 @@ def plot_two_panel(data_freq_time, params, cb=None, prob=None,
                origin='upper', extent=extent)
 
     ax2.set_xlabel('Time (ms)')
-    ax2.set_ylabel('Freq (MHz)')
+    ax2.set_ylabel('Freq (MHz)', labelpad=10)
 
     if cb is None:
         cb = -1
@@ -69,21 +69,21 @@ def plot_three_panel(data_freq_time, data_dm_time, times, dms,
     plt.imshow(data_freq_time, aspect='auto', vmax=4, vmin=-4, 
                extent=[0, times[-1], freq_low, freq_up], 
                interpolation='nearest', cmap=cmap)
-    plt.ylabel('Freq [MHz]')
+    plt.ylabel('Freq [MHz]', labelpad=10)
 
     plt.subplot(312, sharex=ax1)
     plt.plot(times, data_freq_time.mean(0), color='k')
-    plt.ylabel('Flux')
+    plt.ylabel('Flux', labelpad=10)
 
     plt.subplot(313, sharex=ax1)
     plt.imshow(data_dm_time, aspect='auto', 
                extent=[0, times[-1], dms[0], dms[-1]], 
                interpolation='nearest', cmap=cmap)
     plt.xlabel('Time [s]')
-    plt.ylabel('DM')
+    plt.ylabel('DM', labelpad=10)
 
     plt.suptitle(suptitle)
-
+    plt.tight_layout()
     plt.show()
     plt.savefig(fnout)
 
