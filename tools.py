@@ -321,7 +321,7 @@ class SNR_Tools:
 
         return par_1, par_2, par_match_arr, ind_missed    
 
-    def plot_comparison(self, par_1, par_2, par_match_arr, ind_missed):
+    def plot_comparison(self, par_1, par_2, par_match_arr, ind_missed, figname='./test.pdf'):
         fig = plt.figure(figsize=(12,12))
 
         frac_recovered = len(ind_missed)
@@ -376,7 +376,7 @@ class SNR_Tools:
 
         plt.tight_layout()
         plt.show()
-        plt.savefig('test.pdf') 
+        plt.savefig(figname)
 
 
 if __name__=='__main__':
@@ -399,12 +399,17 @@ if __name__=='__main__':
     except:
         dm_max = np.inf
 
+    try:
+        figname = sys.argv[5]
+    except:
+        figname = 'test.pdf'
+
     SNRTools = SNR_Tools()
 
     try:
         par_1, par_2, par_match_arr, ind_missed = SNRTools.compare_snr(fn_1, fn_2, dm_min=dm_min, 
                                         dm_max=dm_max, save_data=False,
-                                        sig_thresh=5.0, t_window=0.13)
+                                        sig_thresh=5.0, t_window=0.13, figname=figname)
     except TypeError:
         print("No matches, exiting")
         exit()
