@@ -322,7 +322,7 @@ class SNR_Tools:
         return par_1, par_2, par_match_arr, ind_missed    
 
     def plot_comparison(self, par_1, par_2, par_match_arr, ind_missed):
-        fig = plt.figure()
+        fig = plt.figure(figsize=(12,12))
 
         frac_recovered = len(ind_missed)
 
@@ -374,13 +374,18 @@ class SNR_Tools:
         plt.xlabel('Width [samples]', fontsize=15)
         plt.ylabel('DM', fontsize=15)
 
+        plt.tight_layout()
         plt.show()
-
+        plt.savefig('test.pdf') 
 
 
 if __name__=='__main__':
 
     import sys
+
+    if len(sys.argv)<3:
+        print("Too few arguments, expected: ")
+        print("trigger_file_1 trigger_file_2 <dm_min> <dm_max>")
 
     fn_1, fn_2 = sys.argv[1], sys.argv[2]
 
