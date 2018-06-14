@@ -289,8 +289,8 @@ class SNR_Tools:
 
             # check for triggers that are within 1.0 seconds and 20% in dm
             if (tdiff[ind]<1.0) and (np.abs(dm_1[ii]-dm_2[ind])/dm_1[ii])<0.2:
-                pparams = (tdiff[ind], t_1[ii], t_2[ind], dm_1[ii], dm_2[ind], snr_1[ii], snr_2[ind])
-                print("%1.4f  %5.1f  %5.1f  %5.1f  %5.1f %5.1f  %5.1f" % pparams)
+                pparams = (tdiff[ind], t_1[ii], t_2[ind], dm_1[ii], dm_2[ind], snr_1[ii], snr_2[ind], w_1[ii], w_2[ind])
+                print("%1.4f  %5.1f  %5.1f  %5.1f  %5.1f %5.1f  %5.1f %5.1f  %5.1f" % pparams)
 
                 params_match = np.array([snr_1[ii], snr_2[ind], 
                                          dm_1[ii], dm_2[ind],
@@ -409,7 +409,7 @@ if __name__=='__main__':
     try:
         par_1, par_2, par_match_arr, ind_missed = SNRTools.compare_snr(fn_1, fn_2, dm_min=dm_min, 
                                         dm_max=dm_max, save_data=False,
-                                        sig_thresh=5.0, t_window=0.13, figname=figname)
+                                        sig_thresh=5.0, t_window=0.1)
     except TypeError:
         print("No matches, exiting")
         exit()
@@ -429,5 +429,5 @@ if __name__=='__main__':
 
     if mk_plot is True:
         import matplotlib.pyplot as plt
-        SNRTools.plot_comparison(par_1, par_2, par_match_arr, ind_missed)
+        SNRTools.plot_comparison(par_1, par_2, par_match_arr, ind_missed, figname=figname)
 

@@ -12,7 +12,7 @@ parser = optparse.OptionParser(prog="sp_search.py", \
                                usage="%prog FN_FILTERBANK [OPTIONS]", \
                                description="Search for single pulses with presto, amber then compare")
 
-parser.add_option('--fn_sp', dest='fn_true', type='float', \
+parser.add_option('--fn_sp', dest='fn_true', type='str', \
                   help="Text file with true single pulses"
                   "(Default: 8.0)", default=None)
 
@@ -35,16 +35,12 @@ parser.add_option('--figname', dest='figname', type='str', \
 options, args = parser.parse_args()
 fn_fil = args[0]
 
-dm_min, dm_max = 200, 300
-fn_presto, fn_amber = options.outfile+'.singlepulse', options.outfile+'.trigger'
-os.system('python tools.py %s %s %d %d' % (fn_presto, fn_amber, dm_min, dm_max)) # presto vs. amber
-
 dm = options.dm
 outfile = options.outfile
 ncpu = options.ncpu
 
 amber='/home/arts/test/amber.sh'
-nbatch=50
+nbatch=100
 
 os.system('prepdata -dm %d -o %s -ncpus %d -nobary %s' % (dm, outfile, ncpu, fn_fil)) 
 os.system('single_pulse_search.py %s.dat -b -p' % outfile)
@@ -59,8 +55,8 @@ fn_amber = outfile+'.trigger'
 dm_min, dm_max = 0.9*dm, 1.1*dm
 
 if fn_true is not None:
-    os.system('python %s %s %d %d %s' % (fn_true, fn_presto, dm_min, dm_max, 'true_presto.pdf')) # true vs. presto                                                     
-    os.system('python %s %s %d %d %s' % (fn_true, fn_amber, dm_min, dm_max, 'true_amber.pdf')) # true vs. amber                                                       
+    os.system('python ./tools.py %s %s %d %d %s' % (fn_true, fn_presto, dm_min, dm_max, 'true_presto.pdf')) # true vs. presto
+    os.system('python ./tools.py %s %s %d %d %s' % (fn_true, fn_amber, dm_min, dm_max, 'true_amber.pdf')) # true vs. amber
 
 os.system('python ./tools.py %s %s %d %d %s' % (fn_presto, fn_amber, dm_min, dm_max, 'presto_amber.pdf')) # presto vs. amber   
 
