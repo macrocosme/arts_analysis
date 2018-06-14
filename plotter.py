@@ -90,7 +90,7 @@ def plot_three_panel(data_freq_time, data_dm_time, times, dms,
 def plot_from_h5(fn, cb, freq_low=1250.09765625, freq_up=1549.90234375, 
                  ):
     # read dataset 
-    with h5py.File(fname, 'r') as f:
+    with h5py.File(fn, 'r') as f:
         data_frb_candidate = f['data_frb_candidate'][:]
         probability = f['probability'][:]
         params = f['params'][:]  # snr, DM, boxcar width, arrival time
@@ -104,9 +104,21 @@ def plot_from_h5(fn, cb, freq_low=1250.09765625, freq_up=1549.90234375,
 
 if __name__ == '__main__':
 #     # input hdf5 file
+    print('\nExpecting: data_file CB <freq_low> <freq_up>\n')
     fn = sys.argv[1]
     cb = int(sys.argv[2])
-    plot_from_h5(fn, cb, freq_low=1250.09765625, freq_up=1549.90234375)
+
+    try:
+        freq_low = sys.argv[3]
+    except:
+        freq_low=1250.09765625
+
+    try:
+        freq_up = sys.argv[4]
+    except:
+        freq_up = 1549.90234375
+        
+    plot_from_h5(fn, cb, freq_low=freq_low, freq_up=freq_up)
 
 #     # read dataset 
 #     with h5py.File(fname, 'r') as f:
