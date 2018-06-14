@@ -467,9 +467,9 @@ if __name__=='__main__':
         data_freq_time_full = []
         params_full = []
 
-    SNRTools = tools.SNR_tools()
+    SNRTools = tools.SNR_Tools()
 
-    sig_cut, dm_cut, tt_cut, ds_cut = SNR_tools.get_triggers(fn_sp, 
+    sig_cut, dm_cut, tt_cut, ds_cut = tools.get_triggers(fn_sp, 
                                                          sig_thresh=options.sig_thresh,
                                                          dm_min=options.dm_min,
                                                          dm_max=options.dm_max)
