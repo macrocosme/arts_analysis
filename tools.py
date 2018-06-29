@@ -59,6 +59,11 @@ def read_singlepulse(fn):
         else:
             # beam batch sample integration_step time DM SNR
             dm, sig, tt, downsample = A[:,-2], A[:,-1], A[:, -3], A[:, 3]
+    elif fn.split('.')[-1]=='cand':
+        A = np.genfromtxt(fn)
+        # SNR sample_no time log_2_width DM_trial DM Members first_samp last_samp
+        dm, sig, tt, log_2_downsample = A[:,5], A[:,0], A[:, 2], A[:, 3]
+        downsample = 2**log_2_downsample
     else:
         print("Didn't recognize singlepulse file")
         return 
@@ -128,7 +133,7 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf, t_window=0.5):
             try:    
                 # step through windows of t_window seconds, starting from tt.min()
                 t0, tm = t_window*ii + tt_start, t_window*(ii+1) + tt_start
-                ind = np.where((dm<dms[1]) & (dm>dms[0]) & (tt<tm) & (tt>t0))[0]
+                ind = np.where((dm<dms[1]) & (dm>dms[0]) & (tt<tm) & (tt>t0))[0] 
                 sig_cut.append(np.amax(sig[ind]))
                 dm_cut.append(dm[ind][np.argmax(sig[ind])])
                 tt_cut.append(tt[ind][np.argmax(sig[ind])]) 
