@@ -10,6 +10,28 @@ class AnalyseTriggers:
         pass 
 
 
+def combine_all_beams(fdir):
+
+    flist = glob.glob(fdir+'/CB*.cand')
+
+    data_all = []
+
+    for fn in flist:
+        CB = float(ff.split('CB')[-1][:2])
+
+        try:
+            data = np.genfromtxt(ff)
+        except:
+            continue
+
+        beamno = np.ones([len(data)])*CB
+        data_full = np.concatenate([data, beamno[:, None]], axis=-1)
+        data_all.append(data_full)
+
+    data_all = np.concatenate(data_all)
+
+    return data_all
+
 
 def dm_range(dm_max, dm_min=5., frac=0.2):
     """ Generate list of DM-windows in which 
