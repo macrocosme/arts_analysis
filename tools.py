@@ -1,4 +1,5 @@
 import numpy as np
+import glob
 import scipy.signal
 
 # should there maybe be a clustering class
@@ -9,7 +10,33 @@ class AnalyseTriggers:
     def __init__(self):
         pass 
 
+def combine_all_beams(fdir, fnout=None):
 
+    flist = glob.glob(fdir+'/CB*.cand')
+
+    data_all = []
+
+    for fn in flist:
+        print(fn)
+        try:
+            CB = float(fn.split('CB')[-1][:2])
+        except:
+            continue
+
+        data = np.genfromtxt(fn)
+
+        if len(data)<1:
+            continue
+
+        beamno = np.ones([len(data)])*CB
+        data_full = np.concatenate([data, beamno[:, None]], axis=-1)
+        data_all.append(data_full)
+
+    data_all = np.concatenate(data_all)
+    if type(fnout) is str:
+        np.savetxt(fnout, data_all)
+
+    return data_all
 
 def dm_range(dm_max, dm_min=5., frac=0.2):
     """ Generate list of DM-windows in which 
@@ -46,6 +73,7 @@ def dm_range(dm_max, dm_min=5., frac=0.2):
     return dm_list
 
 def read_singlepulse(fn):
+
     if fn.split('.')[-1] in ('singlepulse', 'txt'):
         A = np.genfromtxt(fn)
         dm, sig, tt, downsample = A[:,0], A[:,1], A[:,2], A[:,4]
@@ -64,6 +92,11 @@ def read_singlepulse(fn):
         # SNR sample_no time log_2_width DM_trial DM Members first_samp last_samp
         dm, sig, tt, log_2_downsample = A[:,5], A[:,0], A[:, 2], A[:, 3]
         downsample = 2**log_2_downsample
+        try:
+            beamno = A[:, 9]
+            return dm, sig, tt, downsample, beamno
+        except:
+            pass
     else:
         print("Didn't recognize singlepulse file")
         return 
@@ -97,7 +130,7 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf, t_window=0.5):
         downsample factor array of brightest trigger in each DM/T window 
     """
 
-    dm, sig, tt, downsample = read_singlepulse(fn)
+    dm, sig, tt, downsample = read_singlepulse(fn)[:4]
     ntrig_orig = len(dm)
 
     low_sig_ind = np.where(sig < sig_thresh)[0]
