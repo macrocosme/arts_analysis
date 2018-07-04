@@ -233,6 +233,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     nfreq = rawdatafile.header['nchans']
     freq_low = freq_up + nfreq*rawdatafile.header['foff']
     time_res = dt * downsamp
+    ntime_file = (os.path.getsize(fn_fil) - 467.)/nfreq
 
     dm_min = max(0, dm0-100)
     dm_max = dm0 + 100
@@ -274,6 +275,10 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     full_arr = np.empty([int(ndm), int(ntime)])   
 
     snr_max = 0
+
+    if ntime_fil < (start_bin+chunksize):
+        print("Trigger at end of file, skipping")
+        return
 
     data = rawdatafile.get_spectra(start_bin, chunksize)
     data.data -= np.median(data.data, axis=-1)[:, None]
