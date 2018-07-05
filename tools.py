@@ -159,27 +159,32 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf, t_window=0.5):
     print("DMs:", dm_list)
 
     tt_start = tt.min() - .5*t_window
+    ind_full = []
 
     # might wanna make this a search in (dm,t,width) cubes
     for dms in dm_list:
         for ii in xrange(ntime + 2):
             try:    
                 # step through windows of t_window seconds, starting from tt.min()
+                # and find max S/N trigger in each DM/time box
                 t0, tm = t_window*ii + tt_start, t_window*(ii+1) + tt_start
                 ind = np.where((dm<dms[1]) & (dm>dms[0]) & (tt<tm) & (tt>t0))[0] 
-                sig_cut.append(np.amax(sig[ind]))
-                dm_cut.append(dm[ind][np.argmax(sig[ind])])
-                tt_cut.append(tt[ind][np.argmax(sig[ind])]) 
-                ds_cut.append(downsample[ind][np.argmax(sig[ind])])
+                ind_maxsnr = ind[np.argmax(sig[ind])]
+                sig_cut.append(sig[ind_maxsnr])
+                dm_cut.append(dm[ind_maxsnr])
+                tt_cut.append(tt[ind_maxsnr])
+                ds_cut.append(downsample[ind_maxsnr])
+                ind_full.append(ind_maxsnr)
             except:
                 continue
 
+    ind_full = np.array(ind_full)
     dm_cut = np.array(dm_cut)
     # now remove the low DM candidates
     ind = np.where((dm_cut >= dm_min) & (dm_cut <= dm_max))[0]
 
     dm_cut = dm_cut[ind]
-
+    ind_full = ind_full[ind]
     sig_cut = np.array(sig_cut)[ind]
     tt_cut = np.array(tt_cut)[ind]
     ds_cut = np.array(ds_cut)[ind]
@@ -188,7 +193,7 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf, t_window=0.5):
 
     print("Grouped down to %d triggers from %d\n" % (ntrig_group, ntrig_orig))
 
-    return sig_cut, dm_cut, tt_cut, ds_cut
+    return sig_cut, dm_cut, tt_cut, ds_cut, ind_full
 
 class SNR_Tools:
 
@@ -293,10 +298,10 @@ class SNR_Tools:
 
         grouped_params1, grouped_params2, matched_params
         """
-        snr_1, dm_1, t_1, w_1 = get_triggers(fn_1, sig_thresh=sig_thresh, 
+        snr_1, dm_1, t_1, w_1, ind_full_1 = get_triggers(fn_1, sig_thresh=sig_thresh, 
                                     dm_min=dm_min, dm_max=np.inf, t_window=t_window)
 
-        snr_2, dm_2, t_2, w_2 = get_triggers(fn_2, sig_thresh=sig_thresh, 
+        snr_2, dm_2, t_2, w_2, ind_full_2 = get_triggers(fn_2, sig_thresh=sig_thresh, 
                                     dm_min=dm_min, dm_max=dm_max, t_window=t_window)
 
         snr_2_reorder = []
