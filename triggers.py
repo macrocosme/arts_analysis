@@ -44,7 +44,7 @@ def multiproc_dedisp(dm):
     datacopy.dedisperse(dm)
     data_freq_time = datacopy[:, t_min:t_max]
 
-    return datacopy.data.mean(0), data_freq_time
+    return [datacopy.data.mean(0), data_freq_time]
 
 def proc_trigger(fn_fil, dm0, t0, sig_cut, 
                  ndm=50, mk_plot=False, downsamp=1, 
@@ -158,7 +158,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         global datacopy 
         datacopy = copy.deepcopy(data)
         pool = multiprocessing.Pool(processes=ndm)        
-        dd, dft = pool.map(multiproc_dedisp, [i for i in dms])
+        xx = pool.map(multiproc_dedisp, [i for i in dms])
+        dd, dft = xx[0], xx[1]
         pool.close()
         print(dd.shape, dft.shape)
         print(time.time()-t0)
