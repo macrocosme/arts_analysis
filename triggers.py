@@ -160,18 +160,17 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         global datacopy 
         datacopy = copy.deepcopy(data)
         pool = multiprocessing.Pool(processes=ndm)        
-        xx = pool.map(multiproc_dedisp, [i for i in dms])
-        xx = np.concatenate(xx)
-        np.save('bingbing', xx)
-        dd, dft = xx[0], xx[1]
+        data_tuple = pool.map(multiproc_dedisp, [i for i in dms])
         pool.close()
-        print(xx)
-        print(np.concatenate(dd).shape)
-        print(len(dft))
+
+        data_tuple = np.concatenate(data_tuple)
+        ddm = np.concatenate(data_tuple[0::2]).reshape(ndm, -1)
+        df = np.concatenate(data_tuple[1::2]).reshape(ndm, nfreq, -1)
+
         print(time.time()-t0)
-        dd = np.concatenate(dd).reshape(ndm, -1)
-        full_arr = dd[:, t_min:t_max]
-        del dd
+        full_arr = ddm[:, t_min:t_max]
+        data_dm_max = df[dm_max_jj]
+        del ddm, df
 
     else:
         print("\nDedispersing Serially\n")
