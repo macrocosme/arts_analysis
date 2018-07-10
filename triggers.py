@@ -162,6 +162,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         xx = pool.map(multiproc_dedisp, [i for i in dms])
         dd, dft = xx[0], xx[1]
         pool.close()
+        print(xx)
         print(np.concatenate(dd).shape)
         print(len(dft))
         print(time.time()-t0)
