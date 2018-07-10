@@ -148,6 +148,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     data = rawdatafile.get_spectra(start_bin, chunksize)
     data.data -= np.median(data.data, axis=-1)[:, None]
     data.data[mask] = 0.
+    full_arr = np.empty([int(ndm), int(ntime)])   
 
     if not fn_mask is None:
         rfimask = rfifind.rfifind(fn_mask)
@@ -173,13 +174,15 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
             df = np.concatenate(data_tuple[1::2]).reshape(ndm_, nfreq, -1)
 
             print(time.time()-t0)
-            full_arr = ddm[:, t_min:t_max]
-            data_dm_max = df[dm_max_jj]
+            full_arr[10*kk:10*(kk+1)] = ddm#[:, t_min:t_max]
+
+            if dm_max_jj in range(10*kk, 10*(kk+1))
+                data_dm_max = df[0]#dm_max_jj]hack
+
             del ddm, df
 
     else:
         print("\nDedispersing Serially\n")
-        full_arr = np.empty([int(ndm), int(ntime)])   
 
         for jj, dm_ in enumerate(dms):
             print("Dedispersing to dm=%0.1f at t=%0.1f sec with width=%.2f" % 
