@@ -43,8 +43,9 @@ def get_mask(rfimask, startsamp, N):
 def multiproc_dedisp(dm):
     datacopy.dedisperse(dm)
     data_freq_time = datacopy[:, t_min:t_max]
+    print(datacopy.data.mean(0).shape)
 
-    return [datacopy.data.mean(0), data_freq_time]
+    return (datacopy.data.mean(0), data_freq_time)
 
 def proc_trigger(fn_fil, dm0, t0, sig_cut, 
                  ndm=50, mk_plot=False, downsamp=1, 
