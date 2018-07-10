@@ -42,8 +42,9 @@ def get_mask(rfimask, startsamp, N):
 
 def multiproc_dedisp(dm):
     datacopy.dedisperse(dm)
+    data_freq_time = datacopy[:, t_min:t_max]
 
-    return datacopy.data.mean(0) 
+    return datacopy.data.mean(0), data_freq_time
 
 def proc_trigger(fn_fil, dm0, t0, sig_cut, 
                  ndm=50, mk_plot=False, downsamp=1, 
@@ -132,6 +133,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         t_min += extra
         t_max += extra
 
+    global t_min, t_max
     t_min, t_max = int(t_min), int(t_max)
     ntime = t_max-t_min
     
@@ -151,17 +153,21 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         data = data.masked(mask, maskval='median-mid80')
 
     if multiproc is True: 
+        print("\nDedispersing in Parallel\n")        
         t0=time.time()
         global datacopy 
         datacopy = copy.deepcopy(data)
         pool = multiprocessing.Pool(processes=ndm)        
-        dd = pool.map(multiproc_dedisp, [i for i in dms])
+        dd, dft = pool.map(multiproc_dedisp, [i for i in dms])
         pool.close()
+        print(dd.shape, dft.shape)
         print(time.time()-t0)
-        full_arr = np.concatenate(dd).reshape(ndm, -1)
+        dd = np.concatenate(dd).reshape(ndm, -1)
+        full_arr = dd[:, t_min:t_max]
         del dd
 
     else:
+        print("\nDedispersing Serially\n")
         full_arr = np.empty([int(ndm), int(ntime)])   
 
         for jj, dm_ in enumerate(dms):
