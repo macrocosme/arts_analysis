@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 
 import numpy as np
 import scipy
@@ -338,6 +339,9 @@ if __name__=='__main__':
         data_freq_time_full = []
         params_full = []
 
+    if options.multiproc is True:
+        import multiprocessing
+
     SNRTools = tools.SNR_Tools()
 
     sig_cut, dm_cut, tt_cut, ds_cut, ind_full = tools.get_triggers(fn_sp, 
@@ -365,7 +369,8 @@ if __name__=='__main__':
                         mk_plot=options.mk_plot, ndm=options.ndm, 
                         downsamp=ds_cut[ii], nfreq_plot=options.nfreq_plot,
                         ntime_plot=options.ntime_plot, cmap=options.cmap,
-                        fn_mask=options.maskfile, cand_no=ii)
+                                     fn_mask=options.maskfile, cand_no=ii,
+                                     multiproc=options.multiproc)
 
         basedir = './'
 
