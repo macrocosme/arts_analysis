@@ -16,54 +16,6 @@ from pypulsar.formats import filterbank
 import tools
 import plotter 
 
-def dm_range(dm_max, dm_min=2., frac=0.2):
-    """ Generate list of DM-windows in which 
-    to search for single pulse groups. 
-
-    Parameters
-    ----------
-    dm_max : float 
-        max DM 
-    dm_min : float  
-        min DM 
-    frac : float 
-        fractional size of each window 
-
-    Returns
-    -------
-    dm_list : list 
-        list of tuples containing (min, max) of each 
-        DM window
-    """
-
-    dm_list =[]
-    prefac = (1-frac)/(1+frac)
-
-    while dm_max>dm_min:
-        if dm_max < 20.:
-            prefac = 0.0 
-
-        dm_list.append((int(prefac*dm_max), dm_max))
-        dm_max = int(prefac*dm_max)
-
-    return dm_list
-
-def read_singlepulse(fn):
-    if fn.split('.')[-1] in ('singlepulse', 'txt'):
-        A = np.loadtxt(fn)
-        dm, sig, tt, downsample = A[:,0], A[:,1], A[:,2], A[:,4]
-    elif fn.split('.')[-1]=='trigger':
-        A = np.loadtxt(fn)
-        dm, sig, tt, downsample = A[:,-2], A[:,-1], A[:, -3], A[:, 3]
-    else:
-        print("Didn't recognize singlepulse file")
-        return 
-
-    if len(A)==0:
-        return 0, 0, 0, 0
-
-    return dm, sig, tt, downsample
-
 
 def get_mask(rfimask, startsamp, N):
     """Return an array of boolean values to act as a mask
@@ -87,32 +39,6 @@ def get_mask(rfimask, startsamp, N):
         mask[blocknums==blocknum] = blockmask
     return mask.T[::-1]
 
-# def plot_three_panel(data_freq_time, data_dm_time, times, dms, 
-#                      freq_up=1550, freq_low=1250,
-#                      cmap="RdBu", suptitle="", fnout="out.pdf"):
-#     figure = plt.figure()
-#     ax1 = plt.subplot(311)
-
-#     plt.imshow(data_freq_time, aspect='auto', vmax=4, vmin=-4, 
-#                extent=[0, times[-1], freq_low, freq_up], 
-#                interpolation='nearest', cmap=cmap)
-#     plt.ylabel('Freq [MHz]')
-
-#     plt.subplot(312, sharex=ax1)
-#     plt.plot(times, data_freq_time.mean(0), color='k')
-#     plt.ylabel('Flux')
-
-#     plt.subplot(313, sharex=ax1)
-#     plt.imshow(data_dm_time, aspect='auto', 
-#                extent=[0, times[-1], dms[0], dms[-1]], 
-#                interpolation='nearest', cmap=cmap)
-#     plt.xlabel('Time [s]')
-#     plt.ylabel('DM')
-
-#     plt.suptitle(suptitle)
-
-#     plt.show()
-#     plt.savefig(fnout)
 
 def proc_trigger(fn_fil, dm0, t0, sig_cut, 
                  ndm=50, mk_plot=False, downsamp=1, 
@@ -227,20 +153,6 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         data_copy = copy.deepcopy(data)
         data_copy.dedisperse(dm_)
         dm_arr = data_copy.data[:, t_min:t_max].mean(0)
-
-        # Taken from PRESTO's single_pulse_search:
-        # The following gets rid of (hopefully) most of the                                                                                                                
-        # outlying values (i.e. power dropouts and single pulses)                                                                                                          
-        # If you throw out 5% (2.5% at bottom and 2.5% at top)                                                                                                             
-        # of random gaussian deviates, the measured stdev is ~0.871                                                                                                        
-        # of the true stdev.  Thus the 1.0/0.871=1.148 correction below.                                                                                                   
-        # The following is roughly .std() since we already removed the median 
-
-        # std_chunk = scipy.signal.detrend(dm_arr, type='linear')
-        # std_chunk.sort()
-        # stds = 1.148*np.sqrt((std_chunk[ntime/40:-ntime/40]**2.0).sum() /
-        #                            (0.95*ntime))
-        # snr_ = std_chunk[-1]/stds 
 
         snr_ = SNRtools.calc_snr(dm_arr)
 
@@ -374,7 +286,7 @@ if __name__=='__main__':
                         default=None)
 
     parser.add_option('--mk_plot', dest='mk_plot', action='store_true', \
-                        help="make plot if True", default=False)
+                        help="make plot if True (default False)", default=False)
 
     parser.add_option('--nfreq_plot', dest='nfreq_plot', type='int',
                         help="make plot with this number of freq channels",
