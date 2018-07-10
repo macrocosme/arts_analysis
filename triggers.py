@@ -39,6 +39,10 @@ def get_mask(rfimask, startsamp, N):
         mask[blocknums==blocknum] = blockmask
     return mask.T[::-1]
 
+def multiproc_dedisp(dm):
+    datacopy.dedisperse(dm)
+
+    return datacopy.data.mean(0) 
 
 def proc_trigger(fn_fil, dm0, t0, sig_cut, 
                  ndm=50, mk_plot=False, downsamp=1, 
@@ -103,7 +107,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     dms[0] = max(0, dms[0])
 
     # Read in 5 disp delays
-    width = 5 * abs(4.14e3 * dm0 * (freq_up**-2 - freq_low**-2))
+    width = 2 * abs(4.14e3 * dm0 * (freq_up**-2 - freq_low**-2))
 
     tdisp = width / dt
     tplot = ntime_plot * downsamp 
@@ -130,8 +134,6 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     t_min, t_max = int(t_min), int(t_max)
     ntime = t_max-t_min
     
-    full_arr = np.empty([int(ndm), int(ntime)])   
-
     snr_max = 0
 
     if ntime_fil < (start_bin+chunksize):
@@ -147,19 +149,34 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         mask = get_mask(rfimask, start_bin, chunksize)
         data = data.masked(mask, maskval='median-mid80')
 
-    for jj, dm_ in enumerate(dms):
-        print("Dedispersing to dm=%0.1f at t=%0.1f sec with width=%.2f" % 
-                    (dm_, start_bin*dt, downsamp))
-        data_copy = copy.deepcopy(data)
-        data_copy.dedisperse(dm_)
-        dm_arr = data_copy.data[:, t_min:t_max].mean(0)
+    if multiproc is True: 
+        t0=time.time()
+        global datacopy 
+        datacopy = copy.deepcopy(data)
+        pool = multiprocessing.Pool(processes=ndm)        
+        dd = pool.map(multiproc_dedisp, [i for i in dms])
+        pool.close()
+        print(time.time()-t0)
+        full_arr = np.concatenate(dd).reshape(ndm, -1)
+        del dd
 
-        snr_ = SNRtools.calc_snr(dm_arr)
+    else:
+        full_arr = np.empty([int(ndm), int(ntime)])   
 
-        full_arr[jj] = copy.copy(dm_arr)
+        for jj, dm_ in enumerate(dms):
+            print("Dedispersing to dm=%0.1f at t=%0.1f sec with width=%.2f" % 
+                        (dm_, start_bin*dt, downsamp))
+            data_copy = copy.deepcopy(data)
 
-        if jj==dm_max_jj:
-            data_dm_max = data_copy.data[:, t_min:t_max]
+            data_copy.dedisperse(dm_)
+            dm_arr = data_copy.data[:, t_min:t_max].mean(0)
+
+            snr_ = SNRtools.calc_snr(dm_arr)
+
+            full_arr[jj] = copy.copy(dm_arr)
+
+            if jj==dm_max_jj:
+                data_dm_max = data_copy.data[:, t_min:t_max]
 
     downsamp = int(downsamp)
 
