@@ -64,74 +64,6 @@ def read_singlepulse(fn):
 
     return dm, sig, tt, downsample
 
-def get_triggers(fn, sig_thresh=5.0, t_window=0.5, dm_min=0, dm_max=np.inf):
-    """ Get brightest trigger in each 10s chunk.
-
-    Parameters
-    ----------
-    fn : str 
-        filename with triggers (.npy, .singlepulse, .trigger)
-    sig_thresh : float
-        min S/N to include
-    t_window : float 
-        Size of each time window in seconds
-
-    Returns
-    -------
-    sig_cut : ndarray
-        S/N array of brightest trigger in each DM/T window 
-    dm_cut : ndarray
-        DMs of brightest trigger in each DM/T window 
-    tt_cut : ndarray
-        Arrival times of brightest trigger in each DM/T window 
-    ds_cut : ndarray 
-        downsample factor array of brightest trigger in each DM/T window 
-    """
-
-    dm, sig, tt, downsample = read_singlepulse(fn)
-
-    low_sig_ind = np.where(sig < sig_thresh)[0]
-    sig = np.delete(sig, low_sig_ind)
-    tt = np.delete(tt, low_sig_ind)
-    dm = np.delete(dm, low_sig_ind)
-    downsample = np.delete(downsample, low_sig_ind)
-
-    sig_cut, dm_cut, tt_cut, ds_cut = [],[],[],[]
-    
-    tduration = tt.max() - tt.min()
-    ntime = int(tduration / t_window)
-
-    # Make dm windows between 90% of the lowest trigger and 
-    # 10% of the largest trigger
-    dm_list = dm_range(1.1*dm.max(), dm_min=0.9*dm.min())
-
-    print("Grouping in window of %.2f sec" % t_window)
-    print("DMs:", dm_list)
-
-    tt_start = tt.min() - .5*t_window
-
-    # might wanna make this a search in (dm,t,width) cubes
-    for dms in dm_list:
-        for ii in xrange(ntime + 2):
-            try:    
-                # step through windows of 2 seconds, starting from tt.min()
-                t0, tm = t_window*ii + tt_start, t_window*(ii+1) + tt_start
-                ind = np.where((dm<dms[1]) & (dm>dms[0]) & (tt<tm) & (tt>t0))[0]
-                sig_cut.append(np.amax(sig[ind]))
-                dm_cut.append(dm[ind][np.argmax(sig[ind])])
-                tt_cut.append(tt[ind][np.argmax(sig[ind])]) 
-                ds_cut.append(downsample[ind][np.argmax(sig[ind])])
-            except:
-                continue
-    # now remove the low DM candidates 
-    ind = np.where((np.array(dm_cut) >= dm_min) & (np.array(dm_cut) <= dm_max))
-
-    sig_cut = np.array(sig_cut)
-    dm_cut = np.array(dm_cut)
-    tt_cut = np.array(tt_cut)
-    ds_cut = np.array(ds_cut)
-
-    return sig_cut, dm_cut, tt_cut, ds_cut
 
 def get_mask(rfimask, startsamp, N):
     """Return an array of boolean values to act as a mask
@@ -233,9 +165,10 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     nfreq = rawdatafile.header['nchans']
     freq_low = freq_up + nfreq*rawdatafile.header['foff']
     time_res = dt * downsamp
+    ntime_fil = (os.path.getsize(fn_fil) - 467.)/nfreq
 
-    dm_min = max(0, dm0-100)
-    dm_max = dm0 + 100
+    dm_min = max(0, dm0-20)
+    dm_max = dm0 + 20
     dms = np.linspace(dm_min, dm_max, ndm, endpoint=True)
 
     # make sure dm0 is in the array
@@ -274,6 +207,10 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     full_arr = np.empty([int(ndm), int(ntime)])   
 
     snr_max = 0
+
+    if ntime_fil < (start_bin+chunksize):
+        print("Trigger at end of file, skipping")
+        return 0,0,0
 
     data = rawdatafile.get_spectra(start_bin, chunksize)
     data.data -= np.median(data.data, axis=-1)[:, None]
@@ -337,11 +274,13 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
                      (beamno, sig_cut, dms[dm_max_jj], t0)
 
     if mk_plot is True:
-        if ndm == 1:
+        print(fn_fig_out)
+        if ndm==1:
             params = snr_, dm_, downsamp, t0
             plotter.plot_two_panel(full_freq_arr_downsamp, params, prob=None, 
                 freq_low=1250.09765625, freq_up=1549.90234375, cand_no=cand_no)
         else:
+            print(fn_fig_out)
             plotter.plot_three_panel(full_freq_arr_downsamp, 
                                      full_dm_arr_downsamp, 
                                      times, dms, freq_low=freq_low, 
@@ -469,7 +408,7 @@ if __name__=='__main__':
 
     SNRTools = tools.SNR_Tools()
 
-    sig_cut, dm_cut, tt_cut, ds_cut = tools.get_triggers(fn_sp, 
+    sig_cut, dm_cut, tt_cut, ds_cut, ind_full = tools.get_triggers(fn_sp, 
                                                          sig_thresh=options.sig_thresh,
                                                          dm_min=options.dm_min,
                                                          dm_max=options.dm_max)

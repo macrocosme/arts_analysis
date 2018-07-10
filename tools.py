@@ -1,4 +1,5 @@
 import numpy as np
+import glob
 import scipy.signal
 
 # should there maybe be a clustering class
@@ -9,19 +10,22 @@ class AnalyseTriggers:
     def __init__(self):
         pass 
 
-
-def combine_all_beams(fdir):
+def combine_all_beams(fdir, fnout=None):
 
     flist = glob.glob(fdir+'/CB*.cand')
 
     data_all = []
 
     for fn in flist:
-        CB = float(ff.split('CB')[-1][:2])
-
+        print(fn)
         try:
-            data = np.genfromtxt(ff)
+            CB = float(fn.split('CB')[-1][:2])
         except:
+            continue
+
+        data = np.genfromtxt(fn)
+
+        if len(data)<1:
             continue
 
         beamno = np.ones([len(data)])*CB
@@ -29,9 +33,10 @@ def combine_all_beams(fdir):
         data_all.append(data_full)
 
     data_all = np.concatenate(data_all)
+    if type(fnout) is str:
+        np.savetxt(fnout, data_all)
 
     return data_all
-
 
 def dm_range(dm_max, dm_min=5., frac=0.2):
     """ Generate list of DM-windows in which 
@@ -67,12 +72,23 @@ def dm_range(dm_max, dm_min=5., frac=0.2):
 
     return dm_list
 
-def read_singlepulse(fn):
+def read_singlepulse(fn, max_rows=None):
+    """ Read in text file containing single-pulse 
+    candidates. Allowed formats are:
+    .singlepulse = PRESTO output
+    .txt = injection pipeline output
+    .trigger = AMBER output 
+    .cand = heimdall output 
+
+    max_rows sets the maximum number of 
+    rows to read from textfile 
+    """
+
     if fn.split('.')[-1] in ('singlepulse', 'txt'):
-        A = np.genfromtxt(fn)
+        A = np.genfromtxt(fn, max_rows=max_rows)
         dm, sig, tt, downsample = A[:,0], A[:,1], A[:,2], A[:,4]
     elif fn.split('.')[-1]=='trigger':
-        A = np.genfromtxt(fn)
+        A = np.genfromtxt(fn, max_rows=max_rows)
         # Check if amber has compacted, in which case 
         # there are two extra rows
         if len(A[0]) > 7: 
@@ -82,10 +98,15 @@ def read_singlepulse(fn):
             # beam batch sample integration_step time DM SNR
             dm, sig, tt, downsample = A[:,-2], A[:,-1], A[:, -3], A[:, 3]
     elif fn.split('.')[-1]=='cand':
-        A = np.genfromtxt(fn)
+        A = np.genfromtxt(fn, max_rows=max_rows)
         # SNR sample_no time log_2_width DM_trial DM Members first_samp last_samp
         dm, sig, tt, log_2_downsample = A[:,5], A[:,0], A[:, 2], A[:, 3]
         downsample = 2**log_2_downsample
+        try:
+            beamno = A[:, 9]
+            return dm, sig, tt, downsample, beamno
+        except:
+            pass
     else:
         print("Didn't recognize singlepulse file")
         return 
@@ -95,7 +116,8 @@ def read_singlepulse(fn):
 
     return dm, sig, tt, downsample
 
-def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf, t_window=0.5):
+def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf, 
+                 t_window=0.5, max_rows=None):
     """ Get brightest trigger in each 10s chunk.
 
     Parameters
@@ -119,7 +141,7 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf, t_window=0.5):
         downsample factor array of brightest trigger in each DM/T window 
     """
 
-    dm, sig, tt, downsample = read_singlepulse(fn)
+    dm, sig, tt, downsample = read_singlepulse(fn, max_rows=max_rows)[:4]
     ntrig_orig = len(dm)
 
     low_sig_ind = np.where(sig < sig_thresh)[0]
@@ -148,27 +170,32 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf, t_window=0.5):
     print("DMs:", dm_list)
 
     tt_start = tt.min() - .5*t_window
+    ind_full = []
 
     # might wanna make this a search in (dm,t,width) cubes
     for dms in dm_list:
         for ii in xrange(ntime + 2):
             try:    
                 # step through windows of t_window seconds, starting from tt.min()
+                # and find max S/N trigger in each DM/time box
                 t0, tm = t_window*ii + tt_start, t_window*(ii+1) + tt_start
                 ind = np.where((dm<dms[1]) & (dm>dms[0]) & (tt<tm) & (tt>t0))[0] 
-                sig_cut.append(np.amax(sig[ind]))
-                dm_cut.append(dm[ind][np.argmax(sig[ind])])
-                tt_cut.append(tt[ind][np.argmax(sig[ind])]) 
-                ds_cut.append(downsample[ind][np.argmax(sig[ind])])
+                ind_maxsnr = ind[np.argmax(sig[ind])]
+                sig_cut.append(sig[ind_maxsnr])
+                dm_cut.append(dm[ind_maxsnr])
+                tt_cut.append(tt[ind_maxsnr])
+                ds_cut.append(downsample[ind_maxsnr])
+                ind_full.append(ind_maxsnr)
             except:
                 continue
 
+    ind_full = np.array(ind_full)
     dm_cut = np.array(dm_cut)
     # now remove the low DM candidates
     ind = np.where((dm_cut >= dm_min) & (dm_cut <= dm_max))[0]
 
     dm_cut = dm_cut[ind]
-
+    ind_full = ind_full[ind]
     sig_cut = np.array(sig_cut)[ind]
     tt_cut = np.array(tt_cut)[ind]
     ds_cut = np.array(ds_cut)[ind]
@@ -177,7 +204,7 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf, t_window=0.5):
 
     print("Grouped down to %d triggers from %d\n" % (ntrig_group, ntrig_orig))
 
-    return sig_cut, dm_cut, tt_cut, ds_cut
+    return sig_cut, dm_cut, tt_cut, ds_cut, ind_full
 
 class SNR_Tools:
 
@@ -251,7 +278,7 @@ class SNR_Tools:
         return snr_max, width_max
 
     def compare_snr(self, fn_1, fn_2, dm_min=0, dm_max=np.inf, save_data=False,
-                    sig_thresh=5.0, t_window=0.5):
+                    sig_thresh=5.0, t_window=0.5, max_rows=None):
         """ Read in two files with single-pulse candidates
         and compare triggers.
 
@@ -282,11 +309,13 @@ class SNR_Tools:
 
         grouped_params1, grouped_params2, matched_params
         """
-        snr_1, dm_1, t_1, w_1 = get_triggers(fn_1, sig_thresh=sig_thresh, 
-                                    dm_min=dm_min, dm_max=np.inf, t_window=t_window)
+        snr_1, dm_1, t_1, w_1, ind_full_1 = get_triggers(fn_1, sig_thresh=sig_thresh, 
+                                    dm_min=dm_min, dm_max=np.inf, t_window=t_window, 
+                                    max_rows=max_rows)
 
-        snr_2, dm_2, t_2, w_2 = get_triggers(fn_2, sig_thresh=sig_thresh, 
-                                    dm_min=dm_min, dm_max=dm_max, t_window=t_window)
+        snr_2, dm_2, t_2, w_2, ind_full_2 = get_triggers(fn_2, sig_thresh=sig_thresh, 
+                                    dm_min=dm_min, dm_max=dm_max, t_window=t_window, 
+                                    max_rows=max_rows)
 
         snr_2_reorder = []
         dm_2_reorder = []
@@ -436,7 +465,7 @@ if __name__=='__main__':
     try:
         par_1, par_2, par_match_arr, ind_missed = SNRTools.compare_snr(fn_1, fn_2, dm_min=dm_min, 
                                         dm_max=dm_max, save_data=False,
-                                        sig_thresh=5.0, t_window=0.1)
+                                        sig_thresh=5.0, t_window=0.1, max_rows=None)
     except TypeError:
         print("No matches, exiting")
         exit()
