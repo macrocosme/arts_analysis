@@ -115,6 +115,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     tdisp = width / dt
     tplot = ntime_plot * downsamp 
 
+    global t_min, t_max
+
     if tdisp > tplot:
         # Need to read in more data than you'll plot
         # because of large dispersion time
@@ -135,7 +137,6 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         t_max += extra
 
     t_min, t_max = int(t_min), int(t_max)
-    global t_min, t_max
     ntime = t_max-t_min
     
     snr_max = 0
@@ -160,7 +161,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         datacopy = copy.deepcopy(data)
         pool = multiprocessing.Pool(processes=ndm)        
         xx = pool.map(multiproc_dedisp, [i for i in dms])
-        print(len(xx))
+        xx = np.concatenate(xx)
+        print(xx.shape)
         dd, dft = xx[0], xx[1]
         pool.close()
         print(xx)
