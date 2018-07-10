@@ -176,7 +176,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
             print(time.time()-t0)
             full_arr[10*kk:10*(kk+1)] = ddm#[:, t_min:t_max]
 
-            if dm_max_jj in range(10*kk, 10*(kk+1))
+            if dm_max_jj in range(10*kk, 10*(kk+1)):
                 data_dm_max = df[0]#dm_max_jj]hack
 
             del ddm, df
