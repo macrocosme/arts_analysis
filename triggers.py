@@ -43,7 +43,6 @@ def get_mask(rfimask, startsamp, N):
 def multiproc_dedisp(dm):
     datacopy.dedisperse(dm)
     data_freq_time = datacopy[:, t_min:t_max]
-    print(datacopy.data.mean(0).shape)
 
     return (datacopy.data.mean(0), data_freq_time)
 
@@ -110,7 +109,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     dms[0] = max(0, dms[0])
 
     # Read in 5 disp delays
-    width = 2 * abs(4.14e3 * dm0 * (freq_up**-2 - freq_low**-2))
+    width = 2*abs(4.14e3 * dm0 * (freq_up**-2 - freq_low**-2))
 
     tdisp = width / dt
     tplot = ntime_plot * downsamp 
@@ -179,6 +178,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
             ind_kk = range(10*kk, 10*(kk+1))
 
             if dm_max_jj in ind_kk:
+                print(dms_[ind_kk.index(dm_max_jj)])
                 data_dm_max = df[ind_kk.index(dm_max_jj)]#dm_max_jj]hack
 
             del ddm, df
