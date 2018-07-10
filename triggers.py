@@ -174,7 +174,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
             df = np.concatenate(data_tuple[1::2]).reshape(ndm_, nfreq, -1)
 
             print(time.time()-t0)
-            full_arr[10*kk:10*(kk+1), t_min:t_max] = ddm#[:, t_min:t_max]
+            full_arr[10*kk:10*(kk+1)] = ddm[:, t_min:t_max]
 
             if dm_max_jj in range(10*kk, 10*(kk+1)):
                 data_dm_max = df[0]#dm_max_jj]hack
