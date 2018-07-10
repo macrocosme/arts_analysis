@@ -134,8 +134,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         t_min += extra
         t_max += extra
 
-    global t_min, t_max
     t_min, t_max = int(t_min), int(t_max)
+    global t_min, t_max
     ntime = t_max-t_min
     
     snr_max = 0
