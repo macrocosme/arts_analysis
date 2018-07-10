@@ -48,7 +48,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
                  ndm=50, mk_plot=False, downsamp=1, 
                  beamno='', fn_mask=None, nfreq_plot=32,
                  ntime_plot=250,
-                 cmap='RdBu', cand_no=1):
+                 cmap='RdBu', cand_no=1, multiproc=False):
     """ Locate data within filterbank file (fn_fi)
     at some time t0, and dedisperse to dm0, generating 
     plots 
@@ -304,6 +304,9 @@ if __name__=='__main__':
 
     parser.add_option('--mk_plot', dest='mk_plot', action='store_true', \
                         help="make plot if True (default False)", default=False)
+
+    parser.add_option('--multiproc', dest='multiproc', action='store_true', \
+                        help="use multicores if True (default False)", default=False)
 
     parser.add_option('--nfreq_plot', dest='nfreq_plot', type='int',
                         help="make plot with this number of freq channels",
