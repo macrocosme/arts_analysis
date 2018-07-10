@@ -159,7 +159,9 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         t0=time.time()
         global datacopy 
 
-        for kk in range(5):
+        ndm_ = min(10, ndm)
+
+        for kk in range(ndm//ndm_):
             dms_ = dms[10*kk:10*(kk+1)]
             datacopy = copy.deepcopy(data)
             pool = multiprocessing.Pool(processes=ndm_)        
