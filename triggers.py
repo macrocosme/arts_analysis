@@ -165,10 +165,10 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     nfreq = rawdatafile.header['nchans']
     freq_low = freq_up + nfreq*rawdatafile.header['foff']
     time_res = dt * downsamp
-    ntime_file = (os.path.getsize(fn_fil) - 467.)/nfreq
+    ntime_fil = (os.path.getsize(fn_fil) - 467.)/nfreq
 
-    dm_min = max(0, dm0-100)
-    dm_max = dm0 + 100
+    dm_min = max(0, dm0-20)
+    dm_max = dm0 + 20
     dms = np.linspace(dm_min, dm_max, ndm, endpoint=True)
 
     # make sure dm0 is in the array
@@ -274,11 +274,13 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
                      (beamno, sig_cut, dms[dm_max_jj], t0)
 
     if mk_plot is True:
-        if ndm == 1:
+        print(fn_fig_out)
+        if ndm==1:
             params = snr_, dm_, downsamp, t0
             plotter.plot_two_panel(full_freq_arr_downsamp, params, prob=None, 
                 freq_low=1250.09765625, freq_up=1549.90234375, cand_no=cand_no)
         else:
+            print(fn_fig_out)
             plotter.plot_three_panel(full_freq_arr_downsamp, 
                                      full_dm_arr_downsamp, 
                                      times, dms, freq_low=freq_low, 
