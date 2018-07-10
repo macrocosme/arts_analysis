@@ -160,6 +160,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         datacopy = copy.deepcopy(data)
         pool = multiprocessing.Pool(processes=ndm)        
         xx = pool.map(multiproc_dedisp, [i for i in dms])
+        print(len(xx))
         dd, dft = xx[0], xx[1]
         pool.close()
         print(xx)
