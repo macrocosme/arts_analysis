@@ -161,7 +161,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         xx = pool.map(multiproc_dedisp, [i for i in dms])
         dd, dft = xx[0], xx[1]
         pool.close()
-        print(dd.shape, dft.shape)
+        print(np.concatenate(dd).shape, np.concatenate(dft).shape)
         print(time.time()-t0)
         dd = np.concatenate(dd).reshape(ndm, -1)
         full_arr = dd[:, t_min:t_max]
