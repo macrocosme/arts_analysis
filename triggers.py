@@ -158,19 +158,22 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         print("\nDedispersing in Parallel\n")        
         t0=time.time()
         global datacopy 
-        datacopy = copy.deepcopy(data)
-        pool = multiprocessing.Pool(processes=ndm)        
-        data_tuple = pool.map(multiproc_dedisp, [i for i in dms])
-        pool.close()
 
-        data_tuple = np.concatenate(data_tuple)
-        ddm = np.concatenate(data_tuple[0::2]).reshape(ndm, -1)
-        df = np.concatenate(data_tuple[1::2]).reshape(ndm, nfreq, -1)
+        for kk in range(5):
+            dms_ = dms[10*kk:10*(kk+1)]
+            datacopy = copy.deepcopy(data)
+            pool = multiprocessing.Pool(processes=ndm_)        
+            data_tuple = pool.map(multiproc_dedisp, [i for i in dms_])
+            pool.close()
 
-        print(time.time()-t0)
-        full_arr = ddm[:, t_min:t_max]
-        data_dm_max = df[dm_max_jj]
-        del ddm, df
+            data_tuple = np.concatenate(data_tuple)
+            ddm = np.concatenate(data_tuple[0::2]).reshape(ndm_, -1)
+            df = np.concatenate(data_tuple[1::2]).reshape(ndm_, nfreq, -1)
+
+            print(time.time()-t0)
+            full_arr = ddm[:, t_min:t_max]
+            data_dm_max = df[dm_max_jj]
+            del ddm, df
 
     else:
         print("\nDedispersing Serially\n")
