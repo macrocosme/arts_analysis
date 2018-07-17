@@ -178,7 +178,6 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
             ind_kk = range(10*kk, 10*(kk+1))
 
             if dm_max_jj in ind_kk:
-                print(dms_[ind_kk.index(dm_max_jj)])
                 data_dm_max = df[ind_kk.index(dm_max_jj)]#dm_max_jj]hack
 
             del ddm, df
@@ -421,7 +420,13 @@ if __name__=='__main__':
 
     if options.save_data == 'concat':
         data_dm_time_full = np.concatenate(data_dm_time_full)
+        ddmshape = data_dm_time.shape
+        data_dm_time_full = data_dm_time_full.reshape(-1, ddmshape[0], ddmshape[1])
+
         data_freq_time_full = np.concatenate(data_freq_time_full)
+        dfshape = data_freq_time.shape
+        data_freq_time_full = data_freq_time_full.reshape(-1, dfshape[0], dfshape[1])
+        
         fnout = '%s/data_full.hdf5' % basedir
 
         f = h5py.File(fnout, 'w')
