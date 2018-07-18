@@ -200,7 +200,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
             del ddm, df
     else:
         print("\nDedispersing Serially\n")
-        t0 = time.time()
+        tbeg = time.time()
         for jj, dm_ in enumerate(dms):
             print("Dedispersing to dm=%0.1f at t=%0.1f sec with width=%.2f" % 
                         (dm_, start_bin*dt, downsamp))
@@ -217,7 +217,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
                     Z = np.zeros([nfreq, np.abs(t_min)])
                     data_dm_max = np.concatenate([Z, data_dm_max], axis=1)
 
-        print("Serial dedispersion in %f sec" % (time.time()-t0))
+        print("Serial dedispersion in %f sec" % (time.time()-tbeg))
     downsamp = int(downsamp)
     downsamp = int(downsamp//downsamp_smear)
     # bin down to nfreq_plot freq channels
