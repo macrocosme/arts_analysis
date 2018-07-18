@@ -84,9 +84,9 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         data array with downsampled freq-time intensities 
     """
     SNRtools = tools.SNR_Tools()
-
+    downsamp = min(512, downsamp)
     rawdatafile = filterbank.filterbank(fn_fil)
-
+    dfreq_MHz = rawdatafile.header['foff']    
     mask = []#np.array([ 5,   6,   9,  32,  35,  49,  75,  76,  78,  82,  83,  87,  92,
              #         93,  97,  98, 108, 110, 111, 112, 114, 118, 122, 123, 124, 157,
              #         160, 299, 300, 301, 302, 303, 304, 305, 306, 307, 308, 309, 660, 
@@ -96,11 +96,11 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     freq_up = rawdatafile.header['fch1']
     nfreq = rawdatafile.header['nchans']
     freq_low = freq_up + nfreq*rawdatafile.header['foff']
-    time_res = dt * downsamp
     ntime_fil = (os.path.getsize(fn_fil) - 467.)/nfreq
+    tdm = np.abs(8.3*1e-6*dm0*dfreq_MHz*(freq_low/1000.)**-3)
 
-    dm_min = max(0, dm0-20)
-    dm_max = dm0 + 20
+    dm_min = max(0, dm0-40)
+    dm_max = dm0 + 40
     dms = np.linspace(dm_min, dm_max, ndm, endpoint=True)
 
     # make sure dm0 is in the array
@@ -108,14 +108,19 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     dms += (dm0-dms[dm_max_jj])
     dms[0] = max(0, dms[0])
 
-    # Read in 5 disp delays
-    width = 2*abs(4.14e3 * dm0 * (freq_up**-2 - freq_low**-2))
+    # Read in 2 disp delays
+    width = 2.5*abs(4.14e3 * dm0 * (freq_up**-2 - freq_low**-2))
 
     tdisp = width / dt
-    tplot = ntime_plot * downsamp 
 
     global t_min, t_max
-
+    downsamp_smear = int(max(1, int(downsamp*dt/tdm/4.)))
+    downsamp_res = int(downsamp//downsamp_smear)
+    downsamp = int(downsamp_res*downsamp_smear)
+    time_res = dt * downsamp
+    tplot = ntime_plot * downsamp 
+    print("Width_full Width_smear Width_res: %d %d %d" % 
+        (downsamp, downsamp_smear, downsamp_res))
     if tdisp > tplot:
         # Need to read in more data than you'll plot
         # because of large dispersion time
@@ -123,7 +128,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         t_min = chunksize//2 - (ntime_plot*downsamp)//2
         t_max = chunksize//2 + (ntime_plot*downsamp)//2
     else:
-        # Only need ot read in enough to plot 
+        # Only need to read in enough to plot 
         chunksize = int(tplot)        
         t_min, t_max = 0, chunksize
 
@@ -136,15 +141,23 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         t_max += extra
 
     t_min, t_max = int(t_min), int(t_max)
-    ntime = t_max-t_min
     
     snr_max = 0
+    
+    # Account for the pre-downsampling to speed up dedispersion
+    t_min /= downsamp_smear
+    t_max /= downsamp_smear
+    ntime = t_max-t_min
 
     if ntime_fil < (start_bin+chunksize):
         print("Trigger at end of file, skipping")
-        return 0,0,0
+        return [],[],[]
 
+    print("Reading in chunk: %d" % chunksize)
     data = rawdatafile.get_spectra(start_bin, chunksize)
+    # Downsample before dedispersion up to 1/4th 
+    # DM smearing limit 
+    data.downsample(downsamp_smear)
     data.data -= np.median(data.data, axis=-1)[:, None]
     data.data[mask] = 0.
     full_arr = np.empty([int(ndm), int(ntime)])   
@@ -155,14 +168,17 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         data = data.masked(mask, maskval='median-mid80')
 
     if multiproc is True: 
-        print("\nDedispersing in Parallel\n")        
         t0=time.time()
         global datacopy 
 
-        ndm_ = min(10, ndm)
+        size_arr = sys.getsizeof(data.data)
+        nproc = int(32.0e9/size_arr)
 
+        ndm_ = min(min(nproc, ndm), 10)
+
+        print("\nDedispersing in Parallel with %d proc\nAssuming 50GB of memory" % ndm_)
         for kk in range(ndm//ndm_):
-            dms_ = dms[10*kk:10*(kk+1)]
+            dms_ = dms[ndm_*kk:ndm_*(kk+1)]
             datacopy = copy.deepcopy(data)
             pool = multiprocessing.Pool(processes=ndm_)        
             data_tuple = pool.map(multiproc_dedisp, [i for i in dms_])
@@ -173,47 +189,50 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
             df = np.concatenate(data_tuple[1::2]).reshape(ndm_, nfreq, -1)
 
             print(time.time()-t0)
-            full_arr[10*kk:10*(kk+1)] = ddm[:, t_min:t_max]
+            full_arr[ndm_*kk:ndm_*(kk+1)] = ddm[:, t_min:t_max]
 
-            ind_kk = range(10*kk, 10*(kk+1))
+            ind_kk = range(ndm_*kk, ndm_*(kk+1))
 
             if dm_max_jj in ind_kk:
+                print(dms_[ind_kk.index(dm_max_jj)])
                 data_dm_max = df[ind_kk.index(dm_max_jj)]#dm_max_jj]hack
 
             del ddm, df
-
     else:
         print("\nDedispersing Serially\n")
-
+        t0 = time.time()
         for jj, dm_ in enumerate(dms):
             print("Dedispersing to dm=%0.1f at t=%0.1f sec with width=%.2f" % 
                         (dm_, start_bin*dt, downsamp))
             data_copy = copy.deepcopy(data)
 
             data_copy.dedisperse(dm_)
-            dm_arr = data_copy.data[:, t_min:t_max].mean(0)
-
+            dm_arr = data_copy.data[:, max(0, t_min):t_max].mean(0)
             snr_ = SNRtools.calc_snr(dm_arr)
-
-            full_arr[jj] = copy.copy(dm_arr)
+            full_arr[jj, np.abs(min(0, t_min)):] = copy.copy(dm_arr)
 
             if jj==dm_max_jj:
-                data_dm_max = data_copy.data[:, t_min:t_max]
+                data_dm_max = data_copy.data[:, max(0, t_min):t_max]
+                if t_min<0:
+                    Z = np.zeros([nfreq, np.abs(t_min)])
+                    data_dm_max = np.concatenate([Z, data_dm_max], axis=1)
 
+        print("Serial dedispersion in %f sec" % (time.time()-t0))
     downsamp = int(downsamp)
-
+    downsamp = int(downsamp//downsamp_smear)
     # bin down to nfreq_plot freq channels
     full_freq_arr_downsamp = data_dm_max[:nfreq//nfreq_plot*nfreq_plot, :].reshape(\
                                    nfreq_plot, -1, ntime).mean(1)
     # bin down in time by factor of downsamp
+    print(ntime, downsamp, downsamp_res)
     full_freq_arr_downsamp = full_freq_arr_downsamp[:, :ntime//downsamp*downsamp\
-                                   ].reshape(-1, ntime//downsamp, downsamp).mean(-1)
+                                   ].reshape(-1, ntime//downsamp_res, downsamp_res).mean(-1)
     
     times = np.linspace(0, ntime*dt, len(full_freq_arr_downsamp[0]))
 
-    full_dm_arr_downsamp = full_arr[:, :ntime//downsamp*downsamp]
+    full_dm_arr_downsamp = full_arr[:, :ntime//downsamp_res*downsamp_res]
     full_dm_arr_downsamp = full_dm_arr_downsamp.reshape(-1, 
-                                 ntime//downsamp, downsamp).mean(-1)
+                                                        ntime//downsamp_res, downsamp_res).mean(-1)
 
     full_freq_arr_downsamp /= np.std(full_freq_arr_downsamp)
     full_dm_arr_downsamp /= np.std(full_dm_arr_downsamp)
@@ -221,7 +240,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     suptitle = "beam%s snr%d dm%d t0%d width%d" %\
                  (beamno, sig_cut, dms[dm_max_jj], t0, downsamp)
 
-    fn_fig_out = './plots/train_data_beam%s_snr%d_dm%d_t0%d.pdf' % \
+    fn_fig_out = './plots/injected_%s_snr%d_dm%d_t0%d.pdf' % \
                      (beamno, sig_cut, dms[dm_max_jj], t0)
 
     if mk_plot is True:
@@ -247,7 +266,7 @@ def h5_writer(data_freq_time, data_dm_time,
     """ Write to an hdf5 file trigger data, 
     pulse parameters
     """
-    fnout = '%s/data_trainsnr%d_dm%d_t0%d.hdf5'\
+    fnout = '%s/heimdall_snr%d_dm%d_t0%d.hdf5'\
                 % (basedir, snr, dm0, t0)
 
     f = h5py.File(fnout, 'w')
@@ -350,6 +369,10 @@ if __name__=='__main__':
                         help="", 
                         default=np.inf)
 
+    parser.add_option('--outdir', dest='outdir', type='str',
+                        help="directory to write data to", 
+                        default='./data/')
+
 
     options, args = parser.parse_args()
     fn_fil = args[0]
@@ -384,7 +407,7 @@ if __name__=='__main__':
                 grouped_triggers, fmt='%0.2f %0.1f %0.3f %0.1f')
 
     for ii, t0 in enumerate(tt_cut[:options.ntrig]):
-        print("\nStarting DM=%0.2f" % dm_cut[ii])
+        print("\nStarting DM=%0.2f S/N=%0.2f width=%d time=%f" % (dm_cut[ii], sig_cut[ii], ds_cut[ii], t0))
         data_dm_time, data_freq_time, time_res = \
                         proc_trigger(fn_fil, dm_cut[ii], t0, sig_cut[ii],
                         mk_plot=options.mk_plot, ndm=options.ndm, 
@@ -392,8 +415,10 @@ if __name__=='__main__':
                         ntime_plot=options.ntime_plot, cmap=options.cmap,
                                      fn_mask=options.maskfile, cand_no=ii,
                                      multiproc=options.multiproc)
+        if len(data_dm_time)==0:
+            continue
 
-        basedir = './'
+        basedir = options.outdir#'./data/'
 
         if options.save_data != '0':
             if options.save_data == 'hdf5':
@@ -401,7 +426,6 @@ if __name__=='__main__':
                           dm_cut[ii], t0, sig_cut[ii], 
                           beamno='', basedir=basedir, time_res=time_res)
             elif options.save_data == 'npy':
-
                 fnout_freq_time = '%s/data_snr%d_dm%d_t0%f_freq.npy'\
                          % (basedir, sig_cut[ii], dm_cut[ii], np.round(t0, 2))
                 fnout_dm_time = '%s/data_snr%d_dm%d_t0%f_dm.npy'\
@@ -420,13 +444,7 @@ if __name__=='__main__':
 
     if options.save_data == 'concat':
         data_dm_time_full = np.concatenate(data_dm_time_full)
-        ddmshape = data_dm_time.shape
-        data_dm_time_full = data_dm_time_full.reshape(-1, ddmshape[0], ddmshape[1])
-
         data_freq_time_full = np.concatenate(data_freq_time_full)
-        dfshape = data_freq_time.shape
-        data_freq_time_full = data_freq_time_full.reshape(-1, dfshape[0], dfshape[1])
-        
         fnout = '%s/data_full.hdf5' % basedir
 
         f = h5py.File(fnout, 'w')
