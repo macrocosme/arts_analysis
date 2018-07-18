@@ -228,7 +228,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     full_freq_arr_downsamp = full_freq_arr_downsamp[:, :ntime//downsamp*downsamp\
                                    ].reshape(-1, ntime//downsamp_res, downsamp_res).mean(-1)
     
-    times = np.linspace(0, ntime*dt, len(full_freq_arr_downsamp[0]))
+    times = np.linspace(0, ntime_plot*downsamp*dt, len(full_freq_arr_downsamp[0]))
 
     full_dm_arr_downsamp = full_arr[:, :ntime//downsamp_res*downsamp_res]
     full_dm_arr_downsamp = full_dm_arr_downsamp.reshape(-1, 
