@@ -10,17 +10,13 @@ AMBER_PATH = '~/test/amber_arg.sh'
 
 outdir = '/data/03/Triggers/injection/%s' % time.strftime("%Y%m%d")
 infile = '/data/03/Triggers/injection/sky_data_nofrb.fil'
-#infile = '/data2/output/20180402/2018-04-02-09:40:11.M31/filterbank/CB22.fil'
-#infile = '/data2/output/20180328/2018-03-28-13:01:20.J0248+6021/filterbank/CB21.fil'
-#infile = '/data1/output/20180425/2018-04-25-03\:02\:05.RA20DEC57/filterbank/CB21.fil'
-#infile = '/data2/output/snr_tests_liam/CB21.fil'
-#outdir = '/data2/snr_tests_liam'
 
 if not os.path.isdir(outdir):
     os.mkdir(outdir)
 
 timestr = time.strftime("%Y%m%d-%H%M")
-os.system('python inject_frb.py %s %s --nfrb %d --dm_list 25.0,50.0,75.0,100.0 --calc_snr True'% (infile, outdir, N_FRB))
+os.system('python inject_frb.py %s %s --nfrb %d --dm_list 25.0,50.0,75.0,125.0,150.0,200.0,250.0,300.0,325.0,350.0,375.0 --calc_snr True'% (infile, outdir, N_FRB))
+exit()
 
 # note this assumes tstr is the same in both inject_frb and glob
 fil_list = glob.glob('%s/*%s.fil' % (outdir, timestr))
