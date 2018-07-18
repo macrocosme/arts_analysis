@@ -445,6 +445,10 @@ if __name__=='__main__':
     if options.save_data == 'concat':
         data_dm_time_full = np.concatenate(data_dm_time_full)
         data_freq_time_full = np.concatenate(data_freq_time_full)
+        
+        data_dm_time_full = data_dm_time_full.reshape(-1,data_dm_time[0],data_dm_time[1])
+        data_freq_time_full = data_freq_time_full.reshape(-1,data_freq_time[0],data_freq_time[1])
+        
         fnout = '%s/data_full.hdf5' % basedir
 
         f = h5py.File(fnout, 'w')
