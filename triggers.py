@@ -243,7 +243,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     fn_fig_out = './plots/injected_%s_snr%d_dm%d_t0%d.pdf' % \
                      (beamno, sig_cut, dms[dm_max_jj], t0)
 
-    params = snr_, dm_, downsamp, t0
+    params = snr_, dm_, downsamp, t0, dt
     if mk_plot is True:
         print(fn_fig_out)
         if ndm==1:
@@ -436,8 +436,6 @@ if __name__=='__main__':
             elif options.save_data == 'concat':
                 data_dm_time_full.append(data_dm_time)
                 data_freq_time_full.append(data_freq_time)
-#                params = [dm_cut[ii], 0, ds_cut[ii], 0, -2, 0, t0, sig_cut[ii]]
-#                params = [sig_cut[ii], dm_cut[ii], ds_cut[ii], t0]
                 params_full.append(params)
         else:
             print('Not saving data')
