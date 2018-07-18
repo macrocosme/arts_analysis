@@ -12,13 +12,13 @@ import matplotlib.pyplot as plt
 
 def plot_two_panel(data_freq_time, params, cb=None, prob=None, 
                    freq_low=1250.09765625, freq_up=1549.90234375, 
-                   cand_no=1):
+                   cand_no=1, delta_t=4.096e-5):
     """ Plot data in two panels
     """
     snr, dm, bin_width, t0 = params
     nfreq, ntime = data_freq_time.shape
 
-    times = np.arange(ntime) * bin_width * 1E3  # ms
+    times = np.arange(ntime)*delta_t*bin_width*1E3  # ms
     freqs = np.linspace(freq_low, freq_up, nfreq)
 
     fig, (ax1, ax2) = plt.subplots(nrows=2, sharex=True, 

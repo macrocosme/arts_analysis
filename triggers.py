@@ -243,14 +243,13 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     fn_fig_out = './plots/injected_%s_snr%d_dm%d_t0%d.pdf' % \
                      (beamno, sig_cut, dms[dm_max_jj], t0)
 
+    params = snr_, dm_, downsamp, t0
     if mk_plot is True:
         print(fn_fig_out)
         if ndm==1:
-            params = snr_, dm_, downsamp, t0
             plotter.plot_two_panel(full_freq_arr_downsamp, params, prob=None, 
-                freq_low=1250.09765625, freq_up=1549.90234375, cand_no=cand_no)
+                                   freq_low=1250.09765625, freq_up=1549.90234375, cand_no=cand_no, delta_t=dt)
         else:
-            print(fn_fig_out)
             plotter.plot_three_panel(full_freq_arr_downsamp, 
                                      full_dm_arr_downsamp, 
                                      times, dms, freq_low=freq_low, 
@@ -258,7 +257,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
                                      suptitle=suptitle, fnout=fn_fig_out, 
                                      cand_no=cand_no)
     
-    return full_dm_arr_downsamp, full_freq_arr_downsamp, time_res
+    return full_dm_arr_downsamp, full_freq_arr_downsamp, time_res, params
 
 def h5_writer(data_freq_time, data_dm_time, 
               dm0, t0, snr, beamno='', basedir='./',
@@ -408,7 +407,7 @@ if __name__=='__main__':
 
     for ii, t0 in enumerate(tt_cut[:options.ntrig]):
         print("\nStarting DM=%0.2f S/N=%0.2f width=%d time=%f" % (dm_cut[ii], sig_cut[ii], ds_cut[ii], t0))
-        data_dm_time, data_freq_time, time_res = \
+        data_dm_time, data_freq_time, time_res, params = \
                         proc_trigger(fn_fil, dm_cut[ii], t0, sig_cut[ii],
                         mk_plot=options.mk_plot, ndm=options.ndm, 
                         downsamp=ds_cut[ii], nfreq_plot=options.nfreq_plot,
@@ -438,7 +437,7 @@ if __name__=='__main__':
                 data_dm_time_full.append(data_dm_time)
                 data_freq_time_full.append(data_freq_time)
 #                params = [dm_cut[ii], 0, ds_cut[ii], 0, -2, 0, t0, sig_cut[ii]]
-                params = [sig_cut[ii], dm_cut[ii], ds_cut[ii], t0]
+#                params = [sig_cut[ii], dm_cut[ii], ds_cut[ii], t0]
                 params_full.append(params)
         else:
             print('Not saving data')
