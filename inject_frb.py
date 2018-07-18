@@ -7,6 +7,7 @@ import numpy as np
 import glob
 import scipy
 import optparse
+import random
 
 try:
     import matplotlib.pyplot as plt
@@ -98,6 +99,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
     # ensure that dispersion sweep is not too large 
     # for chunksize
     f_edge = 0.3    
+
     while chunksize <= t_delay_max_pix/f_edge:
         chunksize *= 2
         NTIME *= 2
@@ -118,10 +120,9 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
     for ii in xrange(N_FRB):
         # drop FRB in random location in data chunk
-        offset = int(np.random.uniform(0.1*chunksize, (1-f_edge)*chunksize)) 
-
+        offset = random.randint(0.1*chunksize, (1-f_edge)*chunksize)
         data_filobj, freq_arr, delta_t, header = reader.read_fil_data(fn_fil, 
-                                            start=start + chunksize*ii, stop=chunksize)
+                                            start=start+chunksize*ii, stop=chunksize)
 
         if ii==0:
             fn_rfi_clean = reader.write_to_fil(np.zeros([NFREQ, 0]), 
@@ -142,9 +143,9 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         data_event, params = simulate_frb.gen_simulated_frb(NFREQ=NFREQ, 
                                                NTIME=NTIME, sim=True, 
 #                                               fluence=3000*(1+0.1*ii),
-                                               fluence=(200, 500),
-                                               spec_ind=0, width=(delta_t, delta_t*100), 
-                                               dm=dm+10*ii, scat_factor=(-4, -3.5), 
+                                               fluence=(150+10*ii, 500+10*ii),
+                                               spec_ind=0, width=(delta_t, delta_t*100),#delta_t*512,#(delta_t, delta_t*100), 
+                                               dm=dm+ii*10, scat_factor=(-4, -3.5), 
                                                background_noise=data_event, 
                                                delta_t=delta_t, plot_burst=False, 
                                                freq=(freq_arr[0], freq_arr[-1]), 
@@ -162,12 +163,11 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         width = params[2]
         downsamp = max(1, int(width/delta_t))
         t_delay_mid = 4.15e3*dm_*(freq_ref**-2-freq_arr[0]**-2)
-        
         # this is an empirical hack. I do not know why 
         # the PRESTO arrival times are different from t0 
         # by the dispersion delay between the reference and 
         # upper frequency
-        t0 -= t_delay_mid
+        t0 -= t_delay_mid #hack
 
         if rfi_clean is True:
             data = rfi_test.apply_rfi_filters(data.astype(np.float32), delta_t)
@@ -195,6 +195,8 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         if calc_snr is True:
             data_filobj.data = data
             data_filobj.dedisperse(dm_)
+            print('t0, t0_ind, offset, np.argmax(data_filobj.data.mean(0))')
+            print(t0, t0_ind, offset, np.argmax(data_filobj.data.mean(0)))
             end_t = abs(4.15e3*dm_*(freq[0]**-2 - freq[1]**-2))
             end_pix = int(end_t / dt)
             end_pix_ds = int(end_t / dt / downsamp)
@@ -204,13 +206,15 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             data_rb -= np.median(data_rb)
 
             SNRTools = tools.SNR_Tools()
+            print("calculating S/N")
             snr_max, width_max = SNRTools.calc_snr_widths(data_rb,
-                                                       widths=range(100))
+                                                          widths=2**np.arange(12))
 
 #            snr_max2, width_max2 = tools.calc_snr_widths(data_rb,
 #                                         )
             print("S/N: %.2f width_used: %.3f width_tru: %.3f DM: %.1f" % (snr_max, width_max, width/delta_t, dm_))
-
+            t0_ind = np.argmax(data_filobj.data.mean(0)) + chunksize*ii
+            t0 = t0_ind*delta_t #huge hack
         else:
             snr_max = 10.0
             width_max = int(width/dt)
