@@ -243,7 +243,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     fn_fig_out = './plots/injected_%s_snr%d_dm%d_t0%d.pdf' % \
                      (beamno, sig_cut, dms[dm_max_jj], t0)
 
-    params = snr_, dm_, downsamp, t0, dt
+    params = snr_, dms[dm_max_jj], downsamp, t0, dt
     if mk_plot is True:
         print(fn_fig_out)
         if ndm==1:
