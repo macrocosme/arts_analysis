@@ -446,8 +446,10 @@ if __name__=='__main__':
         data_dm_time_full = np.concatenate(data_dm_time_full)
         data_freq_time_full = np.concatenate(data_freq_time_full)
         
-        data_dm_time_full = data_dm_time_full.reshape(-1,data_dm_time[0],data_dm_time[1])
-        data_freq_time_full = data_freq_time_full.reshape(-1,data_freq_time[0],data_freq_time[1])
+        ndm, nt = data_dm_time.shape
+        data_dm_time_full = data_dm_time_full.reshape(-1,ndm,nt)
+        nf, nt = data_freq_time.shape
+        data_freq_time_full = data_freq_time_full.reshape(-1,nf,nt)
         
         fnout = '%s/data_full.hdf5' % basedir
 
