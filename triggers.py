@@ -437,7 +437,8 @@ if __name__=='__main__':
             elif options.save_data == 'concat':
                 data_dm_time_full.append(data_dm_time)
                 data_freq_time_full.append(data_freq_time)
-                params = [dm_cut[ii], 0, ds_cut[ii], 0, -2, 0, t0, sig_cut[ii]]
+#                params = [dm_cut[ii], 0, ds_cut[ii], 0, -2, 0, t0, sig_cut[ii]]
+                params = [sig_cut[ii], dm_cut[ii], ds_cut[ii], t0]
                 params_full.append(params)
         else:
             print('Not saving data')
