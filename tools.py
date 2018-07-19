@@ -38,6 +38,60 @@ def combine_all_beams(fdir, fnout=None):
 
     return data_all
 
+def get_multibeam_triggers(times, beamno, t_window=0.5):
+    CB_list = set(beamno)
+    nbins = int((times.max()-times.min())/t_window)
+    ntrig_perbeam = np.zeros([nbins])
+
+    for CB in CB_list:
+        if CB==13:
+            continue
+        vals, time_bins = np.histogram(times[beamno==CB], 
+                                       range=(times.min()-1, times.max()+1), 
+                                       bins=nbins)
+        vals[vals!=0] = 1.0
+        ntrig_perbeam += vals
+
+    return ntrig_perbeam
+
+def group_dm_time_beam(fdir, fnout=None):
+
+    flist = glob.glob(fdir+'/CB*.cand')
+
+    times_full, beamno_full, dm_full = [], [], []
+    for fn in flist:
+        print(fn)
+        try:
+            CB = float(fn.split('CB')[-1][:2])
+        except:
+            continue
+
+        try:
+            sig_cut, dm_cut, tt_cut, ds_cut, ind_full = \
+                         get_triggers(fn, sig_thresh=10.0, 
+                         dm_min=10.0, dm_max=np.inf, 
+                         t_window=0.5, 
+                         max_rows=None)
+        except IndexError:
+            print("Skipping CB%d" % CB)
+            continue
+
+        beamno = np.ones([len(dm_cut)])*CB
+
+        times_full.append(tt_cut)
+        beamno_full.append(beamno)
+        dm_full.append(dm_cut)
+        # data_full = np.concatenate([data, beamno[:, None]], axis=-1)
+        # data_all.append(data_full)
+
+    times_full = np.concatenate(times_full)
+    beamno_full = np.concatenate(beamno_full)
+    dm_full = np.concatenate(dm_full)
+
+    ntrig_pb = get_multibeam_triggers(times_full, beamno_full, t_window=0.5)
+
+    return times_full, beamno_full, dm_full, ntrig_pb
+
 def dm_range(dm_max, dm_min=5., frac=0.2):
     """ Generate list of DM-windows in which 
     to search for single pulse groups. 
