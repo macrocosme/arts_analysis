@@ -167,8 +167,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         mask = get_mask(rfimask, start_bin, chunksize)
         data = data.masked(mask, maskval='median-mid80')
 
-    if multiproc is True: 
-        t0=time.time()
+    if multiproc is True:
+        tbeg=time.time()
         global datacopy 
 
         size_arr = sys.getsizeof(data.data)
@@ -188,7 +188,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
             ddm = np.concatenate(data_tuple[0::2]).reshape(ndm_, -1)
             df = np.concatenate(data_tuple[1::2]).reshape(ndm_, nfreq, -1)
 
-            print(time.time()-t0)
+            print(time.time()-tbeg)
             full_arr[ndm_*kk:ndm_*(kk+1)] = ddm[:, t_min:t_max]
 
             ind_kk = range(ndm_*kk, ndm_*(kk+1))
@@ -212,13 +212,13 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
             full_arr[jj, np.abs(min(0, t_min)):] = copy.copy(dm_arr)
 
             if jj==dm_max_jj:
+                snr_max = snr_
                 data_dm_max = data_copy.data[:, max(0, t_min):t_max]
                 if t_min<0:
                     Z = np.zeros([nfreq, np.abs(t_min)])
                     data_dm_max = np.concatenate([Z, data_dm_max], axis=1)
 
         print("Serial dedispersion in %f sec" % (time.time()-tbeg))
-    downsamp = int(downsamp)
     downsamp = int(downsamp//downsamp_smear)
     # bin down to nfreq_plot freq channels
     full_freq_arr_downsamp = data_dm_max[:nfreq//nfreq_plot*nfreq_plot, :].reshape(\
@@ -243,7 +243,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     fn_fig_out = './plots/injected_%s_snr%d_dm%d_t0%d.pdf' % \
                      (beamno, sig_cut, dms[dm_max_jj], t0)
 
-    params = snr_, dms[dm_max_jj], downsamp, t0, dt
+    params = snr_max, dms[dm_max_jj], downsamp, t0, dt
     if mk_plot is True:
         print(fn_fig_out)
         if ndm==1:
