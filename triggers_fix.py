@@ -158,7 +158,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 
     if ntime_fil < (start_bin+chunksize):
         print("Trigger at end of file, skipping")
-        return [],[],[]
+        return [],[],[],[]
 
     print("Reading in chunk: %d" % chunksize)
     data = rawdatafile.get_spectra(start_bin, chunksize)
