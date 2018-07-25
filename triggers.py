@@ -364,6 +364,9 @@ if __name__=='__main__':
     parser.add_option('--multiproc', dest='multiproc', action='store_true', \
                         help="use multicores if True (default False)", default=False)
 
+    parser.add_option('--rficlean', dest='rficlean', action='store_true', \
+                        help="use rficlean if True (default False)", default=False)
+
     parser.add_option('--nfreq_plot', dest='nfreq_plot', type='int',
                         help="make plot with this number of freq channels",
                         default=32)
@@ -429,7 +432,8 @@ if __name__=='__main__':
                         downsamp=ds_cut[ii], nfreq_plot=options.nfreq_plot,
                         ntime_plot=options.ntime_plot, cmap=options.cmap,
                                      fn_mask=options.maskfile, cand_no=ii,
-                                     multiproc=options.multiproc)
+                                     multiproc=options.multiproc, 
+                                     rficlean=options.rficlean)
         if len(data_dm_time)==0:
             continue
 
