@@ -109,9 +109,9 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     dms[0] = max(0, dms[0])
 
     # Read in 2 disp delays
-    width = 2.5*abs(4.14e3 * dm0 * (freq_up**-2 - freq_low**-2))
+#    width = 2.5*abs(4.14e3 * dm0 * (freq_up**-2 - freq_low**-2))
 
-    tdisp = width / dt
+#    tdisp = width / dt
 
     global t_min, t_max
     downsamp_smear = int(max(1, int(downsamp*dt/tdm/4.)))
@@ -119,25 +119,27 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     downsamp = int(downsamp_res*downsamp_smear)
     time_res = dt * downsamp
     tplot = ntime_plot * downsamp 
-    print("Width_full Width_smear Width_res: %d %d %d" % 
+    print("Width_full:%d  Width_smear:%d  Width_res: %d" % 
         (downsamp, downsamp_smear, downsamp_res))
-    if tdisp > tplot:
-        # Need to read in more data than you'll plot
-        # because of large dispersion time
-        chunksize = int(tdisp)
-        t_min = chunksize//2 - (ntime_plot*downsamp)//2
-        t_max = chunksize//2 + (ntime_plot*downsamp)//2
-    else:
-        # Only need to read in enough to plot 
-        chunksize = int(tplot)        
-        t_min, t_max = 0, chunksize
+
+    # if tdisp > tplot:
+    #     # Need to read in more data than you'll plot
+    #     # because of large dispersion time
+    #     chunksize = int(tdisp)
+    #     t_min = chunksize//2 - (ntime_plot*downsamp)//2
+    #     t_max = chunksize//2 + (ntime_plot*downsamp)//2
+    # else:
+    #     # Only need to read in enough to plot 
+    #     chunksize = int(tplot)        
+    #     t_min, t_max = 0, chunksize
 
 #    start_bin = int(t0/dt - chunksize/2.)
-    print("hack: assuming t0=ti")
+
     start_bin = int(t0/dt - ntime_plot*downsamp//2)
-    deltdisp = abs(4.14e3 * dm0 * (freq_up**-2 - freq_low**-2))
-    chunksize = int(deltdisp/dt + ntime_plot*downsamp)
-    print("end hack")
+    width = abs(4.14e3 * dm0 * (freq_up**-2 - freq_low**-2))
+    chunksize = int(width/dt + ntime_plot*downsamp)
+
+    t_min, t_max = 0, ntime_plot*downsamp
 
     if start_bin < 0:
         extra = start_bin
@@ -156,16 +158,10 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 
     if ntime_fil < (start_bin+chunksize):
         print("Trigger at end of file, skipping")
-        return [],[],[]
+        return [],[],[],[]
 
     print("Reading in chunk: %d" % chunksize)
     data = rawdatafile.get_spectra(start_bin, chunksize)
-
-    print("hack: assuming t0=ti")
-    data.dedisperse(dm0)
-    np.save('datatest', data.data)
-    print("end hack")
-    exit()
     
     # Downsample before dedispersion up to 1/4th 
     # DM smearing limit 
@@ -231,12 +227,12 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
                     data_dm_max = np.concatenate([Z, data_dm_max], axis=1)
 
         print("Serial dedispersion in %f sec" % (time.time()-tbeg))
+
     downsamp = int(downsamp//downsamp_smear)
     # bin down to nfreq_plot freq channels
     full_freq_arr_downsamp = data_dm_max[:nfreq//nfreq_plot*nfreq_plot, :].reshape(\
                                    nfreq_plot, -1, ntime).mean(1)
     # bin down in time by factor of downsamp
-    print(ntime, downsamp, downsamp_res)
     full_freq_arr_downsamp = full_freq_arr_downsamp[:, :ntime//downsamp*downsamp\
                                    ].reshape(-1, ntime//downsamp_res, downsamp_res).mean(-1)
     
@@ -260,7 +256,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         print(fn_fig_out)
         if ndm==1:
             plotter.plot_two_panel(full_freq_arr_downsamp, params, prob=None, 
-                                   freq_low=1250.09765625, freq_up=1549.90234375, cand_no=cand_no, delta_t=dt)
+                                   freq_low=freq_low, freq_up=freq_up, cand_no=cand_no, delta_t=dt)
         else:
             plotter.plot_three_panel(full_freq_arr_downsamp, 
                                      full_dm_arr_downsamp, 
