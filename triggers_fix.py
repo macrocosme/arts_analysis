@@ -139,6 +139,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     width = abs(4.14e3 * dm0 * (freq_up**-2 - freq_low**-2))
     chunksize = int(width/dt + ntime_plot*downsamp)
 
+    t_min, t_max = 0, ntime_plot*downsamp
+
     if start_bin < 0:
         extra = start_bin
         start_bin = 0
