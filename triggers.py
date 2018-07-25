@@ -169,7 +169,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         data_nobandpass = data_tmean - data_tmean.reshape(-1, 16).mean(-1).repeat(16)
         stdev, med = SNRtools.sigma_from_mad(data_nobandpass)
         mask = np.where(np.abs(data_nobandpass - med) > 5.0*stdev)[0]
-        data.data[mask] = data_tmean[:, None]
+        data.data[mask] = 0.0
 
     # Downsample before dedispersion up to 1/4th 
     # DM smearing limit 
