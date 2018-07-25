@@ -132,7 +132,12 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         chunksize = int(tplot)        
         t_min, t_max = 0, chunksize
 
-    start_bin = int(t0/dt - chunksize/2.)
+#    start_bin = int(t0/dt - chunksize/2.)
+    print("hack: assuming t0=ti")
+    start_bin = int(t0/dt - ntime_plot*downsamp//2)
+    deltdisp = abs(4.14e3 * dm0 * (freq_up**-2 - freq_low**-2))
+    chunksize = int(deltdisp/dt + ntime_plot*downsamp)
+    print("end hack")
 
     if start_bin < 0:
         extra = start_bin
@@ -155,6 +160,13 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 
     print("Reading in chunk: %d" % chunksize)
     data = rawdatafile.get_spectra(start_bin, chunksize)
+
+    print("hack: assuming t0=ti")
+    data.dedisperse(dm0)
+    np.save('datatest', data.data)
+    print("end hack")
+    exit()
+    
     # Downsample before dedispersion up to 1/4th 
     # DM smearing limit 
     data.downsample(downsamp_smear)
