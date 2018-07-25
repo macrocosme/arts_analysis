@@ -111,7 +111,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     # Read in 2 disp delays
 #    width = 2.5*abs(4.14e3 * dm0 * (freq_up**-2 - freq_low**-2))
 
-    tdisp = width / dt
+#    tdisp = width / dt
 
     global t_min, t_max
     downsamp_smear = int(max(1, int(downsamp*dt/tdm/4.)))
@@ -137,7 +137,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 
     start_bin = int(t0/dt - ntime_plot*downsamp//2)
     width = abs(4.14e3 * dm0 * (freq_up**-2 - freq_low**-2))
-    chunksize = int(deltdisp/dt + ntime_plot*downsamp)
+    chunksize = int(width/dt + ntime_plot*downsamp)
 
     if start_bin < 0:
         extra = start_bin
