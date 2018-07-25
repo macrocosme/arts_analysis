@@ -166,22 +166,23 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     
     if rficlean is True:
         data_tmean = np.mean(data.data, axis=-1)
-        data_tmean = data_tmean - data.data.reshape(-1, 16).mean(-1).repeat(16)
-        stdev, med = SNRtools.sigma_from_mad(data_tmean)
-        mask = np.where(np.abs(data_tmean - med) > 5.0*stdev)[0]
-        print("MASK:", mask)
+        data_nobandpass = data_tmean - data_tmean.reshape(-1, 16).mean(-1).repeat(16)
+        stdev, med = SNRtools.sigma_from_mad(data_nobandpass)
+        mask = np.where(np.abs(data_nobandpass - med) > 5.0*stdev)[0]
+        data.data[mask] = data_tmean[:, None]
 
     # Downsample before dedispersion up to 1/4th 
     # DM smearing limit 
     data.downsample(downsamp_smear)
     data.data -= np.median(data.data, axis=-1)[:, None]
-    data.data[mask] = 0.
+
     full_arr = np.empty([int(ndm), int(ntime)])   
 
     if not fn_mask is None:
-        rfimask = rfifind.rfifind(fn_mask)
-        mask = get_mask(rfimask, start_bin, chunksize)
-        data = data.masked(mask, maskval='median-mid80')
+        pass
+        # rfimask = rfifind.rfifind(fn_mask)
+        # mask = get_mask(rfimask, start_bin, chunksize)
+        # data = data.masked(mask, maskval='median-mid80')
 
     if multiproc is True:
         tbeg=time.time()
