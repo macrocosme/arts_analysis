@@ -50,7 +50,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
                  ndm=50, mk_plot=False, downsamp=1, 
                  beamno='', fn_mask=None, nfreq_plot=32,
                  ntime_plot=250,
-                 cmap='RdBu', cand_no=1, multiproc=False):
+                 cmap='RdBu', cand_no=1, multiproc=False,
+                 rficlean=False):
     """ Locate data within filterbank file (fn_fi)
     at some time t0, and dedisperse to dm0, generating 
     plots 
@@ -163,6 +164,13 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     print("Reading in chunk: %d" % chunksize)
     data = rawdatafile.get_spectra(start_bin, chunksize)
     
+    if rficlean is True:
+        data_tmean = np.mean(data.data, axis=-1)
+        data_tmean = data_tmean - data.data.reshape(-1, 16).mean(-1).repeat(16)
+        stdev, med = SNRtools.sigma_from_mad(data_tmean)
+        mask = np.where(np.abs(data_tmean - med) > 5.0*stdev)[0]
+        print("MASK:", mask)
+
     # Downsample before dedispersion up to 1/4th 
     # DM smearing limit 
     data.downsample(downsamp_smear)
