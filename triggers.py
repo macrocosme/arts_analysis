@@ -175,7 +175,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     # DM smearing limit 
     data.downsample(downsamp_smear)
     data.data -= np.median(data.data, axis=-1)[:, None]
-
+    np.save('test_disp', data.data) #hack
     full_arr = np.empty([int(ndm), int(ntime)])   
 
     if not fn_mask is None:
@@ -231,6 +231,9 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
             if jj==dm_max_jj:
                 snr_max = snr_
                 data_dm_max = data_copy.data[:, max(0, t_min):t_max]
+                print(jj, dm_, dm0)
+                np.save('test_dedisp%d' % dm_, data.data) #hack
+
                 if t_min<0:
                     Z = np.zeros([nfreq, np.abs(t_min)])
                     data_dm_max = np.concatenate([Z, data_dm_max], axis=1)
