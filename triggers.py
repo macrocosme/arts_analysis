@@ -115,8 +115,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 #    tdisp = width / dt
 
     global t_min, t_max
-#    downsamp_smear = int(max(1, int(downsamp*dt/tdm/4.)))
-    downsamp_smear = int(max(1, 0*int(downsamp*dt/tdm/4.)))# hack
+    downsamp_smear = int(max(1, int(downsamp*dt/tdm/4.)))
+#    downsamp_smear = int(max(1, 0*int(downsamp*dt/tdm/4.)))# hack
     downsamp_res = int(downsamp//downsamp_smear)
     downsamp = int(downsamp_res*downsamp_smear)
     time_res = dt * downsamp
@@ -241,12 +241,11 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 
         print("Serial dedispersion in %f sec" % (time.time()-tbeg))
 
-    downsamp = int(downsamp//downsamp_smear)
     # bin down to nfreq_plot freq channels
     full_freq_arr_downsamp = data_dm_max[:nfreq//nfreq_plot*nfreq_plot, :].reshape(\
                                    nfreq_plot, -1, ntime).mean(1)
     # bin down in time by factor of downsamp
-    full_freq_arr_downsamp = full_freq_arr_downsamp[:, :ntime//downsamp*downsamp\
+    full_freq_arr_downsamp = full_freq_arr_downsamp[:, :ntime//downsamp_res*downsamp_res\
                                    ].reshape(-1, ntime//downsamp_res, downsamp_res).mean(-1)
     
     times = np.linspace(0, ntime_plot*downsamp*dt, len(full_freq_arr_downsamp[0]))
@@ -269,8 +268,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         print(fn_fig_out)
         if ndm==1:
             plotter.plot_two_panel(full_freq_arr_downsamp, params, prob=None, 
-                                   freq_low=freq_low, freq_up=freq_up, cand_no=cand_no, 
-                                   )
+                                   freq_low=freq_low, freq_up=freq_up, 
+                                   cand_no=cand_no, times=times)
         else:
             plotter.plot_three_panel(full_freq_arr_downsamp, 
                                      full_dm_arr_downsamp, 
