@@ -93,9 +93,10 @@ def plot_three_panel(data_freq_time, data_dm_time, params, dms, times=None,
     plt.xlabel('Time [ms]')
     plt.ylabel('DM', labelpad=10)
 
-    print(dm, freq_low, freqs, times)
+    print(dm, freq_low, freqs)
     DM0_delays = dm * 4.15E6 * (freq_low**-2 - freqs**-2)
     ax1.plot(DM0_delays, freqs, c='r', lw='2')
+    print(DM0_delays)
 
     plt.suptitle(suptitle)
     plt.tight_layout()
