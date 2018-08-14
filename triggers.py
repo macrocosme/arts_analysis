@@ -232,7 +232,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
                 snr_max = snr_
                 data_dm_max = data_copy.data[:, max(0, t_min):t_max]
                 print(jj, dm_, dm0)
-                np.save('test_dedisp%d' % dm_, data.data) #hack
+                np.save('test_dedisp%d' % dm_, data_dm_max) #hack
 
                 if t_min<0:
                     Z = np.zeros([nfreq, np.abs(t_min)])
