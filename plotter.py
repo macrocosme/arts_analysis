@@ -61,7 +61,7 @@ def plot_two_panel(data_freq_time, params, times=None, cb=None, prob=None,
     plt.savefig(figname)
     plt.close(fig)
 
-def plot_three_panel(data_freq_time, data_dm_time, params, times=None, dms, 
+def plot_three_panel(data_freq_time, data_dm_time, params, dms, times=None, 
                      freq_up=1549.90234375, freq_low=1250.09765625,
                      cmap="RdBu", suptitle="", fnout="out.pdf", 
                      cand_no=1):
