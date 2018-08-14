@@ -21,6 +21,7 @@ def plot_two_panel(data_freq_time, params, times=None, cb=None, prob=None,
     if times is None:
         times = np.arange(ntime)*delta_t*bin_width*1e3  # ms
 
+    times *= 1e3 #convert to ms
     freqs = np.linspace(freq_low, freq_up, nfreq)
 
     fig, (ax1, ax2) = plt.subplots(nrows=2, sharex=True, 
