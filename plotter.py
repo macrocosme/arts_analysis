@@ -19,8 +19,8 @@ def plot_two_panel(data_freq_time, params, times=None, cb=None, prob=None,
     nfreq, ntime = data_freq_time.shape
 
     if times is None:
-        times = np.arange(ntime)*delta_t*bin_width*1E3  # ms
-    
+        times = np.arange(ntime)*delta_t*bin_width*1e3  # ms
+
     freqs = np.linspace(freq_low, freq_up, nfreq)
 
     fig, (ax1, ax2) = plt.subplots(nrows=2, sharex=True, 
@@ -61,12 +61,20 @@ def plot_two_panel(data_freq_time, params, times=None, cb=None, prob=None,
     plt.savefig(figname)
     plt.close(fig)
 
-def plot_three_panel(data_freq_time, data_dm_time, times, dms, 
+def plot_three_panel(data_freq_time, data_dm_time, params, times=None, dms, 
                      freq_up=1549.90234375, freq_low=1250.09765625,
                      cmap="RdBu", suptitle="", fnout="out.pdf", 
                      cand_no=1):
+    snr, dm, bin_width, t0, delta_t = params
+    nfreq, ntime = data_freq_time.shape
+
+    if times is None:
+        times = np.arange(ntime)*delta_t*bin_width*1e3  # ms
+
     figure = plt.figure()
     ax1 = plt.subplot(311)
+
+    times *= 1e3 # convert to ms from s
 
     plt.imshow(data_freq_time, aspect='auto', vmax=4, vmin=-4, 
                extent=[0, times[-1], freq_low, freq_up], 
@@ -81,8 +89,12 @@ def plot_three_panel(data_freq_time, data_dm_time, times, dms,
     plt.imshow(data_dm_time, aspect='auto', 
                extent=[0, times[-1], dms[0], dms[-1]], 
                interpolation='nearest', cmap=cmap)
-    plt.xlabel('Time [s]')
+    plt.xlabel('Time [ms]')
     plt.ylabel('DM', labelpad=10)
+
+    print(dm, freq_low, freqs, times)
+    DM0_delays = dm * 4.15E6 * (freq_low**-2 - freqs**-2)
+    ax1.plot(DM0_delays, freqs, c='r', lw='2')
 
     plt.suptitle(suptitle)
     plt.tight_layout()
