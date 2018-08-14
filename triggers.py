@@ -115,7 +115,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 #    tdisp = width / dt
 
     global t_min, t_max
-    downsamp_smear = int(max(1, int(downsamp*dt/tdm/4.)))
+#    downsamp_smear = int(max(1, int(downsamp*dt/tdm/4.)))
+    downsamp_smear = int(max(1, 0*int(downsamp*dt/tdm/4.)))# hack
     downsamp_res = int(downsamp//downsamp_smear)
     downsamp = int(downsamp_res*downsamp_smear)
     time_res = dt * downsamp
