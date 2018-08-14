@@ -67,6 +67,7 @@ def plot_three_panel(data_freq_time, data_dm_time, params, dms, times=None,
                      cand_no=1):
     snr, dm, bin_width, t0, delta_t = params
     nfreq, ntime = data_freq_time.shape
+    freqs = np.linspace(freq_low, freq_up, nfreq)
 
     if times is None:
         times = np.arange(ntime)*delta_t*bin_width*1e3  # ms
