@@ -115,7 +115,11 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 #    tdisp = width / dt
 
     global t_min, t_max
-    downsamp_smear = int(max(1, int(downsamp*dt/tdm/4.)))
+    # if smearing timescale is < 4*pulse width, 
+    # downsample before dedispersion for speed 
+    downsamp_smear = max(1, int(downsamp*dt/tdm/4.))
+    # ensure that it's not larger than pulse width
+    downsamp_smear = int(min(downsamp, downsamp_smear))
     downsamp_res = int(downsamp//downsamp_smear)
     downsamp = int(downsamp_res*downsamp_smear)
     time_res = dt * downsamp
@@ -139,6 +143,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     start_bin = int(t0/dt - ntime_plot*downsamp//2)
     width = abs(4.14e3 * dm0 * (freq_up**-2 - freq_low**-2))
     chunksize = int(width/dt + ntime_plot*downsamp)
+    print("Hack: chunksize")
 
     t_min, t_max = 0, ntime_plot*downsamp
 
@@ -173,6 +178,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 
     # Downsample before dedispersion up to 1/4th 
     # DM smearing limit 
+    print(data.data.shape, downsamp_smear)
     data.downsample(downsamp_smear)
     data.data -= np.median(data.data, axis=-1)[:, None]
     full_arr = np.empty([int(ndm), int(ntime)])   
@@ -253,10 +259,10 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     full_freq_arr_downsamp /= np.std(full_freq_arr_downsamp)
     full_dm_arr_downsamp /= np.std(full_dm_arr_downsamp)
 
-    suptitle = "beam%s snr%d dm%d t0%d width%d" %\
+    suptitle = " beam:%s  snr:%.1f  dm:%d  t0:%.1f  width:%d" %\
                  (beamno, sig_cut, dms[dm_max_jj], t0, downsamp)
 
-    fn_fig_out = './plots/injected_%s_snr%d_dm%d_t0%d.pdf' % \
+    fn_fig_out = './plots/CB%s_snr%d_dm%d_t0%d.pdf' % \
                      (beamno, sig_cut, dms[dm_max_jj], t0)
 
     params = snr_max, dms[dm_max_jj], downsamp, t0, dt
@@ -265,7 +271,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         if ndm==1:
             plotter.plot_two_panel(full_freq_arr_downsamp, params, prob=None, 
                                    freq_low=freq_low, freq_up=freq_up, 
-                                   cand_no=cand_no, times=times)
+                                   cand_no=cand_no, times=times, suptitle=suptitle,
+                                   fnout=fn_fig_out)
         else:
             plotter.plot_three_panel(full_freq_arr_downsamp, 
                                      full_dm_arr_downsamp, params, dms, 
