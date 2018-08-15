@@ -170,6 +170,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     data = rawdatafile.get_spectra(start_bin, chunksize)
     
     if rficlean is True:
+        print("Cleaning RFI")
         data_tmean = np.mean(data.data, axis=-1)
         data_nobandpass = data_tmean - data_tmean.reshape(-1, 16).mean(-1).repeat(16)
         stdev, med = SNRtools.sigma_from_mad(data_nobandpass)
@@ -259,8 +260,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     full_freq_arr_downsamp /= np.std(full_freq_arr_downsamp)
     full_dm_arr_downsamp /= np.std(full_dm_arr_downsamp)
 
-    suptitle = " beam:%s  snr:%.1f  dm:%d  t0:%.1f  width:%d" %\
-                 (beamno, sig_cut, dms[dm_max_jj], t0, downsamp)
+    suptitle = " CB:%s  S/N_pipe:%.1f  S/N_presto:%.1f \nDM:%d  t:%.1f  width:%d" %\
+                 (beamno, sig_cut, snr_max, dms[dm_max_jj], t0, downsamp)
 
     fn_fig_out = './plots/CB%s_snr%d_dm%d_t0%d.pdf' % \
                      (beamno, sig_cut, dms[dm_max_jj], t0)

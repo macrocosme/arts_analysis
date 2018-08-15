@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 def plot_two_panel(data_freq_time, params, times=None, cb=None, prob=None, 
                    freq_low=1250.09765625, freq_up=1549.90234375, 
-                   cand_no=1):
+                   cand_no=1, fnout='out.pdf', suptitle=''):
     """ Plot data in two panels
     """
     snr, dm, bin_width, t0, delta_t = params
@@ -34,7 +34,6 @@ def plot_two_panel(data_freq_time, params, times=None, cb=None, prob=None,
     # add what a DM=0 signal would look like
     DM0_delays = dm * 4.15E6 * (freq_low**-2 - freqs**-2)
     ax2.plot(DM0_delays, freqs, c='r', lw='2')
-    print(DM0_delays, freqs)
     # scaling: std = 1, median=0
     extent = [times[0], times[-1], freq_low, freq_up]
 
@@ -50,22 +49,25 @@ def plot_two_panel(data_freq_time, params, times=None, cb=None, prob=None,
     if prob is None:
         prob = -1
 
-    try:
-        fig.suptitle("p: {:.2f}, S/N: {:.0f}, DM: {:.2f}, \
-                  T0: {:.2f}, CB: {:02d}".format(prob, snr, dm, t0, cb))
-        figname = "plots/cand_{:04d}_snr{:.0f}_dm{:.0f}.pdf".format(cand_no, snr, dm)
-    except:
-        fig.suptitle("p: %.2f, S/N: %.0f, DM: %.2f, T0: %.2f, CB: %02d" \
-                     % (prob, snr, dm, t0, cb))
-        figname = "plots/cand_%04d_snr%.0f_dm%.0f.pdf" % (cand_no, snr, dm)
+    suptitle = 'p:%.2f %s' % (prob, suptitle)
 
-    plt.savefig(figname)
+#    try:
+#        fig.suptitle("p: {:.2f}, S/N: {:.0f}, DM: {:.2f}, \
+#                  T0: {:.2f}, CB: {:02d}".format(prob, snr, dm, t0, cb))
+#        figname = "plots/cand_{:04d}_snr{:.0f}_dm{:.0f}.pdf".format(cand_no, snr, dm)
+#    except:
+#        fig.suptitle("p: %.2f, S/N: %.0f, DM: %.2f, T0: %.2f, CB: %02d" \
+#                     % (prob, snr, dm, t0, cb))
+#        figname = "plots/cand_%04d_snr%.0f_dm%.0f.pdf" % (cand_no, snr, dm)
+
+    fig.suptitle(suptitle)
+    plt.savefig(fnout)
     plt.close(fig)
 
 def plot_three_panel(data_freq_time, data_dm_time, params, dms, times=None, 
                      freq_up=1549.90234375, freq_low=1250.09765625,
-                     cmap="RdBu", suptitle="", fnout="out.pdf", 
-                     cand_no=1):
+                     cmap="RdBu", suptitle="", fnout="out.pdf", cb=None,
+                     cand_no=1, prob=None):
     snr, dm, bin_width, t0, delta_t = params
     nfreq, ntime = data_freq_time.shape
     freqs = np.linspace(freq_low, freq_up, nfreq)
@@ -97,9 +99,15 @@ def plot_three_panel(data_freq_time, data_dm_time, params, dms, times=None,
     DM0_delays = dm * 4.15E6 * (freq_low**-2 - freqs**-2)
     ax1.plot(DM0_delays, freqs, c='r', lw='2')
 
-    plt.suptitle(suptitle)
-    plt.tight_layout()
-    plt.show()
+    if cb is None:
+        cb = -1
+    if prob is None:
+        prob = -1
+
+    suptitle = 'p:%.2f %s' % (prob, suptitle)
+
+    plt.suptitle(suptitle, fontsize=14)
+#    plt.tight_layout()
     plt.savefig(fnout)
 
 def plot_from_h5(fn, cb, freq_low=1250.09765625, freq_up=1549.90234375, 
