@@ -92,8 +92,8 @@ def plot_three_panel(data_freq_time, data_dm_time, params, dms, times=None,
 
     plt.subplot(313, sharex=ax1)
     plt.imshow(data_dm_time, aspect='auto', 
-               extent=[0, times[-1], dms[0], dms[-1]], 
-               interpolation='nearest', cmap=cmap)
+               extent=[0, times[-1], dms[-1], dms[0]], 
+               interpolation='nearest', cmap=cmap, origin='upper')
     plt.xlabel('Time [ms]')
     plt.ylabel('DM', labelpad=10)
 
