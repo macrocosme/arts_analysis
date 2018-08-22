@@ -224,14 +224,15 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         print("\nDedispersing Serially\n")
         tbeg = time.time()
         for jj, dm_ in enumerate(dms):
-            print("Dedispersing to dm=%0.1f at t=%0.1f sec with width=%.2f" % 
-                        (dm_, start_bin*dt, downsamp))
             data_copy = copy.deepcopy(data)
 
             data_copy.dedisperse(dm_)
             dm_arr = data_copy.data[:, max(0, t_min):t_max].mean(0)
             snr_ = SNRtools.calc_snr(dm_arr)
             full_arr[jj, np.abs(min(0, t_min)):] = copy.copy(dm_arr)
+
+            print("Dedispersing to dm=%0.1f at t=%0.1fsec with width=%.1f S/N=%.1f" % 
+                        (dm_, t0, downsamp, snr_))
 
             if jj==dm_max_jj:
                 snr_max = snr_
