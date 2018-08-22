@@ -143,7 +143,6 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     start_bin = int(t0/dt - ntime_plot*downsamp//2)
     width = abs(4.14e3 * dm0 * (freq_up**-2 - freq_low**-2))
     chunksize = int(width/dt + ntime_plot*downsamp)
-    print("Hack: chunksize")
 
     t_min, t_max = 0, ntime_plot*downsamp
 
@@ -423,6 +422,9 @@ if __name__=='__main__':
     print("-----------------------------")
     print("Grouped down to %d triggers" % ntrig_grouped)
     print("----------------------------- \n")
+
+    print(dm_cut)
+    print(tt_cut)
 
     grouped_triggers = np.empty([ntrig_grouped, 4])
     grouped_triggers[:,0] = sig_cut
