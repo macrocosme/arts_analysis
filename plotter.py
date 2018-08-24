@@ -199,23 +199,23 @@ def plot_comparison(par_1, par_2, par_match_arr,
     plt.legend(['Detected events','Missed events'], fontsize=15)
 
     plt.subplot(332)
-    plt.hist(dm_1, log=True, color='C0', alpha=0.5, bins=30)
-    plt.hist(dm_2, log=True, color='C0', alpha=0.5, bins=30)
+    plt.hist(dm_1, log=True, alpha=0.5, bins=30)
+    plt.hist(dm_2, log=True, alpha=0.5, bins=30)
     plt.xlabel('DM [pc cm**-3]', fontsize=12)
 
     plt.subplot(333)
-    plt.hist(snr_1, color='C1', alpha=0.5, log=True, bins=30)
-    plt.hist(snr_2, color='C1', alpha=0.5, log=True, bins=30)
+    plt.hist(snr_1, alpha=0.5, log=True, bins=30)
+    plt.hist(snr_2, alpha=0.5, log=True, bins=30)
     plt.xlabel('S/N', fontsize=12)
 
     plt.subplot(335)
-    plt.hist(t_1, color='C2', alpha=0.5, log=True, bins=30)
-    plt.hist(t_2, color='C2', alpha=0.5, log=True, bins=30)
+    plt.hist(t_1, alpha=0.5, log=True, bins=30)
+    plt.hist(t_2, alpha=0.5, log=True, bins=30)
     plt.xlabel('Time [sec]', fontsize=12)
 
     plt.subplot(336)
-    plt.hist(np.log2(width_1), color='C3', alpha=0.5, bins=8, log=True)
-    plt.hist(np.log2(width_2), color='C3', alpha=0.5, bins=8, log=True)
+    plt.hist(np.log2(width_1), alpha=0.5, bins=8, log=True)
+    plt.hist(np.log2(width_2), alpha=0.5, bins=8, log=True)
     plt.xlabel('log2(Width) [samples]', fontsize=12)
 
     fig.add_subplot(337)
