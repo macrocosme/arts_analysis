@@ -166,7 +166,7 @@ def mk_histograms(params, fnout='summary_hist.pdf',
 def plot_comparison(par_1, par_2, par_match_arr, 
                     ind_missed, figname='./test.pdf', 
                     suptitle='file 2 vs. file 1.'):
-    fig = plt.figure(figsize=(12,12))
+    fig = plt.figure(figsize=(14,12))
 
     frac_recovered = len(ind_missed)
 
