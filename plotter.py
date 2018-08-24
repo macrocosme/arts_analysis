@@ -185,16 +185,16 @@ def plot_comparison(par_1, par_2, par_match_arr,
     width_2_match = par_match_arr[3,:,1]
 
     fig.add_subplot(331)
+    plt.plot(snr_1[ind_missed], np.zeros([len(ind_missed)]), '.', color='orange')
     plt.plot(snr_1_match, snr_2_match, '.')
     plt.plot(snr_1, snr_1, color='k')
-    plt.plot(snr_1[ind_missed], np.zeros([len(ind_missed)]), '.', color='orange')
     plt.xlabel('Injected S/N', fontsize=12)
     plt.ylabel('Detected S/N', fontsize=12)        
     plt.legend(['Detected events','Expected S/N','Missed events'], fontsize=12)
 
     fig.add_subplot(334)
+    plt.plot(dm_1[ind_missed], np.zeros([len(ind_missed)]), '.', color='orange')
     plt.plot(dm_1_match, snr_1_match/snr_2_match, '.')
-    plt.plot(dm_1[ind_missed], np.zeros([len(ind_missed)]), 'o', color='orange')
     plt.xlabel('DM', fontsize=12)
     plt.ylabel('Expected S/N : Detected S/N', fontsize=12)        
     plt.legend(['Detected events','Missed events'], fontsize=12)
@@ -239,10 +239,10 @@ def plot_comparison(par_1, par_2, par_match_arr,
     plt.xlabel('Width [samples]', fontsize=12)
     plt.ylabel('DM', fontsize=12)
 
+    plt.suptitle(suptitle)
     #plt.tight_layout()
     plt.show()
     plt.savefig(figname)
-    plt.suptitle(suptitle)
 
 if __name__ == '__main__':
 #     # input hdf5 file
