@@ -79,8 +79,6 @@ def plot_three_panel(data_freq_time, data_dm_time, params, dms, times=None,
     ax1 = plt.subplot(311)
 
     times *= 1e3 # convert to ms from s
-    print(data_freq_time.shape)
-    print(data_freq_time.mean(0))
     plt.imshow(data_freq_time, aspect='auto', vmax=4, vmin=-4, 
                extent=[0, times[-1], freq_low, freq_up], 
                interpolation='nearest', cmap=cmap)
@@ -115,7 +113,6 @@ def plot_three_panel(data_freq_time, data_dm_time, params, dms, times=None,
 def plot_from_h5(fn, cb, freq_low=1250.09765625, freq_up=1549.90234375, 
                  ):
     # read dataset 
-    print(freq_low, freq_up)
     with h5py.File(fn, 'r') as f:
         data_frb_candidate = f['data_frb_candidate'][:]
         probability = f['probability'][:]
