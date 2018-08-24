@@ -245,7 +245,7 @@ def plot_comparison(par_1, par_2, par_match_arr,
 
     snr_ratio = np.mean(snr_1_match / snr_2_match)
 
-    suptitle += ('mean S/N ratio: ' + np.str(snr_ratio))
+    suptitle += ('mean S/N ratio: ' + np.str(np.round(snr_ratio,2)))
 
     plt.suptitle(suptitle, fontsize=20)
     #plt.tight_layout()
