@@ -188,15 +188,15 @@ def plot_comparison(par_1, par_2, par_match_arr,
     plt.plot(snr_1[ind_missed], np.zeros([len(ind_missed)]), '.', color='orange')
     plt.plot(snr_1_match, snr_2_match, '.')
     plt.plot(snr_1, snr_1, color='k')
-    plt.xlabel('Injected S/N', fontsize=12)
-    plt.ylabel('Detected S/N', fontsize=12)        
-    plt.legend(['Detected events','Expected S/N','Missed events'], fontsize=12)
+    plt.xlabel('file 1 S/N', fontsize=12)
+    plt.ylabel('file 2 S/N', fontsize=12)        
+    plt.legend(['file 1','file 2','Missed events'], fontsize=12)
 
     fig.add_subplot(334)
     plt.plot(dm_1[ind_missed], np.zeros([len(ind_missed)]), '.', color='orange')
     plt.plot(dm_1_match, snr_1_match/snr_2_match, '.')
     plt.xlabel('DM', fontsize=12)
-    plt.ylabel('Expected S/N : Detected S/N', fontsize=12)        
+    plt.ylabel('S/N_1 : S/N_2', fontsize=12)        
     plt.legend(['Detected events','Missed events'], fontsize=12)
 
     plt.subplot(332)
@@ -239,7 +239,7 @@ def plot_comparison(par_1, par_2, par_match_arr,
     plt.xlabel('Width [samples]', fontsize=12)
     plt.ylabel('DM', fontsize=12)
 
-    plt.suptitle(suptitle)
+    plt.suptitle(suptitle, fontsize=20)
     #plt.tight_layout()
     plt.show()
     plt.savefig(figname)
