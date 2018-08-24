@@ -1,7 +1,7 @@
 import numpy as np
 import glob
 import scipy.signal
-
+import optparse 
 # should there maybe be a clustering class
 # and a S/N calculation class?
 
@@ -434,7 +434,7 @@ class SNR_Tools:
         return par_1, par_2, par_match_arr, ind_missed    
 
     def plot_comparison(self, par_1, par_2, par_match_arr, ind_missed, figname='./test.pdf'):
-        fig = plt.figure(figsize=(12,12))
+        fig = plt.figure(figsize=(14,14))
 
         frac_recovered = len(ind_missed)
 
@@ -518,10 +518,46 @@ if __name__=='__main__':
 
     SNRTools = SNR_Tools()
 
+    parser = optparse.OptionParser(prog="tools.py", \
+                        version="", \
+                        usage="%prog fn1 fn2 [OPTIONS]", \
+                        description="Compare to single-pulse trigger files")
+
+    parser.add_option('--sig_thresh', dest='sig_thresh', type='float', \
+                        help="Only process events above >sig_thresh S/N" \
+                                "(Default: 8.0)", default=8.0)
+
+    parser.add_option('--save_data', dest='save_data', type='str',
+                        help="save each trigger's data. 0=don't save. \
+                        hdf5 = save to hdf5. npy=save to npy. concat to \
+                        save all triggers into one file",
+                        default='hdf5')
+
+    parser.add_option('--mk_plot', dest='mk_plot', action='store_true', \
+                        help="make plot if True (default False)", default=False)
+
+    parser.add_option('--dm_min', dest='dm_min', type='float',
+                        help="", 
+                        default=10.0)
+
+    parser.add_option('--dm_max', dest='dm_max', type='float',
+                        help="", 
+                        default=np.inf)
+
+    parser.add_option('--outdir', dest='outdir', type='str',
+                        help="directory to write data to", 
+                        default='./data/')
+
+    options, args = parser.parse_args()
+    fn_1 = args[0]
+    fn_2 = args[1]
+
     try:
-        par_1, par_2, par_match_arr, ind_missed = SNRTools.compare_snr(fn_1, fn_2, dm_min=dm_min, 
-                                        dm_max=dm_max, save_data=False,
-                                        sig_thresh=8.0, t_window=0.1, max_rows=None)
+        par_1, par_2, par_match_arr, ind_missed = SNRTools.compare_snr(fn_1, fn_2, 
+                                        dm_min=options.dm_min, 
+                                        dm_max=options.dm_max, save_data=False,
+                                        sig_thresh=options.sig_thresh, t_window=0.1, 
+                                        max_rows=None)
     except TypeError:
         print("No matches, exiting")
         exit()
@@ -539,7 +575,7 @@ if __name__=='__main__':
 
     mk_plot = True
 
-    if mk_plot is True:
+    if options.mk_plot is True:
         import matplotlib.pyplot as plt
         import plotter 
         plotter.plot_comparison(par_1, par_2, par_match_arr, ind_missed, figname=figname)
