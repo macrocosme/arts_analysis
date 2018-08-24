@@ -195,6 +195,7 @@ def plot_comparison(par_1, par_2, par_match_arr,
     fig.add_subplot(334)
     plt.plot(dm_1[ind_missed], np.zeros([len(ind_missed)]), '.', color='orange')
     plt.plot(dm_1_match, snr_1_match/snr_2_match, '.')
+    plt.plot(dm_1, np.ones_like(dm_1), '--', color='k')
     plt.xlabel('DM', fontsize=12)
     plt.ylabel('S/N_1 : S/N_2', fontsize=12)        
     plt.legend(['Detected events','Missed events'], fontsize=12)
