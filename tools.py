@@ -54,9 +54,13 @@ def get_multibeam_triggers(times, beamno, t_window=0.5):
 
     return ntrig_perbeam
 
-def group_dm_time_beam(fdir, fnout=None):
+def group_dm_time_beam(fdir, fnout=None, trigname='cand'):
+    """ Go through all compound beams (CB) in 
+    directory fdir, group in time/DM, then 
+    group in time/CB. 
+    """
 
-    flist = glob.glob(fdir+'/CB*.cand')
+    flist = glob.glob(fdir+'/CB*%s' % trigname)
 
     times_full, beamno_full, dm_full = [], [], []
     for fn in flist:
@@ -68,7 +72,7 @@ def group_dm_time_beam(fdir, fnout=None):
 
         try:
             sig_cut, dm_cut, tt_cut, ds_cut, ind_full = \
-                         get_triggers(fn, sig_thresh=10.0, 
+                         get_triggers(fn, sig_thresh=8.0, 
                          dm_min=10.0, dm_max=np.inf, 
                          t_window=0.5, 
                          max_rows=None)
@@ -81,14 +85,12 @@ def group_dm_time_beam(fdir, fnout=None):
         times_full.append(tt_cut)
         beamno_full.append(beamno)
         dm_full.append(dm_cut)
-        # data_full = np.concatenate([data, beamno[:, None]], axis=-1)
-        # data_all.append(data_full)
 
     times_full = np.concatenate(times_full)
     beamno_full = np.concatenate(beamno_full)
     dm_full = np.concatenate(dm_full)
 
-    ntrig_pb = get_multibeam_triggers(times_full, beamno_full, t_window=0.5)
+    ntrig_pb = get_multibeam_triggers(times_full, beamno_full, t_window=1.0)
 
     return times_full, beamno_full, dm_full, ntrig_pb
 
@@ -519,7 +521,7 @@ if __name__=='__main__':
     try:
         par_1, par_2, par_match_arr, ind_missed = SNRTools.compare_snr(fn_1, fn_2, dm_min=dm_min, 
                                         dm_max=dm_max, save_data=False,
-                                        sig_thresh=5.0, t_window=0.1, max_rows=None)
+                                        sig_thresh=8.0, t_window=0.1, max_rows=None)
     except TypeError:
         print("No matches, exiting")
         exit()
@@ -539,5 +541,7 @@ if __name__=='__main__':
 
     if mk_plot is True:
         import matplotlib.pyplot as plt
-        SNRTools.plot_comparison(par_1, par_2, par_match_arr, ind_missed, figname=figname)
+        import plotter 
+        plotter.plot_comparison(par_1, par_2, par_match_arr, ind_missed, figname=figname)
+#        SNRTools.plot_comparison(par_1, par_2, par_match_arr, ind_missed, figname=figname)
 

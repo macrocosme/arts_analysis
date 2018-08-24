@@ -163,6 +163,85 @@ def mk_histograms(params, fnout='summary_hist.pdf',
     plt.show()
     plt.savefig(fnout)
 
+def plot_comparison(par_1, par_2, par_match_arr, 
+                    ind_missed, figname='./test.pdf'):
+    fig = plt.figure(figsize=(12,12))
+
+    frac_recovered = len(ind_missed)
+
+    snr_1, snr_2 = par_1[0], par_2[0]
+    dm_1, dm_2 = par_1[1], par_2[1]
+    t_1, t_2 = par_1[2], par_2[2]
+    width_1, width_2 = par_1[3], par_2[3]
+
+    snr_1_match = par_match_arr[0,:,0]
+    snr_2_match = par_match_arr[0,:,1]
+
+    dm_1_match = par_match_arr[1,:,0]
+    dm_2_match = par_match_arr[1,:,1]
+
+    width_1_match = par_match_arr[3,:,0]
+    width_2_match = par_match_arr[3,:,1]
+
+    fig.add_subplot(331)
+    plt.plot(snr_1_match, snr_2_match, '.')
+    plt.plot(snr_1, snr_1, color='k')
+    plt.plot(snr_1[ind_missed], np.zeros([len(ind_missed)]), 'o', color='orange')
+    plt.xlabel('Injected S/N', fontsize=15)
+    plt.ylabel('Detected S/N', fontsize=15)        
+    plt.legend(['Detected events','Expected S/N','Missed events'], fontsize=15)
+
+    fig.add_subplot(334)
+    plt.plot(dm_1_match, snr_1_match/snr_2_match, '.')
+    plt.plot(dm_1[ind_missed], np.zeros([len(ind_missed)]), 'o', color='orange')
+    plt.xlabel('DM', fontsize=15)
+    plt.ylabel('Expected S/N : Detected S/N', fontsize=15)        
+    plt.legend(['Detected events','Missed events'], fontsize=15)
+
+    plt.subplot(332)
+    plt.hist(dm_1, log=True, color='C0', alpha=0.5, bins=30)
+    plt.hist(dm_2, log=True, color='C0', alpha=0.5, bins=30)
+    plt.xlabel('DM [pc cm**-3]', fontsize=12)
+
+    plt.subplot(333)
+    plt.hist(snr_1, color='C1', alpha=0.5, log=True, bins=30)
+    plt.hist(snr_2, color='C1', alpha=0.5, log=True, bins=30)
+    plt.xlabel('S/N', fontsize=12)
+
+    plt.subplot(335)
+    plt.hist(t_1, color='C2', alpha=0.5, log=True, bins=30)
+    plt.hist(t_2, color='C2', alpha=0.5, log=True, bins=30)
+    plt.xlabel('Time [sec]', fontsize=12)
+
+    plt.subplot(336)
+    plt.hist(np.log2(width_1), color='C3', alpha=0.5, bins=8, log=True)
+    plt.hist(np.log2(width_2), color='C3', alpha=0.5, bins=8, log=True)
+    plt.xlabel('log2(Width) [samples]', fontsize=12)
+
+    fig.add_subplot(337)
+    plt.hist(width_1, bins=50, alpha=0.3, normed=True)
+    plt.hist(width_2, bins=50, alpha=0.3, normed=True)
+    plt.hist(width_1[ind_missed], bins=50, alpha=0.3, normed=True)
+    plt.xlabel('Width [samples]', fontsize=15)
+
+    fig.add_subplot(338)
+    plt.plot(width_1_match, snr_1_match,'.')
+    plt.plot(width_1_match, snr_2_match,'.')
+    plt.plot(width_1, snr_1, '.')
+    plt.xlabel('Width [samples]', fontsize=15)
+    plt.ylabel('S/N injected', fontsize=15)
+
+    fig.add_subplot(339)
+    plt.plot(width_1_match, dm_1_match,'.')
+    plt.plot(width_1_match, dm_2_match,'.')
+    plt.plot(width_1, dm_1,'.')
+    plt.xlabel('Width [samples]', fontsize=15)
+    plt.ylabel('DM', fontsize=15)
+
+    plt.tight_layout()
+    plt.show()
+    plt.savefig(figname)
+
 if __name__ == '__main__':
 #     # input hdf5 file
     print('\nExpecting: data_file CB <freq_low> <freq_up>\n')
