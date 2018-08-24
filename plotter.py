@@ -164,7 +164,8 @@ def mk_histograms(params, fnout='summary_hist.pdf',
     plt.savefig(fnout)
 
 def plot_comparison(par_1, par_2, par_match_arr, 
-                    ind_missed, figname='./test.pdf'):
+                    ind_missed, figname='./test.pdf', 
+                    suptitle='file 2 vs. file 1.'):
     fig = plt.figure(figsize=(12,12))
 
     frac_recovered = len(ind_missed)
@@ -187,16 +188,16 @@ def plot_comparison(par_1, par_2, par_match_arr,
     plt.plot(snr_1_match, snr_2_match, '.')
     plt.plot(snr_1, snr_1, color='k')
     plt.plot(snr_1[ind_missed], np.zeros([len(ind_missed)]), '.', color='orange')
-    plt.xlabel('Injected S/N', fontsize=15)
-    plt.ylabel('Detected S/N', fontsize=15)        
-    plt.legend(['Detected events','Expected S/N','Missed events'], fontsize=15)
+    plt.xlabel('Injected S/N', fontsize=12)
+    plt.ylabel('Detected S/N', fontsize=12)        
+    plt.legend(['Detected events','Expected S/N','Missed events'], fontsize=12)
 
     fig.add_subplot(334)
     plt.plot(dm_1_match, snr_1_match/snr_2_match, '.')
     plt.plot(dm_1[ind_missed], np.zeros([len(ind_missed)]), 'o', color='orange')
-    plt.xlabel('DM', fontsize=15)
-    plt.ylabel('Expected S/N : Detected S/N', fontsize=15)        
-    plt.legend(['Detected events','Missed events'], fontsize=15)
+    plt.xlabel('DM', fontsize=12)
+    plt.ylabel('Expected S/N : Detected S/N', fontsize=12)        
+    plt.legend(['Detected events','Missed events'], fontsize=12)
 
     plt.subplot(332)
     plt.hist(dm_1, log=True, alpha=0.5, bins=30)
@@ -222,25 +223,26 @@ def plot_comparison(par_1, par_2, par_match_arr,
     plt.hist(width_1, bins=50, alpha=0.3, normed=True)
     plt.hist(width_2, bins=50, alpha=0.3, normed=True)
     plt.hist(width_1[ind_missed], bins=50, alpha=0.3, normed=True)
-    plt.xlabel('Width [samples]', fontsize=15)
+    plt.xlabel('Width [samples]', fontsize=12)
 
     fig.add_subplot(338)
     plt.plot(width_1_match, snr_1_match,'.')
     plt.plot(width_1_match, snr_2_match,'.')
     plt.plot(width_1, snr_1, '.')
-    plt.xlabel('Width [samples]', fontsize=15)
-    plt.ylabel('S/N injected', fontsize=15)
+    plt.xlabel('Width [samples]', fontsize=12)
+    plt.ylabel('S/N injected', fontsize=12)
 
     fig.add_subplot(339)
     plt.plot(width_1_match, dm_1_match,'.')
     plt.plot(width_1_match, dm_2_match,'.')
     plt.plot(width_1, dm_1,'.')
-    plt.xlabel('Width [samples]', fontsize=15)
-    plt.ylabel('DM', fontsize=15)
+    plt.xlabel('Width [samples]', fontsize=12)
+    plt.ylabel('DM', fontsize=12)
 
-    plt.tight_layout()
+    #plt.tight_layout()
     plt.show()
     plt.savefig(figname)
+    plt.suptitle(suptitle)
 
 if __name__ == '__main__':
 #     # input hdf5 file
