@@ -68,6 +68,9 @@ def plot_three_panel(data_freq_time, data_dm_time, params, dms, times=None,
                      freq_up=1549.90234375, freq_low=1250.09765625,
                      cmap="RdBu", suptitle="", fnout="out.pdf", cb=None,
                      cand_no=1, prob=None):
+    """ Plot freq/time, time, and dm/time data in 
+    three panels. 
+    """
     snr, dm, bin_width, t0, delta_t = params
     nfreq, ntime = data_freq_time.shape
     freqs = np.linspace(freq_low, freq_up, nfreq)
@@ -124,6 +127,41 @@ def plot_from_h5(fn, cb, freq_low=1250.09765625, freq_up=1549.90234375,
         plot_two_panel(data_freq_time, params[i], cb=cb, freq_low=freq_low, 
                     freq_up=freq_up, prob=probability[i], cand_no=i)
 
+
+def mk_histograms(params, fnout='summary_hist.pdf', 
+                  suptitle='Trigger summary', alpha=0.25):
+    """ Take parameter array (ntrig, 4) and make 
+    histograms of each param 
+    """
+    assert(len(params)==4)
+
+    # if int(mpl.__version__[0])<2:
+    #     alpha=0.5
+    # else:
+    #     alpha=1.
+
+    figure = plt.figure(figsize=(8,8))
+    ax1 = plt.subplot(221)
+    plt.hist(params[0], log=True, color='C0', alpha=alpha, bins=30)
+    plt.xlabel('DM [pc cm**-3]', fontsize=12)
+
+    plt.subplot(222)
+    plt.hist(params[1], color='C1', alpha=alpha, log=True, bins=30)
+    plt.xlabel('S/N', fontsize=12)
+
+    plt.subplot(223)
+    plt.hist(params[2], color='C2', alpha=alpha, log=True, bins=30)
+    plt.xlabel('Time [sec]', fontsize=12)
+
+    plt.subplot(224)
+    plt.hist(np.log2(params[3]), color='C3', alpha=alpha, bins=8, log=True)
+    plt.xlabel('log2(Width) [samples]', fontsize=12)
+
+    suptitle = "%s %d events" % (suptitle, len(params))
+    plt.suptitle(suptitle)
+
+    plt.show()
+    plt.savefig(fnout)
 
 if __name__ == '__main__':
 #     # input hdf5 file
