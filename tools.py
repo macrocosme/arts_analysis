@@ -535,7 +535,7 @@ if __name__=='__main__':
 
     parser.add_option('--title', dest='title', type='str',
                         help="directory to write data to", 
-                        default=None)
+                        default='file1 vs. file2')
 
     options, args = parser.parse_args()
     fn_1 = args[0]
@@ -566,6 +566,6 @@ if __name__=='__main__':
         import matplotlib.pyplot as plt
         import plotter 
         plotter.plot_comparison(par_1, par_2, par_match_arr, ind_missed, 
-                                suptitle=title, figname=figname)
+                                suptitle=options.title, figname=figname)
 #        SNRTools.plot_comparison(par_1, par_2, par_match_arr, ind_missed, figname=figname)
 
