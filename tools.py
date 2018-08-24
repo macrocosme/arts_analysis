@@ -495,26 +495,7 @@ if __name__=='__main__':
 
     import sys
 
-    if len(sys.argv)<3:
-        print("Too few arguments, expected: ")
-        print("trigger_file_1 trigger_file_2 <dm_min> <dm_max>")
-
     fn_1, fn_2 = sys.argv[1], sys.argv[2]
-
-    try:
-        dm_min = np.float(sys.argv[3])
-    except:
-        dm_min = 0.0
-
-    try:
-        dm_max = np.float(sys.argv[4])
-    except:
-        dm_max = np.inf
-
-    try:
-        figname = sys.argv[5]
-    except:
-        figname = 'test.pdf'
 
     SNRTools = SNR_Tools()
 
@@ -538,11 +519,15 @@ if __name__=='__main__':
 
     parser.add_option('--dm_min', dest='dm_min', type='float',
                         help="", 
-                        default=10.0)
+                        default=0.0)
 
     parser.add_option('--dm_max', dest='dm_max', type='float',
                         help="", 
                         default=np.inf)
+
+    parser.add_option('--t_window', dest='t_window', type='float',
+                        help="", 
+                        default=0.1)
 
     parser.add_option('--outdir', dest='outdir', type='str',
                         help="directory to write data to", 
@@ -556,7 +541,8 @@ if __name__=='__main__':
         par_1, par_2, par_match_arr, ind_missed = SNRTools.compare_snr(fn_1, fn_2, 
                                         dm_min=options.dm_min, 
                                         dm_max=options.dm_max, save_data=False,
-                                        sig_thresh=options.sig_thresh, t_window=0.1, 
+                                        sig_thresh=options.sig_thresh, 
+                                        t_window=options.t_window, 
                                         max_rows=None)
     except TypeError:
         print("No matches, exiting")
@@ -568,10 +554,7 @@ if __name__=='__main__':
     snr_1 = par_match_arr[0, :, 0]
     snr_2 = par_match_arr[0, :, 1]
 
-    print(snr_1)
-    print(snr_2)
-
-    print('File 1 has %f times higher S/N than file 2' % np.mean(snr_1/snr_2))
+    print('\nFile 1 has %f times higher S/N than file 2\n' % np.mean(snr_1/snr_2))
 
     mk_plot = True
 
