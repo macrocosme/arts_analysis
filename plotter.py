@@ -222,22 +222,22 @@ def plot_comparison(par_1, par_2, par_match_arr,
     plt.xlabel('log2(Width) [samples]', fontsize=12)
 
     fig.add_subplot(337)
+    plt.hist(width_1[ind_missed], bins=50, alpha=0.3, normed=True, color='C3')
     plt.hist(width_1, bins=50, alpha=0.3, normed=True)
     plt.hist(width_2, bins=50, alpha=0.3, normed=True)
-    plt.hist(width_1[ind_missed], bins=50, alpha=0.3, normed=True)
     plt.xlabel('Width [samples]', fontsize=12)
 
     fig.add_subplot(338)
+    plt.plot(width_1, snr_1, '.', color='C3')
     plt.plot(width_1_match, snr_1_match,'.')
     plt.plot(width_1_match, snr_2_match,'.')
-    plt.plot(width_1, snr_1, '.')
     plt.xlabel('Width [samples]', fontsize=12)
     plt.ylabel('S/N injected', fontsize=12)
 
     fig.add_subplot(339)
+    plt.plot(width_1, dm_1,'.',color='C3')
     plt.plot(width_1_match, dm_1_match,'.')
     plt.plot(width_1_match, dm_2_match,'.')
-    plt.plot(width_1, dm_1,'.')
     plt.xlabel('Width [samples]', fontsize=12)
     plt.ylabel('DM', fontsize=12)
 
