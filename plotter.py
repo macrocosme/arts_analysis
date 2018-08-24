@@ -227,7 +227,7 @@ def plot_comparison(par_1, par_2, par_match_arr,
     plt.hist(width_2, bins=50, alpha=0.3, normed=True)
     plt.xlabel('Width [samples]', fontsize=12)
 
-    fig.add_subplot(338)
+    fig.add_subplot(325)
     plt.plot(width_1, snr_1, '.', color='C3')
     plt.plot(width_1_match, snr_1_match,'.')
     plt.plot(width_1_match, snr_2_match,'.')
@@ -235,7 +235,7 @@ def plot_comparison(par_1, par_2, par_match_arr,
     plt.ylabel('S/N injected', fontsize=12)
     plt.grid()
 
-    fig.add_subplot(339)
+    fig.add_subplot(326)
     plt.plot(width_1, dm_1,'.',color='C3')
     plt.plot(width_1_match, np.log10(0.1+dm_1_match),'.')
     plt.plot(width_1_match, np.log10(0.1+dm_2_match),'.')
