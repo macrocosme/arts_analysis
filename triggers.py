@@ -178,7 +178,6 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 
     # Downsample before dedispersion up to 1/4th 
     # DM smearing limit 
-    print(data.data.shape, downsamp_smear)
     data.downsample(downsamp_smear)
     data.data -= np.median(data.data, axis=-1)[:, None]
     full_arr = np.empty([int(ndm), int(ntime)])   
@@ -423,8 +422,8 @@ if __name__=='__main__':
     print("Grouped down to %d triggers" % ntrig_grouped)
     print("----------------------------- \n")
 
-    print(dm_cut)
-    print(tt_cut)
+    print("DMs: %s" % dm_cut)
+    print("S/N: %s" % sig_cut)
 
     grouped_triggers = np.empty([ntrig_grouped, 4])
     grouped_triggers[:,0] = sig_cut
