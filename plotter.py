@@ -186,7 +186,7 @@ def plot_comparison(par_1, par_2, par_match_arr,
     fig.add_subplot(331)
     plt.plot(snr_1_match, snr_2_match, '.')
     plt.plot(snr_1, snr_1, color='k')
-    plt.plot(snr_1[ind_missed], np.zeros([len(ind_missed)]), 'o', color='orange')
+    plt.plot(snr_1[ind_missed], np.zeros([len(ind_missed)]), '.', color='orange')
     plt.xlabel('Injected S/N', fontsize=15)
     plt.ylabel('Detected S/N', fontsize=15)        
     plt.legend(['Detected events','Expected S/N','Missed events'], fontsize=15)
