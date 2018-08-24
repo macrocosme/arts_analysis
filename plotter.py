@@ -243,6 +243,10 @@ def plot_comparison(par_1, par_2, par_match_arr,
     plt.ylabel('DM', fontsize=12)
     plt.grid()
 
+    snr_ratio = np.mean(snr_1_match / snr_2_match)
+
+    suptitle += ('mean S/N ratio: ' + np.str(snr_ratio))
+
     plt.suptitle(suptitle, fontsize=20)
     #plt.tight_layout()
     plt.show()
