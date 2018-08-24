@@ -366,7 +366,7 @@ class SNR_Tools:
         grouped_params1, grouped_params2, matched_params
         """
         snr_1, dm_1, t_1, w_1, ind_full_1 = get_triggers(fn_1, sig_thresh=sig_thresh, 
-                                    dm_min=dm_min, dm_max=np.inf, t_window=t_window, 
+                                    dm_min=dm_min, dm_max=dm_max, t_window=t_window, 
                                     max_rows=max_rows)
 
         snr_2, dm_2, t_2, w_2, ind_full_2 = get_triggers(fn_2, sig_thresh=sig_thresh, 
