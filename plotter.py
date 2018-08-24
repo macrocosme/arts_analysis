@@ -190,7 +190,7 @@ def plot_comparison(par_1, par_2, par_match_arr,
     plt.plot(snr_1, snr_1, color='k')
     plt.xlabel('file 1 S/N', fontsize=12)
     plt.ylabel('file 2 S/N', fontsize=12)        
-    plt.legend(['file 1','file 2','Missed events'], fontsize=12)
+    plt.legend(['file 1','file 2','Missed'], fontsize=10)
 
     fig.add_subplot(334)
     plt.plot(dm_1[ind_missed], np.zeros([len(ind_missed)]), '.', color='orange')
@@ -198,12 +198,13 @@ def plot_comparison(par_1, par_2, par_match_arr,
     plt.plot(dm_1, np.ones_like(dm_1), '--', color='k')
     plt.xlabel('DM', fontsize=12)
     plt.ylabel('S/N_1 : S/N_2', fontsize=12)        
-    plt.legend(['Detected events','Missed events'], fontsize=12)
+    plt.legend(['Detected','Missed, equal S/N'], fontsize=10)
 
     plt.subplot(332)
     plt.hist(dm_1, log=True, alpha=0.5, bins=30)
     plt.hist(dm_2, log=True, alpha=0.5, bins=30)
     plt.xlabel('DM [pc cm**-3]', fontsize=12)
+    plt.legend(['file 1','file 2'], fontsize=10)
 
     plt.subplot(333)
     plt.hist(snr_1, alpha=0.5, log=True, bins=30)
