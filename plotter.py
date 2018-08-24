@@ -166,7 +166,7 @@ def mk_histograms(params, fnout='summary_hist.pdf',
 def plot_comparison(par_1, par_2, par_match_arr, 
                     ind_missed, figname='./test.pdf', 
                     suptitle='file 2 vs. file 1.'):
-    fig = plt.figure(figsize=(14,12))
+    fig = plt.figure(figsize=(12,14))
 
     frac_recovered = len(ind_missed)
 
@@ -233,13 +233,15 @@ def plot_comparison(par_1, par_2, par_match_arr,
     plt.plot(width_1_match, snr_2_match,'.')
     plt.xlabel('Width [samples]', fontsize=12)
     plt.ylabel('S/N injected', fontsize=12)
+    plt.grid()
 
     fig.add_subplot(339)
     plt.plot(width_1, dm_1,'.',color='C3')
-    plt.plot(width_1_match, dm_1_match,'.')
-    plt.plot(width_1_match, dm_2_match,'.')
+    plt.plot(width_1_match, np.log10(0.1+dm_1_match),'.')
+    plt.plot(width_1_match, np.log10(0.1+dm_2_match),'.')
     plt.xlabel('Width [samples]', fontsize=12)
     plt.ylabel('DM', fontsize=12)
+    plt.grid()
 
     plt.suptitle(suptitle, fontsize=20)
     #plt.tight_layout()
