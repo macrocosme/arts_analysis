@@ -221,11 +221,11 @@ def plot_comparison(par_1, par_2, par_match_arr,
     plt.hist(np.log2(width_2), alpha=0.5, bins=8, log=True)
     plt.xlabel('log2(Width) [samples]', fontsize=12)
 
-    fig.add_subplot(337)
-    plt.hist(width_1[ind_missed], bins=50, alpha=0.3, normed=True, color='C3')
-    plt.hist(width_1, bins=50, alpha=0.3, normed=True)
-    plt.hist(width_2, bins=50, alpha=0.3, normed=True)
-    plt.xlabel('Width [samples]', fontsize=12)
+    # fig.add_subplot(337)
+    # plt.hist(width_1[ind_missed], bins=50, alpha=0.3, normed=True, color='C3')
+    # plt.hist(width_1, bins=50, alpha=0.3, normed=True)
+    # plt.hist(width_2, bins=50, alpha=0.3, normed=True)
+    # plt.xlabel('Width [samples]', fontsize=12)
 
     fig.add_subplot(325)
     plt.plot(width_1, snr_1, '.', color='C3')
