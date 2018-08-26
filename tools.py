@@ -208,6 +208,9 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
 
     sig_cut, dm_cut, tt_cut, ds_cut = [],[],[],[]
     
+    if len(tt)==0:
+        return 
+        
     tduration = tt.max() - tt.min()
     ntime = int(tduration / t_window)
 
@@ -395,7 +398,6 @@ class SNR_Tools:
             tdiff = np.abs(t_1[ii] - t_2)
             ind = np.where(tdiff == tdiff.min())[0]
 
-            print(ii, t_1[ii], t_2[ind]) #hack
             if t_1[ii] > t_max:
                 continue
 
