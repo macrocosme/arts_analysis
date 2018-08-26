@@ -334,7 +334,8 @@ class SNR_Tools:
         return snr_max, width_max
 
     def compare_snr(self, fn_1, fn_2, dm_min=0, dm_max=np.inf, save_data=False,
-                    sig_thresh=5.0, t_window=0.5, max_rows=None):
+                    sig_thresh=5.0, t_window=0.5, max_rows=None,
+                    t_max=np.inf):
         """ Read in two files with single-pulse candidates
         and compare triggers.
 
@@ -390,8 +391,13 @@ class SNR_Tools:
 
         print("t_diff   t_0   t_1   dm_0   dm_1  snr_1   snr_2")
         for ii in range(len(snr_1)):
+
             tdiff = np.abs(t_1[ii] - t_2)
             ind = np.where(tdiff == tdiff.min())[0]
+
+            print(ii, t_1[ii], t_2[ind]) #hack
+            if t_1[ii] > t_max:
+                continue
 
             # make sure you are getting correct trigger in dm/time space
             if len(ind) > 1:
@@ -525,6 +531,10 @@ if __name__=='__main__':
                         help="", 
                         default=np.inf)
 
+    parser.add_option('--t_max', dest='t_max', type='float',
+                        help="Only process first t_max seconds", 
+                        default=np.inf)
+
     parser.add_option('--t_window', dest='t_window', type='float',
                         help="", 
                         default=0.1)
@@ -551,7 +561,7 @@ if __name__=='__main__':
                                         dm_max=options.dm_max, save_data=False,
                                         sig_thresh=options.sig_thresh, 
                                         t_window=options.t_window, 
-                                        max_rows=None)
+                                        max_rows=None, t_max=options.t_max)
     except TypeError:
         print("No matches, exiting")
         exit()
