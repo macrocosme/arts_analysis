@@ -188,6 +188,7 @@ def plot_comparison(par_1, par_2, par_match_arr,
     plt.plot(snr_1[ind_missed], np.zeros([len(ind_missed)]), '.', color='orange')
     plt.plot(snr_1_match, snr_2_match, '.')
     plt.plot(snr_1, snr_1, color='k')
+    plt.loglog()
     plt.xlabel('file 1 S/N', fontsize=12)
     plt.ylabel('file 2 S/N', fontsize=12)        
     plt.legend(['Missed', 'file 1', 'file 2', 'Equal S/N'], fontsize=10)
