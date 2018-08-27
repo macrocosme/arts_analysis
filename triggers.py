@@ -430,7 +430,7 @@ if __name__=='__main__':
         snr_1, snr_2 = par_1[0], par_2[0]
         snr_comparison = np.zeros_like(snr_1)
         ind_missed = np.array(ind_missed)
-        print(par_match_arr[0, :, 1].shape, snr_comparison[~ind_missed].shape)
+        print(par_match_arr[0, :, 1].shape, snr_comparison.shape, snr_comparison[~ind_missed].shape)
         snr_comparison[~ind_missed] = par_match_arr[0, :, 1]
         print(ind_missed)
 
