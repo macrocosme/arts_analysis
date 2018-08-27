@@ -168,8 +168,6 @@ def plot_comparison(par_1, par_2, par_match_arr,
                     suptitle='file 2 vs. file 1.'):
     fig = plt.figure(figsize=(12,14))
 
-    frac_recovered = len(ind_missed)
-
     snr_1, snr_2 = par_1[0], par_2[0]
     dm_1, dm_2 = par_1[1], par_2[1]
     t_1, t_2 = par_1[2], par_2[2]
@@ -250,8 +248,10 @@ def plot_comparison(par_1, par_2, par_match_arr,
     plt.grid()
 
     snr_ratio = np.mean(snr_1_match / snr_2_match)
+    frac_missed = np.float(len(ind_missed))/len(snr_1)
 
     suptitle += ('   avg (S/N)_1/(S/N)_2: ' + np.str(np.round(snr_ratio,2)))
+    suptitle += '\n      frac$_{missed}$=%0.2f' % frac_missed
 
     plt.suptitle(suptitle, fontsize=20)
     #plt.tight_layout()
