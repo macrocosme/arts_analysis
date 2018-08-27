@@ -185,13 +185,13 @@ def plot_comparison(par_1, par_2, par_match_arr,
     width_2_match = par_match_arr[3,:,1]
 
     fig.add_subplot(331)
-    plt.plot(snr_1[ind_missed], np.zeros([len(ind_missed)]), '.', color='orange')
+    plt.plot(snr_1[ind_missed], 1+np.zeros([len(ind_missed)]), '.', color='orange')
     plt.plot(snr_1_match, snr_2_match, '.')
     plt.plot(snr_1, snr_1, color='k')
     plt.loglog()
     plt.xlabel('file 1 S/N', fontsize=12)
     plt.ylabel('file 2 S/N', fontsize=12)        
-    plt.legend(['Missed', 'file 1', 'file 2', 'Equal S/N'], fontsize=10)
+    plt.legend(['Missed', 'Matched', 'Equal S/N'], fontsize=10)
 
     fig.add_subplot(334)
     plt.plot(dm_1[ind_missed], np.zeros([len(ind_missed)]), '.', color='orange')
@@ -246,7 +246,7 @@ def plot_comparison(par_1, par_2, par_match_arr,
 
     snr_ratio = np.mean(snr_1_match / snr_2_match)
 
-    suptitle += ('   avg S/N ratio: ' + np.str(np.round(snr_ratio,2)))
+    suptitle += ('   avg (S/N)_1/(S/N)_2: ' + np.str(np.round(snr_ratio,2)))
 
     plt.suptitle(suptitle, fontsize=20)
     #plt.tight_layout()
