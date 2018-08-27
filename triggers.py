@@ -51,7 +51,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
                  beamno='', fn_mask=None, nfreq_plot=32,
                  ntime_plot=250,
                  cmap='RdBu', cand_no=1, multiproc=False,
-                 rficlean=False, comparison_snr=-1):
+                 rficlean=False, snr_comparison=-1):
     """ Locate data within filterbank file (fn_fi)
     at some time t0, and dedisperse to dm0, generating 
     plots 
