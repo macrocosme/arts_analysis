@@ -427,11 +427,11 @@ if __name__=='__main__':
                                             save_data=False,
                                             sig_thresh=options.sig_thresh, 
                                             max_rows=None)
+            print(ind_missed, ~ind_missed)
         except TypeError:
             print("No matches, exiting")
             exit()
 
-    print(ind_missed, ~ind_missed)
     sig_cut, dm_cut, tt_cut, ds_cut, ind_full = tools.get_triggers(fn_sp, 
                                                          sig_thresh=options.sig_thresh,
                                                          dm_min=options.dm_min,
