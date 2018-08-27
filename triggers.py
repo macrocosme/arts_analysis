@@ -272,14 +272,14 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
             plotter.plot_two_panel(full_freq_arr_downsamp, params, prob=None, 
                                    freq_low=freq_low, freq_up=freq_up, 
                                    cand_no=cand_no, times=times, suptitle=suptitle,
-                                   fnout=fn_fig_out, comparison_snr=comparison_snr)
+                                   fnout=fn_fig_out)
         else:
             plotter.plot_three_panel(full_freq_arr_downsamp, 
                                      full_dm_arr_downsamp, params, dms, 
                                      times=times, freq_low=freq_low, 
                                      freq_up=freq_up, 
                                      suptitle=suptitle, fnout=fn_fig_out, 
-                                     cand_no=cand_no, comparison_snr=comparison_snr)
+                                     cand_no=cand_no)
     
     return full_dm_arr_downsamp, full_freq_arr_downsamp, time_res, params
 
