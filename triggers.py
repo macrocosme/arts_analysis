@@ -259,8 +259,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     full_freq_arr_downsamp /= np.std(full_freq_arr_downsamp)
     full_dm_arr_downsamp /= np.std(full_dm_arr_downsamp)
 
-    suptitle = " CB:%s  S/N$_{pipe}$:%.1f  S/N$_{presto}$:%.1f \
-                 S/N$_{compare}$:%.1f \nDM:%d  t:%.1fs  width:%d" %\
+    suptitle = " CB:%s  S/N$_{pipe}$:%.1f  S/N$_{presto}$:%.1f S/N$_{compare}$:%.1f \nDM:%d  t:%.1fs  width:%d" %\
                  (beamno, sig_cut, snr_max, snr_comparison, \
                     dms[dm_max_jj], t0, downsamp)
 
