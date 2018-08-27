@@ -419,18 +419,14 @@ if __name__=='__main__':
     SNRTools = tools.SNR_Tools()
 
     if options.compare_trig is not None:
-        try:
-            par_1, par_2, par_match_arr, ind_missed = SNRTools.compare_snr(
-                                            fn_sp, options.compare_trig, 
-                                            dm_min=options.dm_min, 
-                                            dm_max=options.dm_max, 
-                                            save_data=False,
-                                            sig_thresh=options.sig_thresh, 
-                                            max_rows=None)
-            print(ind_missed, ~ind_missed)
-        except TypeError:
-            print("No matches, exiting")
-            exit()
+        par_1, par_2, par_match_arr, ind_missed = SNRTools.compare_snr(
+                                        fn_sp, options.compare_trig, 
+                                        dm_min=options.dm_min, 
+                                        dm_max=options.dm_max, 
+                                        save_data=False,
+                                        sig_thresh=options.sig_thresh, 
+                                        max_rows=None)
+        print(ind_missed)
 
     sig_cut, dm_cut, tt_cut, ds_cut, ind_full = tools.get_triggers(fn_sp, 
                                                          sig_thresh=options.sig_thresh,
