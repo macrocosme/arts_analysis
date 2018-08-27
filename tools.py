@@ -251,13 +251,13 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
     ind_full = np.array(ind_full)
     dm_cut = np.array(dm_cut)
     # now remove the low DM candidates
-    print(np.array(tt_cut).astype(np.float), t_max)
-    ind = np.where((dm_cut >= dm_min) & (dm_cut <= dm_max))[0]
+    tt_cut = np.array(tt_cut).astype(np.float)
+    ind = np.where((dm_cut >= dm_min) & (dm_cut <= dm_max) & (tt_cut < t_max))[0]
 
     dm_cut = dm_cut[ind]
     ind_full = ind_full[ind]
     sig_cut = np.array(sig_cut)[ind]
-    tt_cut = np.array(tt_cut)[ind]
+    tt_cut = tt_cut[ind]
     ds_cut = np.array(ds_cut)[ind]
 
     ntrig_group = len(dm_cut)
