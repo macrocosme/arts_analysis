@@ -418,7 +418,7 @@ if __name__=='__main__':
 
     SNRTools = tools.SNR_Tools()
 
-    if options.compare_snr not None:
+    if options.compare_snr is not None:
         try:
             par_1, par_2, par_match_arr, ind_missed = SNRTools.compare_snr(
                                             fn_sp, options.compare_snr, 
