@@ -426,14 +426,16 @@ if __name__=='__main__':
                                         dm_max=options.dm_max, 
                                         save_data=False,
                                         sig_thresh=options.sig_thresh, 
-                                        max_rows=None)
+                                        max_rows=None, 
+                                        t_window=0.25)
 
         snr_1, snr_2 = par_1[0], par_2[0]
         snr_comparison_arr = np.zeros_like(snr_1)
         ind_missed = np.array(ind_missed)
         snr_comparison_arr[ind_matched] = par_match_arr[0, :, 1]
-
-    sig_cut, dm_cut, tt_cut, ds_cut, ind_full = tools.get_triggers(fn_sp, 
+        sig_cut, dm_cut, tt_cut, ds_cut, ind_full = par_1
+    else:
+        sig_cut, dm_cut, tt_cut, ds_cut, ind_full = tools.get_triggers(fn_sp, 
                                                          sig_thresh=options.sig_thresh,
                                                          dm_min=options.dm_min,
                                                          dm_max=options.dm_max)
@@ -459,14 +461,14 @@ if __name__=='__main__':
         print(snr_comparison_arr.shape, snr_comparison_arr[ii])
         print("\nStarting DM=%0.2f S/N=%0.2f width=%d time=%f" % (dm_cut[ii], sig_cut[ii], ds_cut[ii], t0))
         data_dm_time, data_freq_time, time_res, params = \
-                        proc_trigger(fn_fil, dm_cut[ii], t0, sig_cut[ii],
-                        mk_plot=options.mk_plot, ndm=options.ndm, 
-                        downsamp=ds_cut[ii], nfreq_plot=options.nfreq_plot,
-                        ntime_plot=options.ntime_plot, cmap=options.cmap,
-                                     fn_mask=options.maskfile, cand_no=ii,
-                                     multiproc=options.multiproc, 
-                                     rficlean=options.rficlean, 
-                                     snr_comparison=snr_comparison_arr[ii])
+                                        proc_trigger(fn_fil, dm_cut[ii], t0, sig_cut[ii],
+                                        mk_plot=options.mk_plot, ndm=options.ndm, 
+                                        downsamp=ds_cut[ii], nfreq_plot=options.nfreq_plot,
+                                        ntime_plot=options.ntime_plot, cmap=options.cmap,
+                                        fn_mask=options.maskfile, cand_no=ii,
+                                        multiproc=options.multiproc, 
+                                        rficlean=options.rficlean, 
+                                        snr_comparison=snr_comparison_arr[ii])
         if len(data_dm_time)==0:
             continue
 
