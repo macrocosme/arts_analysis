@@ -173,7 +173,7 @@ def read_singlepulse(fn, max_rows=None):
     return dm, sig, tt, downsample
 
 def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf, 
-                 t_window=0.5, max_rows=None):
+                 t_window=0.5, max_rows=None, t_max=np.inf):
     """ Get brightest trigger in each 10s chunk.
 
     Parameters
@@ -210,7 +210,7 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
     
     if len(tt)==0:
         return 
-        
+
     tduration = tt.max() - tt.min()
     ntime = int(tduration / t_window)
 
@@ -251,7 +251,7 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
     ind_full = np.array(ind_full)
     dm_cut = np.array(dm_cut)
     # now remove the low DM candidates
-    ind = np.where((dm_cut >= dm_min) & (dm_cut <= dm_max))[0]
+    ind = np.where((dm_cut >= dm_min) & (dm_cut <= dm_max) & (tt_cut<t_max))[0]
 
     dm_cut = dm_cut[ind]
     ind_full = ind_full[ind]
@@ -371,11 +371,11 @@ class SNR_Tools:
         """
         snr_1, dm_1, t_1, w_1, ind_full_1 = get_triggers(fn_1, sig_thresh=sig_thresh, 
                                     dm_min=dm_min, dm_max=dm_max, t_window=t_window, 
-                                    max_rows=max_rows)
+                                    max_rows=max_rows, t_max=t_max)
 
         snr_2, dm_2, t_2, w_2, ind_full_2 = get_triggers(fn_2, sig_thresh=sig_thresh, 
                                     dm_min=dm_min, dm_max=dm_max, t_window=t_window, 
-                                    max_rows=max_rows)
+                                    max_rows=max_rows, t_max=t_max)
 
         snr_2_reorder = []
         dm_2_reorder = []
