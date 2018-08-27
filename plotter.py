@@ -213,9 +213,12 @@ def plot_comparison(par_1, par_2, par_match_arr,
     plt.xlabel('S/N', fontsize=12)
 
     plt.subplot(335)
-    plt.hist(t_1, alpha=0.5, log=True, bins=30)
-    plt.hist(t_2, alpha=0.5, log=True, bins=30)
+#    plt.hist(t_1, alpha=0.5, log=True, bins=30)
+#    plt.hist(t_2, alpha=0.5, log=True, bins=30)
+    plt.plot(t_1, np.log10(.1+dm_1), '.', alpha=0.5)
+    plt.plot(t_2, np.log10(.1+dm_2), '.', alpha=0.5)    
     plt.xlabel('Time [sec]', fontsize=12)
+    plt.ylabel('DM', fontsize=12)
 
     plt.subplot(336)
     plt.hist(np.log2(width_1), alpha=0.5, bins=8, log=True)
