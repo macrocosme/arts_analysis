@@ -428,8 +428,9 @@ if __name__=='__main__':
                                         max_rows=None)
 
         snr_1, snr_2 = par_1[0], par_2[0]
-        #snr_1 = par_match_arr[0, :, 0]
-        snr_2_match = par_match_arr[0, :, 1]
+        snr_comparison = np.zeros_like(snr_1)
+        print(snr_comparison.shape, snr_comparison[~ind_missed].shape, par_match_arr[0, :, 1].shape)
+        snr_comparison[~ind_missed] = par_match_arr[0, :, 1]
         print(ind_missed)
 
     sig_cut, dm_cut, tt_cut, ds_cut, ind_full = tools.get_triggers(fn_sp, 
@@ -437,9 +438,6 @@ if __name__=='__main__':
                                                          dm_min=options.dm_min,
                                                          dm_max=options.dm_max)
 
-    print(snr_1.shape, sig_cut.shape)
-    print(snr_1-sig_cut)
-    
     ntrig_grouped = len(sig_cut)
     print("-----------------------------")
     print("Grouped down to %d triggers" % ntrig_grouped)
