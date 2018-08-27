@@ -433,7 +433,8 @@ if __name__=='__main__':
         snr_comparison_arr = np.zeros_like(snr_1)
         ind_missed = np.array(ind_missed)
         snr_comparison_arr[ind_matched] = par_match_arr[0, :, 1]
-        sig_cut, dm_cut, tt_cut, ds_cut, ind_full = par_1
+        sig_cut, dm_cut, tt_cut, ds_cut, ind_full = par_1[:, 0], par_1[:, 1], \
+                                par_1[:, 2], par_1[:, 3], par_1[:, 4]
     else:
         sig_cut, dm_cut, tt_cut, ds_cut, ind_full = tools.get_triggers(fn_sp, 
                                                          sig_thresh=options.sig_thresh,

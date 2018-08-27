@@ -386,8 +386,8 @@ class SNR_Tools:
         ntrig_1 = len(snr_1)
         ntrig_2 = len(snr_2)    
 
-        par_1 = np.concatenate([snr_1, dm_1, t_1, w_1]).reshape(4, -1)
-        par_2 = np.concatenate([snr_2, dm_2, t_2, w_2]).reshape(4, -1)
+        par_1 = np.concatenate([snr_1, dm_1, t_1, w_1, ind_full_1]).reshape(5, -1)
+        par_2 = np.concatenate([snr_2, dm_2, t_2, w_2, ind_full_2]).reshape(5, -1)
 
         # Make arrays for the matching parameters
         par_match_arr = []
