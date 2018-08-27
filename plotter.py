@@ -208,6 +208,7 @@ def plot_comparison(par_1, par_2, par_match_arr,
     plt.subplot(333)
     plt.hist(snr_1, alpha=0.5, log=True, bins=30)
     plt.hist(snr_2, alpha=0.5, log=True, bins=30)
+    plt.hist(snr_1[ind_missed], alpha=0.5, log=True, bins=30)
     plt.xlabel('S/N', fontsize=10)
 
     plt.subplot(335)
