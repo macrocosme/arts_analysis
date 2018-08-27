@@ -250,11 +250,10 @@ def plot_comparison(par_1, par_2, par_match_arr,
     snr_ratio = np.mean(snr_1_match / snr_2_match)
     frac_missed = np.float(len(ind_missed))/len(snr_1)
 
-    suptitle += ('   avg (S/N)_1/(S/N)_2: ' + np.str(np.round(snr_ratio,2)))
+    suptitle += ('   avg S/N$_1$/S/N$_2$: ' + np.str(np.round(snr_ratio,2)))
     suptitle += '\n      frac$_{missed}$=%0.2f' % frac_missed
 
     plt.suptitle(suptitle, fontsize=20)
-    #plt.tight_layout()
     plt.show()
     plt.savefig(figname)
 
