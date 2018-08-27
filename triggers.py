@@ -419,7 +419,7 @@ if __name__=='__main__':
     SNRTools = tools.SNR_Tools()
 
     if options.compare_trig is not None:
-        par_1, par_2, par_match_arr, ind_missed = SNRTools.compare_snr(
+        par_1, par_2, par_match_arr, ind_missed, ind_matched = SNRTools.compare_snr(
                                         fn_sp, options.compare_trig, 
                                         dm_min=options.dm_min, 
                                         dm_max=options.dm_max, 
@@ -430,9 +430,7 @@ if __name__=='__main__':
         snr_1, snr_2 = par_1[0], par_2[0]
         snr_comparison = np.zeros_like(snr_1)
         ind_missed = np.array(ind_missed)
-        print(par_match_arr[0, :, 1].shape, snr_comparison.shape, snr_comparison[~ind_missed].shape)
-        snr_comparison[~ind_missed] = par_match_arr[0, :, 1]
-        print(ind_missed)
+        snr_comparison[ind_matched] = par_match_arr[0, :, 1]
 
     sig_cut, dm_cut, tt_cut, ds_cut, ind_full = tools.get_triggers(fn_sp, 
                                                          sig_thresh=options.sig_thresh,
