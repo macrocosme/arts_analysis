@@ -185,7 +185,7 @@ def plot_comparison(par_1, par_2, par_match_arr,
     width_2_match = par_match_arr[3,:,1]
 
     fig.add_subplot(331)
-    plt.plot(snr_1[ind_missed], 1+np.zeros([len(ind_missed)]), '.', color='orange')
+    plt.plot(snr_1[ind_missed], 5+np.zeros([len(ind_missed)]), '.', color='orange')
     plt.plot(snr_1_match, snr_2_match, '.')
     plt.plot(snr_1, snr_1, color='k')
     plt.loglog()
