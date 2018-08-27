@@ -426,12 +426,17 @@ if __name__=='__main__':
                                         save_data=False,
                                         sig_thresh=options.sig_thresh, 
                                         max_rows=None)
+
+        snr_1 = par_match_arr[0, :, 0]
+        snr_2 = par_match_arr[0, :, 1]
         print(ind_missed)
 
     sig_cut, dm_cut, tt_cut, ds_cut, ind_full = tools.get_triggers(fn_sp, 
                                                          sig_thresh=options.sig_thresh,
                                                          dm_min=options.dm_min,
                                                          dm_max=options.dm_max)
+
+    print(snr_1 - sig_cut)
     ntrig_grouped = len(sig_cut)
     print("-----------------------------")
     print("Grouped down to %d triggers" % ntrig_grouped)
