@@ -392,6 +392,8 @@ class SNR_Tools:
         # Make arrays for the matching parameters
         par_match_arr = []
         ind_missed = []
+        ind_matched = []
+
 
         print("t_diff   t_0   t_1   dm_0   dm_1  snr_1   snr_2")
         for ii in range(len(snr_1)):
@@ -419,6 +421,8 @@ class SNR_Tools:
                                          w_1[ii], w_2[ind]])
 
                 par_match_arr.append(params_match)
+                ind_matched.append(ii)
+
             else:
                 # Keep track of missed triggers
                 ind_missed.append(ii)
@@ -440,7 +444,7 @@ class SNR_Tools:
             np.save(fn_2+'_params_grouped', par_2)
             np.save('params_matched', par_match_1)
 
-        return par_1, par_2, par_match_arr, ind_missed    
+        return par_1, par_2, par_match_arr, ind_missed, ind_matched  
 
     def plot_comparison(self, par_1, par_2, par_match_arr, ind_missed, figname='./test.pdf'):
         fig = plt.figure(figsize=(14,14))
@@ -559,7 +563,7 @@ if __name__=='__main__':
     fn_2 = args[1]
 
     try:
-        par_1, par_2, par_match_arr, ind_missed = SNRTools.compare_snr(fn_1, fn_2, 
+        par_1, par_2, par_match_arr, ind_missed, ind_matched = SNRTools.compare_snr(fn_1, fn_2, 
                                         dm_min=options.dm_min, 
                                         dm_max=options.dm_max, save_data=False,
                                         sig_thresh=options.sig_thresh, 
