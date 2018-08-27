@@ -51,7 +51,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
                  beamno='', fn_mask=None, nfreq_plot=32,
                  ntime_plot=250,
                  cmap='RdBu', cand_no=1, multiproc=False,
-                 rficlean=False):
+                 rficlean=False, compare_trig=None):
     """ Locate data within filterbank file (fn_fi)
     at some time t0, and dedisperse to dm0, generating 
     plots 
@@ -399,6 +399,10 @@ if __name__=='__main__':
                         help="directory to write data to", 
                         default='./data/')
 
+    parser.add_option('--compare_trig', dest='compare_trig', type='str',
+                        help="Compare input triggers with another trigger file",
+                        default=None)
+
 
     options, args = parser.parse_args()
     fn_fil = args[0]
@@ -414,6 +418,20 @@ if __name__=='__main__':
 
     SNRTools = tools.SNR_Tools()
 
+    if options.compare_snr not None:
+        try:
+            par_1, par_2, par_match_arr, ind_missed = SNRTools.compare_snr(
+                                            fn_sp, options.compare_snr, 
+                                            dm_min=options.dm_min, 
+                                            dm_max=options.dm_max, 
+                                            save_data=False,
+                                            sig_thresh=options.sig_thresh, 
+                                            max_rows=None)
+        except TypeError:
+            print("No matches, exiting")
+            exit()
+
+    print(ind_missed, ~ind_missed)
     sig_cut, dm_cut, tt_cut, ds_cut, ind_full = tools.get_triggers(fn_sp, 
                                                          sig_thresh=options.sig_thresh,
                                                          dm_min=options.dm_min,
