@@ -51,7 +51,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
                  beamno='', fn_mask=None, nfreq_plot=32,
                  ntime_plot=250,
                  cmap='RdBu', cand_no=1, multiproc=False,
-                 rficlean=False, compare_trig=None):
+                 rficlean=False, comparison_snr=-1):
     """ Locate data within filterbank file (fn_fi)
     at some time t0, and dedisperse to dm0, generating 
     plots 
@@ -259,8 +259,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     full_freq_arr_downsamp /= np.std(full_freq_arr_downsamp)
     full_dm_arr_downsamp /= np.std(full_dm_arr_downsamp)
 
-    suptitle = " CB:%s  S/N_pipe:%.1f  S/N_presto:%.1f \nDM:%d  t:%.1f  width:%d" %\
-                 (beamno, sig_cut, snr_max, dms[dm_max_jj], t0, downsamp)
+    suptitle = " CB:%s  S/N$_{pipe}$:%.1f  S/N_presto:%.1f S/N_compare:%.1f \nDM:%d  t:%.1f  width:%d" %\
+                 (beamno, sig_cut, snr_max, snr_comparison, dms[dm_max_jj], t0, downsamp)
 
     fn_fig_out = './plots/CB%s_snr%d_dm%d_t0%d.pdf' % \
                      (beamno, sig_cut, dms[dm_max_jj], t0)
@@ -272,14 +272,14 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
             plotter.plot_two_panel(full_freq_arr_downsamp, params, prob=None, 
                                    freq_low=freq_low, freq_up=freq_up, 
                                    cand_no=cand_no, times=times, suptitle=suptitle,
-                                   fnout=fn_fig_out)
+                                   fnout=fn_fig_out, comparison_snr=comparison_snr)
         else:
             plotter.plot_three_panel(full_freq_arr_downsamp, 
                                      full_dm_arr_downsamp, params, dms, 
                                      times=times, freq_low=freq_low, 
                                      freq_up=freq_up, 
                                      suptitle=suptitle, fnout=fn_fig_out, 
-                                     cand_no=cand_no)
+                                     cand_no=cand_no, comparison_snr=comparison_snr)
     
     return full_dm_arr_downsamp, full_freq_arr_downsamp, time_res, params
 
@@ -463,7 +463,8 @@ if __name__=='__main__':
                         ntime_plot=options.ntime_plot, cmap=options.cmap,
                                      fn_mask=options.maskfile, cand_no=ii,
                                      multiproc=options.multiproc, 
-                                     rficlean=options.rficlean)
+                                     rficlean=options.rficlean, 
+                                     snr_comparison=snr_comparison[ii])
         if len(data_dm_time)==0:
             continue
 
