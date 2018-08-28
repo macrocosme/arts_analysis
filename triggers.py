@@ -267,7 +267,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 
 
     if not os.path.isdir('%s/plots' % outdir):
-        os.system('mkdir %s/plots' % outdir)
+        os.system('mkdir -p %s/plots' % outdir)
 
     fn_fig_out = '%s/plots/CB%s_snr%d_dm%d_t0%d.pdf' % \
                      (outdir, beamno, sig_cut, dms[dm_max_jj], t0)
