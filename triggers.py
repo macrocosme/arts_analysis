@@ -463,8 +463,7 @@ if __name__=='__main__':
             snr_comparison = snr_comparison_arr[ii]
         except:
             snr_comparison=-1
-            
-        print(snr_comparison_arr.shape, snr_comparison_arr[ii])
+
         print("\nStarting DM=%0.2f S/N=%0.2f width=%d time=%f" % (dm_cut[ii], sig_cut[ii], ds_cut[ii], t0))
         data_dm_time, data_freq_time, time_res, params = \
                                         proc_trigger(fn_fil, dm_cut[ii], t0, sig_cut[ii],
