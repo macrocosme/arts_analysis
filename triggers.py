@@ -477,7 +477,7 @@ if __name__=='__main__':
         if len(data_dm_time)==0:
             continue
 
-        basedir = options.outdir + './data/'
+        basedir = options.outdir #+ './data/'
 
         if options.save_data != '0':
             if options.save_data == 'hdf5':
