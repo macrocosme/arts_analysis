@@ -291,8 +291,8 @@ def h5_writer(data_freq_time, data_dm_time,
     """ Write to an hdf5 file trigger data, 
     pulse parameters
     """
-    fnout = '%s/CB%s_%d_dm%d_t0%d.hdf5'\
-                % (beamno, basedir, snr, dm0, t0)
+    fnout = '%s/snr%d_dm%d_t0%d.hdf5'\
+                % (basedir, snr, dm0, t0)
 
     f = h5py.File(fnout, 'w')
     f.create_dataset('data_freq_time', data=data_freq_time)
