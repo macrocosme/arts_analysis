@@ -459,6 +459,11 @@ if __name__=='__main__':
                 grouped_triggers, fmt='%0.2f %0.1f %0.3f %0.1f')
 
     for ii, t0 in enumerate(tt_cut[:options.ntrig]):
+        try:
+            snr_comparison = snr_comparison_arr[ii]
+        except:
+            snr_comparison=-1
+            
         print(snr_comparison_arr.shape, snr_comparison_arr[ii])
         print("\nStarting DM=%0.2f S/N=%0.2f width=%d time=%f" % (dm_cut[ii], sig_cut[ii], ds_cut[ii], t0))
         data_dm_time, data_freq_time, time_res, params = \
@@ -469,11 +474,11 @@ if __name__=='__main__':
                                         fn_mask=options.maskfile, cand_no=ii,
                                         multiproc=options.multiproc, 
                                         rficlean=options.rficlean, 
-                                        snr_comparison=snr_comparison_arr[ii])
+                                        snr_comparison=snr_comparison)
         if len(data_dm_time)==0:
             continue
 
-        basedir = options.outdir#'./data/'
+        basedir = options.outdir + './data/'
 
         if options.save_data != '0':
             if options.save_data == 'hdf5':
