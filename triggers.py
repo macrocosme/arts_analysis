@@ -254,12 +254,13 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 
     full_dm_arr_downsamp = full_arr[:, :ntime//downsamp_res*downsamp_res]
     full_dm_arr_downsamp = full_dm_arr_downsamp.reshape(-1, 
-                                                        ntime//downsamp_res, downsamp_res).mean(-1)
+                             ntime//downsamp_res, downsamp_res).mean(-1)
 
     full_freq_arr_downsamp /= np.std(full_freq_arr_downsamp)
     full_dm_arr_downsamp /= np.std(full_dm_arr_downsamp)
 
-    suptitle = " CB:%s  S/N$_{pipe}$:%.1f  S/N$_{presto}$:%.1f S/N$_{compare}$:%.1f \nDM:%d  t:%.1fs  width:%d" %\
+    suptitle = " CB:%s  S/N$_{pipe}$:%.1f  S/N$_{presto}$:%.1f\
+                 S/N$_{compare}$:%.1f \nDM:%d  t:%.1fs  width:%d" %\
                  (beamno, sig_cut, snr_max, snr_comparison, \
                     dms[dm_max_jj], t0, downsamp)
 
@@ -290,8 +291,8 @@ def h5_writer(data_freq_time, data_dm_time,
     """ Write to an hdf5 file trigger data, 
     pulse parameters
     """
-    fnout = '%s/heimdall_snr%d_dm%d_t0%d.hdf5'\
-                % (basedir, snr, dm0, t0)
+    fnout = '%s/CB%d_%d_dm%d_t0%d.hdf5'\
+                % (beamno, basedir, snr, dm0, t0)
 
     f = h5py.File(fnout, 'w')
     f.create_dataset('data_freq_time', data=data_freq_time)
