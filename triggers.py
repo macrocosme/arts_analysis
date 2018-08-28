@@ -51,7 +51,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
                  beamno='', fn_mask=None, nfreq_plot=32,
                  ntime_plot=250,
                  cmap='RdBu', cand_no=1, multiproc=False,
-                 rficlean=False, snr_comparison=-1):
+                 rficlean=False, snr_comparison=-1,
+                 outdir='./'):
     """ Locate data within filterbank file (fn_fi)
     at some time t0, and dedisperse to dm0, generating 
     plots 
@@ -264,8 +265,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
                  (beamno, sig_cut, snr_max, snr_comparison, \
                     dms[dm_max_jj], t0, downsamp)
 
-    fn_fig_out = './plots/CB%s_snr%d_dm%d_t0%d.pdf' % \
-                     (beamno, sig_cut, dms[dm_max_jj], t0)
+    fn_fig_out = '%s/plots/CB%s_snr%d_dm%d_t0%d.pdf' % \
+                     (outdir, beamno, sig_cut, dms[dm_max_jj], t0)
 
     params = sig_cut, dms[dm_max_jj], downsamp, t0, dt
     if mk_plot is True:
@@ -474,7 +475,7 @@ if __name__=='__main__':
                                         fn_mask=options.maskfile, cand_no=ii,
                                         multiproc=options.multiproc, 
                                         rficlean=options.rficlean, 
-                                        snr_comparison=snr_comparison)
+                                        snr_comparison=snr_comparison, outdir=options.outdir)
         if len(data_dm_time)==0:
             continue
 
