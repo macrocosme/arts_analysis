@@ -407,7 +407,7 @@ if __name__=='__main__':
                         help="Compare input triggers with another trigger file",
                         default=None)
 
-    parser.add_option('--beamno', dest='beamon', type='str',
+    parser.add_option('--beamno', dest='beamno', type='str',
                         help="Beam number of input data",
                         default='')
 
