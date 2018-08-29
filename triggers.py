@@ -407,6 +407,10 @@ if __name__=='__main__':
                         help="Compare input triggers with another trigger file",
                         default=None)
 
+    parser.add_option('--beamno', dest='beamon', type='str',
+                        help="Beam number of input data",
+                        default='')
+
 
     options, args = parser.parse_args()
     fn_fil = args[0]
@@ -468,21 +472,23 @@ if __name__=='__main__':
             snr_comparison=-1
 
         print("\nStarting DM=%0.2f S/N=%0.2f width=%d time=%f" % (dm_cut[ii], sig_cut[ii], ds_cut[ii], t0))
-        data_dm_time, data_freq_time, time_res, params = \
-                                        proc_trigger(fn_fil, dm_cut[ii], t0, sig_cut[ii],
+        data_dm_time, data_freq_time, time_res, params = proc_trigger(\
+                                        fn_fil, dm_cut[ii], t0, sig_cut[ii],
                                         mk_plot=options.mk_plot, ndm=options.ndm, 
                                         downsamp=ds_cut[ii], nfreq_plot=options.nfreq_plot,
                                         ntime_plot=options.ntime_plot, cmap=options.cmap,
                                         fn_mask=options.maskfile, cand_no=ii,
                                         multiproc=options.multiproc, 
                                         rficlean=options.rficlean, 
-                                        snr_comparison=snr_comparison, outdir=options.outdir)
+                                        snr_comparison=snr_comparison, 
+                                        outdir=options.outdir,
+                                        beamno=options.beamno)
         if len(data_dm_time)==0:
             continue
 
         basedir = options.outdir + '/data/'
 
-        if not os.path.isdir('%s' % basedir)
+        if not os.path.isdir(basedir):
             os.system('mkdir -p %s' % basedir)
 
         if options.save_data != '0':
