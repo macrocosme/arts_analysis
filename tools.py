@@ -142,9 +142,17 @@ def read_singlepulse(fn, max_rows=None):
 
     if fn.split('.')[-1] in ('singlepulse', 'txt'):
         A = np.genfromtxt(fn, max_rows=max_rows)
+
+        if len(A.shape)==1:
+            A = A[None]
+
         dm, sig, tt, downsample = A[:,0], A[:,1], A[:,2], A[:,4]
     elif fn.split('.')[-1]=='trigger':
         A = np.genfromtxt(fn, max_rows=max_rows)
+
+        if len(A.shape)==1:
+            A = A[None]
+
         # Check if amber has compacted, in which case 
         # there are two extra rows
         if len(A[0]) > 7: 
@@ -155,6 +163,10 @@ def read_singlepulse(fn, max_rows=None):
             dm, sig, tt, downsample = A[:,-2], A[:,-1], A[:, -3], A[:, 3]
     elif fn.split('.')[-1]=='cand':
         A = np.genfromtxt(fn, max_rows=max_rows)
+
+        if len(A.shape)==1:
+            A = A[None]
+
         # SNR sample_no time log_2_width DM_trial DM Members first_samp last_samp
         dm, sig, tt, log_2_downsample = A[:,5], A[:,0], A[:, 2], A[:, 3]
         downsample = 2**log_2_downsample
