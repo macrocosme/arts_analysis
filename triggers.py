@@ -89,10 +89,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     downsamp = min(512, downsamp)
     rawdatafile = filterbank.filterbank(fn_fil)
     dfreq_MHz = rawdatafile.header['foff']    
-    mask = []#np.array([ 5,   6,   9,  32,  35,  49,  75,  76,  78,  82,  83,  87,  92,
-             #         93,  97,  98, 108, 110, 111, 112, 114, 118, 122, 123, 124, 157,
-             #         160, 299, 300, 301, 302, 303, 304, 305, 306, 307, 308, 309, 660, 
-             #         661])
+    mask = []
 
     dt = rawdatafile.header['tsamp']
     freq_up = rawdatafile.header['fch1']
@@ -483,7 +480,10 @@ if __name__=='__main__':
         if len(data_dm_time)==0:
             continue
 
-        basedir = options.outdir #+ './data/'
+        basedir = options.outdir + '/data/'
+
+        if not os.path.isdir('%s' % basedir)
+            os.system('mkdir -p %s' % basedir)
 
         if options.save_data != '0':
             if options.save_data == 'hdf5':
