@@ -293,8 +293,8 @@ def h5_writer(data_freq_time, data_dm_time,
     """ Write to an hdf5 file trigger data, 
     pulse parameters
     """
-    fnout = '%s/snr%d_dm%d_t0%d.hdf5'\
-                % (basedir, snr, dm0, t0)
+    fnout = '%s/CB%s_snr%d_dm%d_t0%d.hdf5'\
+                % (basedir, beamno, snr, dm0, t0)
 
     f = h5py.File(fnout, 'w')
     f.create_dataset('data_freq_time', data=data_freq_time)
@@ -350,6 +350,10 @@ if __name__=='__main__':
 
     parser.add_option('--sig_thresh', dest='sig_thresh', type='float', \
                         help="Only process events above >sig_thresh S/N" \
+                                "(Default: 8.0)", default=8.0)
+
+    parser.add_option('--sig_max', dest='sig_max', type='float', \
+                        help="Only process events above <sig_max S/N" \
                                 "(Default: 8.0)", default=8.0)
 
     parser.add_option('--ndm', dest='ndm', type='int', \
@@ -446,7 +450,8 @@ if __name__=='__main__':
         sig_cut, dm_cut, tt_cut, ds_cut, ind_full = tools.get_triggers(fn_sp, 
                                                          sig_thresh=options.sig_thresh,
                                                          dm_min=options.dm_min,
-                                                         dm_max=options.dm_max)
+                                                         dm_max=options.dm_max,
+                                                         sig_max=options.sig_max)
 
     ntrig_grouped = len(sig_cut)
     print("-----------------------------")
@@ -495,7 +500,7 @@ if __name__=='__main__':
             if options.save_data == 'hdf5':
                 h5_writer(data_freq_time, data_dm_time, 
                           dm_cut[ii], t0, sig_cut[ii], 
-                          beamno='', basedir=basedir, time_res=time_res)
+                          beamno=options.beamno, basedir=basedir, time_res=time_res)
             elif options.save_data == 'npy':
                 fnout_freq_time = '%s/data_snr%d_dm%d_t0%f_freq.npy'\
                          % (basedir, sig_cut[ii], dm_cut[ii], np.round(t0, 2))
