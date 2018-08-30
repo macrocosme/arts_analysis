@@ -213,16 +213,12 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
     dm, sig, tt, downsample = read_singlepulse(fn, max_rows=max_rows)[:4]
     ntrig_orig = len(dm)
 
-    low_sig_ind = np.where((sig < sig_thresh) & (sig > sig_max))[0]
-    low_sig_ind_ = np.where((sig < sig_thresh))[0]
+    bad_sig_ind = np.where((sig < sig_thresh) | (sig > sig_max))[0]
 
-    print(low_sig_ind)
-    print(low_sig_ind_, 'hack')
-
-    sig = np.delete(sig, low_sig_ind)
-    tt = np.delete(tt, low_sig_ind)
-    dm = np.delete(dm, low_sig_ind)
-    downsample = np.delete(downsample, low_sig_ind)
+    sig = np.delete(sig, bad_sig_ind)
+    tt = np.delete(tt, bad_sig_ind)
+    dm = np.delete(dm, bad_sig_ind)
+    downsample = np.delete(downsample, bad_sig_ind)
 
     sig_cut, dm_cut, tt_cut, ds_cut = [],[],[],[]
     
