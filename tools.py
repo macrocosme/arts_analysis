@@ -214,6 +214,11 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
     ntrig_orig = len(dm)
 
     low_sig_ind = np.where((sig < sig_thresh) & (sig > sig_max))[0]
+    low_sig_ind_ = np.where((sig < sig_thresh))[0]
+
+    print(low_sig_ind)
+    print(low_sig_ind_, 'hack')
+
     sig = np.delete(sig, low_sig_ind)
     tt = np.delete(tt, low_sig_ind)
     dm = np.delete(dm, low_sig_ind)
