@@ -354,7 +354,7 @@ if __name__=='__main__':
 
     parser.add_option('--sig_max', dest='sig_max', type='float', \
                         help="Only process events above <sig_max S/N" \
-                                "(Default: 8.0)", default=8.0)
+                                "(Default: 8.0)", default=np.inf)
 
     parser.add_option('--ndm', dest='ndm', type='int', \
                         help="Number of DMs to use in DM transform (Default: 50).", \
