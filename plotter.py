@@ -32,7 +32,7 @@ def plot_two_panel(data_freq_time, params, times=None, cb=None, prob=None,
             np.sqrt(data_freq_time.shape[0]), c='k')
     ax1.set_ylabel('S/N', labelpad=10)
     # add what a DM=0 signal would look like
-    DM0_delays = dm * 4.15E6 * (freq_low**-2 - freqs**-2)
+    DM0_delays = dm * 4.15E6 * (freq_low**-2 - freqs**-2)*delta_t*bin_width*1e3
     ax2.plot(DM0_delays, freqs, c='r', lw='2', alpha=0.5)
     # scaling: std = 1, median=0
     extent = [times[0], times[-1], freq_low, freq_up]
@@ -98,7 +98,7 @@ def plot_three_panel(data_freq_time, data_dm_time, params, dms, times=None,
     plt.xlabel('Time [ms]')
     plt.ylabel('DM', labelpad=10)
 
-    DM0_delays = dm * 4.15E6 * (freq_low**-2 - freqs**-2)
+    DM0_delays = dm * 4.15E6 * (freq_low**-2 - freqs**-2)*delta_t*bin_width*1e3
     ax1.plot(DM0_delays, freqs, c='r', lw='2', alpha=0.5)
     plt.xlim(0, times[-1])
 
