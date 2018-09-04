@@ -429,7 +429,7 @@ if __name__=='__main__':
         print("par_1.shape, par_2.shape, par_match_arr.shape")
         print(par_1.shape, par_2.shape, par_match_arr.shape)
 
-        snr_1, snr_2 = par_1[0], par_2[0]
+        snr_1, snr_2 = par_1[:, 0], par_2[:, 0]
         snr_comparison_arr = np.zeros_like(snr_1)
         ind_missed = np.array(ind_missed)
         snr_comparison_arr[ind_matched] = par_match_arr[0, :, 1]
