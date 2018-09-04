@@ -426,6 +426,8 @@ if __name__=='__main__':
                                         sig_thresh=options.sig_thresh, 
                                         max_rows=None, 
                                         t_window=0.25)
+        print("par_1.shape, par_2.shape, par_match_arr.shape")
+        print(par_1.shape, par_2.shape, par_match_arr.shape)
 
         snr_1, snr_2 = par_1[0], par_2[0]
         snr_comparison_arr = np.zeros_like(snr_1)
@@ -440,7 +442,7 @@ if __name__=='__main__':
                                                          dm_max=options.dm_max,
                                                          sig_max=options.sig_max)
 
-        print(sig_cut, sig_cut1)
+        print(sig_cut.shape, sig_cut1.shape)
         print(dm_cut, dm_cut1)
 
     ntrig_grouped = len(sig_cut)
