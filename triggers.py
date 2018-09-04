@@ -433,12 +433,15 @@ if __name__=='__main__':
         snr_comparison_arr[ind_matched] = par_match_arr[0, :, 1]
         sig_cut, dm_cut, tt_cut, ds_cut, ind_full = par_1[:, 0], par_1[:, 1], \
                                 par_1[:, 2], par_1[:, 3], par_1[:, 4]
-    else:
-        sig_cut, dm_cut, tt_cut, ds_cut, ind_full = tools.get_triggers(fn_sp, 
+    #else:
+        sig_cut1, dm_cut1, tt_cut1, ds_cut1, ind_full1 = tools.get_triggers(fn_sp, 
                                                          sig_thresh=options.sig_thresh,
                                                          dm_min=options.dm_min,
                                                          dm_max=options.dm_max,
                                                          sig_max=options.sig_max)
+
+        print(sig_cut, sig_cut1)
+        print(dm_cut, dm_cut1)
 
     ntrig_grouped = len(sig_cut)
     print("-----------------------------")
