@@ -125,19 +125,6 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     print("Width_full:%d  Width_smear:%d  Width_res: %d" % 
         (downsamp, downsamp_smear, downsamp_res))
 
-    # if tdisp > tplot:
-    #     # Need to read in more data than you'll plot
-    #     # because of large dispersion time
-    #     chunksize = int(tdisp)
-    #     t_min = chunksize//2 - (ntime_plot*downsamp)//2
-    #     t_max = chunksize//2 + (ntime_plot*downsamp)//2
-    # else:
-    #     # Only need to read in enough to plot 
-    #     chunksize = int(tplot)        
-    #     t_min, t_max = 0, chunksize
-
-#    start_bin = int(t0/dt - chunksize/2.)
-
     start_bin = int(t0/dt - ntime_plot*downsamp//2)
     width = abs(4.14e3 * dm0 * (freq_up**-2 - freq_low**-2))
     chunksize = int(width/dt + ntime_plot*downsamp)
@@ -488,6 +475,8 @@ if __name__=='__main__':
                                         snr_comparison=snr_comparison, 
                                         outdir=options.outdir,
                                         beamno=options.beamno)
+
+        print(data_dm_time)
         if len(data_dm_time)==0:
             continue
 
