@@ -217,7 +217,7 @@ def plot_comparison(par_1, par_2, par_match_arr,
     plt.plot(t_1, np.log10(.1+dm_1), '.', alpha=0.5)
     plt.plot(t_2, np.log10(.1+dm_2), '.', alpha=0.5)    
     plt.xlabel('Time [sec]', fontsize=10)
-    plt.ylabel('DM', fontsize=10)
+    plt.ylabel('log10(DM)', fontsize=10)
 
     plt.subplot(336)
     plt.hist(np.log2(width_1), alpha=0.5, bins=8, log=True)
@@ -235,7 +235,7 @@ def plot_comparison(par_1, par_2, par_match_arr,
     plt.plot(np.log2(width_1_match), np.log10(snr_2_match),'.')
 #    plt.plot(width_1_match, snr_2_match,'.')
     plt.xlabel('log2(Width) [samples]', fontsize=10)
-    plt.ylabel('S/N injected', fontsize=10)
+    plt.ylabel('log10(S/N)', fontsize=10)
     plt.legend(['file 1 all', 'Matched'], fontsize=10)
     plt.grid()
 
@@ -243,8 +243,8 @@ def plot_comparison(par_1, par_2, par_match_arr,
     plt.plot(np.log2(width_1), np.log10(0.1+dm_1),'.',color='C3')
     plt.plot(np.log2(width_1_match), np.log10(0.1+dm_2_match),'.')
     #plt.plot(np.log2(width_1_match), np.log10(0.1+dm_2_match),'.')
-    plt.xlabel('Width [samples]', fontsize=10)
-    plt.ylabel('DM', fontsize=10)
+    plt.xlabel('log2(Width) [samples]', fontsize=10)
+    plt.ylabel('log10(DM)', fontsize=10)
     plt.legend(['file 1 all', 'Matched'], fontsize=10)
     plt.grid()
 
