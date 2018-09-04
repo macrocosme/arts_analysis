@@ -476,9 +476,11 @@ if __name__=='__main__':
                                         outdir=options.outdir,
                                         beamno=options.beamno)
 
-        print(data_dm_time)
         if len(data_dm_time)==0:
+            print("continue")
             continue
+        else:
+            print("not continue")
 
         basedir = options.outdir + '/data/'
 
