@@ -478,10 +478,7 @@ if __name__=='__main__':
                                         beamno=options.beamno)
 
         if len(data_dm_time)==0:
-            print("continue")
             continue
-        else:
-            print("not continue")
 
         basedir = options.outdir + '/data/'
 
