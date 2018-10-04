@@ -381,14 +381,14 @@ def func(options, args, ii):
                 grouped_triggers, fmt='%0.2f %0.1f %0.3f %0.1f')
 
 
-    import multiprocessing
-    from joblib import Parallel, delayed
+#    import multiprocessing
+#    from joblib import Parallel, delayed
 
-    ncpu = multiprocessing.cpu_count() - 1 
-    Parallel(n_jobs=ncpu)(delayed(inject_in_filterbank)(fn_fil, fn_fil_out, N_FRB=options.nfrb,
-                                                        NTIME=2**15, rfi_clean=options.rfi_clean,
-                                                        calc_snr=options.calc_snr, start=0,
-                                                        dm=float(x)) for x in options.dm_list)
+#    ncpu = multiprocessing.cpu_count() - 1 
+#    Parallel(n_jobs=ncpu)(delayed(inject_in_filterbank)(fn_fil, fn_fil_out, N_FRB=options.nfrb,
+#                                                        NTIME=2**15, rfi_clean=options.rfi_clean,
+#                                                        calc_snr=options.calc_snr, start=0,
+#                                                        dm=float(x)) for x in options.dm_list)
 
     for ii, t0 in enumerate(tt_cut[ii::1][:options.ntrig]):
         try:
@@ -596,8 +596,8 @@ if __name__=='__main__':
                 grouped_triggers, fmt='%0.2f %0.1f %0.3f %0.1f')
 
 
-    import multiprocessing
-    from joblib import Parallel, delayed
+#    import multiprocessing
+#    from joblib import Parallel, delayed
 
     ncpu = multiprocessing.cpu_count() - 1 
     Parallel(n_jobs=ncpu)(delayed(inject_in_filterbank)(fn_fil, fn_fil_out, N_FRB=options.nfrb,
