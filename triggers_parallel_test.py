@@ -390,7 +390,7 @@ def func(options, args, ii):
                                                         calc_snr=options.calc_snr, start=0,
                                                         dm=float(x)) for x in options.dm_list)
 
-    for ii, t0 in enumerate(tt_cut[ii::1:options.ntrig]):
+    for ii, t0 in enumerate(tt_cut[ii::1][:options.ntrig]):
         try:
             snr_comparison = snr_comparison_arr[ii]
         except:
@@ -540,7 +540,7 @@ if __name__=='__main__':
     options, args = parser.parse_args()
     func(options, args, 0)
     exit()
-    
+
     fn_fil = args[0]
     fn_sp = args[1]    
 
