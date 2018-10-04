@@ -539,6 +539,13 @@ if __name__=='__main__':
 
     options, args = parser.parse_args()
     func(options, args, 0)
+
+    import multiprocessing
+    from joblib import Parallel, delayed
+
+    ncpu = multiprocessing.cpu_count() - 1 
+    ncpu = 10
+    Parallel(n_jobs=ncpu)(delayed(func)(options, args, ii) for ii in range(10))
     exit()
 
     fn_fil = args[0]
