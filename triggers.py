@@ -86,7 +86,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         data array with downsampled freq-time intensities 
     """
     SNRtools = tools.SNR_Tools()
-    downsamp = min(512, downsamp)
+    downsamp = min(4096, downsamp)
     rawdatafile = filterbank.filterbank(fn_fil)
     dfreq_MHz = rawdatafile.header['foff']    
     mask = []
@@ -115,7 +115,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     global t_min, t_max
     # if smearing timescale is < 4*pulse width, 
     # downsample before dedispersion for speed 
-    downsamp_smear = max(1, int(downsamp*dt/tdm/4.))
+    downsamp_smear = max(1, int(downsamp*dt/tdm/2.))
     # ensure that it's not larger than pulse width
     downsamp_smear = int(min(downsamp, downsamp_smear))
     downsamp_res = int(downsamp//downsamp_smear)
