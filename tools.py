@@ -279,6 +279,7 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
 
     print("Grouped down to %d triggers from %d\n" % (ntrig_group, ntrig_orig))
 
+    rm_ii = []
     for ii in xrange(len(ds_cut)):        
         tdm = 8.3 * delta_nu_MHz / nu_GHz**3 * dm_cut[ii] # microseconds
 
