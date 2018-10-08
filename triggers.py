@@ -442,7 +442,7 @@ if __name__=='__main__':
 
     descending_snr = True
     if descending_snr:
-        sig_index = np.argsort(sig_cut)
+        sig_index = np.argsort(sig_cut)[::-1]
         sig_cut = sig_cut[sig_index]
         dm_cut = dm_cut[sig_index]
         tt_cut = tt_cut[sig_index]
