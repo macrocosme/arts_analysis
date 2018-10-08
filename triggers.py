@@ -402,6 +402,9 @@ if __name__=='__main__':
                         help="Beam number of input data",
                         default='')
 
+    parser.add_option('--descending_snr', dest='descending_snr', action='store_true', \
+                        help="Process from highest to lowest S/N if True (default False)", default=False)
+
 
     options, args = parser.parse_args()
     fn_fil = args[0]
@@ -440,8 +443,7 @@ if __name__=='__main__':
                                                          dm_max=options.dm_max,
                                                          sig_max=options.sig_max)
 
-    descending_snr = True
-    if descending_snr:
+    if options.descending_snr:
         sig_index = np.argsort(sig_cut)[::-1]
         sig_cut = sig_cut[sig_index]
         dm_cut = dm_cut[sig_index]
