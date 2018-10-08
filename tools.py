@@ -279,18 +279,18 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
 
     print("Grouped down to %d triggers from %d\n" % (ntrig_group, ntrig_orig))
 
-    rm_ii = []
-    for ii in xrange(len(ds_cut)):        
-        tdm = 8.3 * delta_nu_MHz / nu_GHz**3 * dm_cut[ii] # microseconds
+    # rm_ii = []
+    # for ii in xrange(len(ds_cut)):        
+    #     tdm = 8.3 * delta_nu_MHz / nu_GHz**3 * dm_cut[ii] # microseconds
 
-        if ds_cut[ii]*dt < (0.5*(dt**2 + tdm**2)**0.5):
-            rm_ii.append(ii)
+    #     if ds_cut[ii]*dt < (0.5*(dt**2 + tdm**2)**0.5):
+    #         rm_ii.append(ii)
 
-    dm_cut = np.delete(dm_cut, rm_ii)
-    tt_cut = np.delete(tt_cut, rm_ii)
-    sig_cut = np.delete(sig_cut, rm_ii)
-    ds_cut = np.delete(ds_cut, rm_ii)
-    ind_full = np.delete(ind_full, rm_ii)
+    # dm_cut = np.delete(dm_cut, rm_ii)
+    # tt_cut = np.delete(tt_cut, rm_ii)
+    # sig_cut = np.delete(sig_cut, rm_ii)
+    # ds_cut = np.delete(ds_cut, rm_ii)
+    # ind_full = np.delete(ind_full, rm_ii)
 
     return sig_cut, dm_cut, tt_cut, ds_cut, ind_full
 
