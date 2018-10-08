@@ -440,6 +440,14 @@ if __name__=='__main__':
                                                          dm_max=options.dm_max,
                                                          sig_max=options.sig_max)
 
+    descending_snr = True
+    if descending_snr:
+        sig_index = np.argsort(sig_cut)
+        sig_cut = sig_cut[sig_index]
+        dm_cut = dm_cut[sig_index]
+        tt_cut = tt_cut[sig_index]
+        ds_cut = ds_cut[sig_index]
+        ind_full = ind_full[sig_index]
 
     ntrig_grouped = len(sig_cut)
     print("-----------------------------")
