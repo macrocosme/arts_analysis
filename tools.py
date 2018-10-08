@@ -278,7 +278,10 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
 
     print("Grouped down to %d triggers from %d\n" % (ntrig_group, ntrig_orig))
 
-    return sig_cut, dm_cut, tt_cut, ds_cut, ind_full
+    sig_ind = np.argsort(sig_cut)
+
+    return sig_cut[sig_ind], dm_cut[sig_ind], \
+            tt_cut[sig_ind], ds_cut[sig_ind], ind_full[sig_ind]
 
 class SNR_Tools:
 
