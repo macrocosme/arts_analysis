@@ -289,7 +289,7 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
     tt_cut = np.delete(tt_cut, rm_ii)
     sig_cut = np.delete(sig_cut, rm_ii)
     ds_cut = np.delete(ds_cut, rm_ii)
-    ind_full = np.delete(ind_full rm_ii)
+    ind_full = np.delete(ind_full, rm_ii)
 
     return sig_cut, dm_cut, tt_cut, ds_cut, ind_full
 
