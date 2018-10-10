@@ -421,7 +421,7 @@ if __name__=='__main__':
                         help="", 
                         default=10.0)
 
-    parser.add_option('--time_elapsed', dest='time_elapsed', type='float',
+    parser.add_option('--time_limit', dest='time_limit', type='float',
                         help="Total time to spend processing in seconds", 
                         default=np.inf)
 
