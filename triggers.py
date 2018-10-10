@@ -559,6 +559,7 @@ if __name__=='__main__':
         time_elapsed = time.time() - start_time
 
         if time_elapsed > options.time_limit:
+            print("Exceeded time limit. Breaking loop.")
             break
 
     if options.save_data == 'concat':
