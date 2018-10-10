@@ -46,6 +46,42 @@ def multiproc_dedisp(dm):
 
     return (datacopy.data.mean(0), data_freq_time)
 
+
+def get_fil_data(fn_fil, t0, dm0, downsamp, freq_low, freq_up, 
+                 dt=0.00004096, downsamp_smear=1, ntime_plot=250, nfreq=1536):
+    start_bin = int(t0/dt - ntime_plot*downsamp//2)
+    width = abs(4.14e3 * dm0 * (freq_up**-2 - freq_low**-2))
+    chunksize = int(width/dt + ntime_plot*downsamp)
+
+    t_min, t_max = 0, ntime_plot*downsamp
+    ntime_fil = (os.path.getsize(fn_fil) - 467.)/nfreq
+
+    if start_bin < 0:
+        extra = start_bin
+        start_bin = 0
+        t_min += extra
+        t_max += extra
+
+    t_min, t_max = int(t_min), int(t_max)
+    
+    snr_max = 0
+    
+    # Account for the pre-downsampling to speed up dedispersion
+    t_min /= downsamp_smear
+    t_max /= downsamp_smear
+    ntime = t_max-t_min
+
+    if ntime_fil < (start_bin+chunksize):
+        print("Trigger at end of file, skipping")
+        return [],[],[],[]
+
+    print("Reading in chunk: %d" % chunksize)
+    data = reader.read_fil_data(fn, start=start_bin, stop=chunksize)[0]
+#    data = rawdatafile.get_spectra(start_bin, chunksize)
+
+    return data
+
+
 def proc_trigger(fn_fil, dm0, t0, sig_cut, 
                  ndm=50, mk_plot=False, downsamp=1, 
                  beamno='', fn_mask=None, nfreq_plot=32,
@@ -200,7 +236,6 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
             ind_kk = range(ndm_*kk, ndm_*(kk+1))
 
             if dm_max_jj in ind_kk:
-                print(dms_[ind_kk.index(dm_max_jj)])
                 data_dm_max = df[ind_kk.index(dm_max_jj)]#dm_max_jj]hack
 
             del ddm, df
@@ -386,6 +421,10 @@ if __name__=='__main__':
                         help="", 
                         default=10.0)
 
+    parser.add_option('--time_elapsed', dest='time_elapsed', type='float',
+                        help="Total time to spend processing in seconds", 
+                        default=np.inf)
+
     parser.add_option('--dm_max', dest='dm_max', type='float',
                         help="", 
                         default=np.inf)
@@ -405,6 +444,7 @@ if __name__=='__main__':
     parser.add_option('--descending_snr', dest='descending_snr', action='store_true', \
                         help="Process from highest to lowest S/N if True (default False)", default=False)
 
+    start_time = time.time()
 
     options, args = parser.parse_args()
     fn_fil = args[0]
@@ -515,6 +555,11 @@ if __name__=='__main__':
                 params_full.append(params)
         else:
             print('Not saving data')
+
+        time_elapsed = time.time() - start_time
+
+        if time_elapsed > options.time_limit:
+            break
 
     if options.save_data == 'concat':
         data_dm_time_full = np.concatenate(data_dm_time_full)
