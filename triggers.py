@@ -247,11 +247,14 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 
             data_copy.dedisperse(dm_)
             dm_arr = data_copy.data[:, max(0, t_min):t_max].mean(0)
+            #hack 
+            snr_1 = (dm_arr.max() - np.median(dm_arr)) / np.std(dm_arr[:100])
             snr_ = SNRtools.calc_snr_mad(dm_arr)
+            print(snr_, snr_1)
             full_arr[jj, np.abs(min(0, t_min)):] = copy.copy(dm_arr)
 
-            print("Dedispersing to dm=%0.1f at t=%0.1fsec with width=%.1f S/N=%.1f" % 
-                        (dm_, t0, downsamp, snr_))
+            #print("Dedispersing to dm=%0.1f at t=%0.1fsec with width=%.1f S/N=%.1f" % 
+            #            (dm_, t0, downsamp, snr_))
 
             if jj==dm_max_jj:
                 snr_max = snr_
