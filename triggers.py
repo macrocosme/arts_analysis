@@ -88,7 +88,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
                  ntime_plot=250,
                  cmap='RdBu', cand_no=1, multiproc=False,
                  rficlean=False, snr_comparison=-1,
-                 outdir='./'):
+                 outdir='./', sig_thresh_local=7.0):
     """ Locate data within filterbank file (fn_fi)
     at some time t0, and dedisperse to dm0, generating 
     plots 
@@ -247,19 +247,14 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 
             data_copy.dedisperse(dm_)
             dm_arr = data_copy.data[:, max(0, t_min):t_max].mean(0)
-            #hack 
-            snr_1 = (dm_arr.max() - np.median(dm_arr)) / np.std(dm_arr[:100])
-            snr_ = SNRtools.calc_snr_mad(dm_arr)
-            print(snr_, snr_1)
+
             full_arr[jj, np.abs(min(0, t_min)):] = copy.copy(dm_arr)
 
-            #print("Dedispersing to dm=%0.1f at t=%0.1fsec with width=%.1f S/N=%.1f" % 
-            #            (dm_, t0, downsamp, snr_))
+            print("Dedispersing to dm=%0.1f at t=%0.1fsec with width=%.1f S/N=%.1f" % 
+                        (dm_, t0, downsamp, sig_cut))
 
             if jj==dm_max_jj:
-                snr_max = snr_
                 data_dm_max = data_copy.data[:, max(0, t_min):t_max]
-
                 if t_min<0:
                     Z = np.zeros([nfreq, np.abs(t_min)])
                     data_dm_max = np.concatenate([Z, data_dm_max], axis=1)
@@ -269,10 +264,18 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     # bin down to nfreq_plot freq channels
     full_freq_arr_downsamp = data_dm_max[:nfreq//nfreq_plot*nfreq_plot, :].reshape(\
                                    nfreq_plot, -1, ntime).mean(1)
+    
     # bin down in time by factor of downsamp
     full_freq_arr_downsamp = full_freq_arr_downsamp[:, :ntime//downsamp_res*downsamp_res\
                                    ].reshape(-1, ntime//downsamp_res, downsamp_res).mean(-1)
+
+    snr_max = SNRtools.calc_snr_mad(full_freq_arr_downsamp.mean(0))
     
+    if snr_max < sig_thresh_local:
+        print("\nSkipping trigger below local threshold %.2f:" % sig_thresh_local)
+        print("snr_local=%.2f  snr_trigger=%.2f\n" % (snr_max, sig_cut))
+        return [],[],[],[]
+
     times = np.linspace(0, ntime_plot*downsamp*dt, len(full_freq_arr_downsamp[0]))
 
     full_dm_arr_downsamp = full_arr[:, :ntime//downsamp_res*downsamp_res]
@@ -432,6 +435,10 @@ if __name__=='__main__':
                         help="", 
                         default=np.inf)
 
+    parser.add_option('--sig_thresh_local', dest='sig_thresh_local', type='float',
+                        help="", 
+                        default=0.0)
+
     parser.add_option('--outdir', dest='outdir', type='str',
                         help="directory to write data to", 
                         default='./data/')
@@ -528,7 +535,7 @@ if __name__=='__main__':
                                         rficlean=options.rficlean, 
                                         snr_comparison=snr_comparison, 
                                         outdir=options.outdir,
-                                        beamno=options.beamno)
+                                        beamno=options.beamno, sig_thresh_local=options.sig_thresh_local)
 
         if len(data_dm_time)==0:
             continue
