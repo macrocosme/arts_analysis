@@ -518,6 +518,10 @@ if __name__=='__main__':
     np.savetxt('grouped_pulses.singlepulse', 
                 grouped_triggers, fmt='%0.2f %0.1f %0.3f %0.1f')
 
+    ndm = options.ndm
+    nfreq_plot = options.nfreq_plot
+    ntime_plot = options.ntime_plot
+
     for ii, t0 in enumerate(tt_cut[:options.ntrig]):
         try:
             snr_comparison = snr_comparison_arr[ii]
@@ -572,14 +576,23 @@ if __name__=='__main__':
             print("Exceeded time limit. Breaking loop.")
             break
 
+    if len(data_dm_time_full)==0:
+        print("\nFound no triggers to concat\n")
+        exit()
+
     if options.save_data == 'concat':
-        data_dm_time_full = np.concatenate(data_dm_time_full)
-        data_freq_time_full = np.concatenate(data_freq_time_full)
+        print(len(data_dm_time_full), data_dm_time_full[0].shape)
+        if len(data_dm_time_full)==1:
+            data_dm_time_full = np.array(data_dm_time_full)
+            data_freq_time_full = np.array(data_freq_time_full)
+        else:
+            data_dm_time_full = np.concatenate(data_dm_time_full, axis=0)
+            data_freq_time_full = np.concatenate(data_freq_time_full, axis=0)
+
+        print(data_dm_time_full.shape)
         
-        ndm, nt = data_dm_time.shape
-        data_dm_time_full = data_dm_time_full.reshape(-1,ndm,nt)
-        nf, nt = data_freq_time.shape
-        data_freq_time_full = data_freq_time_full.reshape(-1,nf,nt)
+        data_dm_time_full = data_dm_time_full.reshape(-1,ndm,ntime_plot)
+        data_freq_time_full = data_freq_time_full.reshape(-1,nfreq_plot,ntime_plot)
         
         fnout = '%s/data_full.hdf5' % basedir
 
