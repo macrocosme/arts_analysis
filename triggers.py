@@ -49,13 +49,13 @@ def multiproc_dedisp(dm):
 
 def get_fil_data(fn_fil, t0, dm0, downsamp, freq_low, freq_up, 
                  dt=0.00004096, downsamp_smear=1, ntime_plot=250, nfreq=1536):
+
     start_bin = int(t0/dt - ntime_plot*downsamp//2)
     width = abs(4.14e3 * dm0 * (freq_up**-2 - freq_low**-2))
     chunksize = int(width/dt + ntime_plot*downsamp)
 
     t_min, t_max = 0, ntime_plot*downsamp
     ntime_fil = (os.path.getsize(fn_fil) - 467.)/nfreq
-
     if start_bin < 0:
         extra = start_bin
         start_bin = 0
@@ -81,6 +81,27 @@ def get_fil_data(fn_fil, t0, dm0, downsamp, freq_low, freq_up,
 
     return data
 
+def cleandata(data):
+    print("Cleaning RFI")
+    dtmean = np.mean(data.data, axis=-1)
+    dfmean = np.mean(data.data, axis=0)
+    stdevf = np.std(dfmean)
+    medf = np.median(dfmean)
+        
+    # remove bandpass by averaging over 16 ajdacent channels 
+#    dtmean_nobandpass = dtmean - dtmean.reshape(-1, 16).mean(-1).repeat(16)
+#    stdevt = np.std(dtmean_nobandpass)
+#    medt = np.median(dtmean_nobandpass)
+
+    # mask 3sigma outliers in both time and freq
+    maskf = np.where(np.abs(dfmean - medf) > 3*stdevf)[0]
+#    maskt = np.where(np.abs(dtmean - medt) > 0.0*stdevt)[0]
+
+    # replace with mean spectrum
+    data.data[:, maskf] = dtmean[:, None]*np.ones(len(maskf))[None]
+#    data.data[maskt] = 0#dfmean[None]*np.ones(len(maskt))[:, None]
+
+    return data
 
 def proc_trigger(fn_fil, dm0, t0, sig_cut, 
                  ndm=50, mk_plot=False, downsamp=1, 
@@ -143,11 +164,6 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     dms += (dm0-dms[dm_max_jj])
     dms[0] = max(0, dms[0])
 
-    # Read in 2 disp delays
-#    width = 2.5*abs(4.14e3 * dm0 * (freq_up**-2 - freq_low**-2))
-
-#    tdisp = width / dt
-
     global t_min, t_max
     # if smearing timescale is < 4*pulse width, 
     # downsample before dedispersion for speed 
@@ -188,21 +204,15 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 
     print("Reading in chunk: %d" % chunksize)
     data = rawdatafile.get_spectra(start_bin, chunksize)
-    
+
     if rficlean is True:
-        print("Cleaning RFI")
-        data_tmean = np.mean(data.data, axis=-1)
-        data_nobandpass = data_tmean - data_tmean.reshape(-1, 16).mean(-1).repeat(16)
-        stdev, med = SNRtools.sigma_from_mad(data_nobandpass)
-        mask = np.where(np.abs(data_nobandpass - med) > 5.0*stdev)[0]
-        data.data[mask] = 0.0
+        data = cleandata(data)
 
     # Downsample before dedispersion up to 1/4th 
     # DM smearing limit 
     data.downsample(downsamp_smear)
     data.data -= np.median(data.data, axis=-1)[:, None]
     full_arr = np.empty([int(ndm), int(ntime)])   
-
     if not fn_mask is None:
         pass
         # rfimask = rfifind.rfifind(fn_mask)
@@ -241,10 +251,12 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
             del ddm, df
     else:
         print("\nDedispersing Serially\n")
-        tbeg = time.time()
+#        tbeg = time.time()
         for jj, dm_ in enumerate(dms):
+            tcopy = time.time()
             data_copy = copy.deepcopy(data)
 
+            t0_dm = time.time()
             data_copy.dedisperse(dm_)
             dm_arr = data_copy.data[:, max(0, t_min):t_max].mean(0)
 
@@ -252,6 +264,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 
             print("Dedispersing to dm=%0.1f at t=%0.1fsec with width=%.1f S/N=%.1f" % 
                         (dm_, t0, downsamp, sig_cut))
+            print("dedisp:", -t0_dm+time.time())
 
             if jj==dm_max_jj:
                 data_dm_max = data_copy.data[:, max(0, t_min):t_max]
@@ -259,7 +272,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
                     Z = np.zeros([nfreq, np.abs(t_min)])
                     data_dm_max = np.concatenate([Z, data_dm_max], axis=1)
 
-        print("Serial dedispersion in %f sec" % (time.time()-tbeg))
+#        print("Serial dedispersion in %f sec" % (time.time()-tbeg))
 
     # bin down to nfreq_plot freq channels
     full_freq_arr_downsamp = data_dm_max[:nfreq//nfreq_plot*nfreq_plot, :].reshape(\
@@ -491,7 +504,7 @@ if __name__=='__main__':
                                                          sig_thresh=options.sig_thresh,
                                                          dm_min=options.dm_min,
                                                          dm_max=options.dm_max,
-                                                         sig_max=options.sig_max)
+                                                         sig_max=options.sig_max, t_window=0.5)
 
     if options.descending_snr:
         sig_index = np.argsort(sig_cut)[::-1]
