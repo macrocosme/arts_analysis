@@ -81,7 +81,21 @@ def get_fil_data(fn_fil, t0, dm0, downsamp, freq_low, freq_up,
 
     return data
 
-def cleandata(data):
+def cleandata(data, threshold=3.0):
+    """ Take filterbank object and mask 
+    RFI time samples with average spectrum.
+
+    Parameters:
+    ----------
+    data : 
+        filterbank data object
+    threshold : float 
+        units of sigma
+
+    Returns:
+    -------
+    cleaned filterbank object
+    """
     print("Cleaning RFI")
     dtmean = np.mean(data.data, axis=-1)
     dfmean = np.mean(data.data, axis=0)
@@ -94,7 +108,7 @@ def cleandata(data):
 #    medt = np.median(dtmean_nobandpass)
 
     # mask 3sigma outliers in both time and freq
-    maskf = np.where(np.abs(dfmean - medf) > 3*stdevf)[0]
+    maskf = np.where(np.abs(dfmean - medf) > threshold*stdevf)[0]
 #    maskt = np.where(np.abs(dtmean - medt) > 0.0*stdevt)[0]
 
     # replace with mean spectrum
