@@ -156,6 +156,14 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     full_freq_arr_downsamp : np.array
         data array with downsampled freq-time intensities 
     """
+
+    try:
+        rfimask = np.loadtxt('./zapped_channels_1400.conf')
+        rfimask = rfimask.astype(int)
+    except:
+        rfimask = []
+        print("Could not load dumb RFIMask")
+
     SNRtools = tools.SNR_Tools()
     downsamp = min(4096, downsamp)
     rawdatafile = filterbank.filterbank(fn_fil)
@@ -218,6 +226,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 
     print("Reading in chunk: %d" % chunksize)
     data = rawdatafile.get_spectra(start_bin, chunksize)
+    print(data.data[rfimask].shape)# = 0.
 
     if rficlean is True:
         data = cleandata(data)
