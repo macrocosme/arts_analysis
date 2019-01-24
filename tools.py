@@ -301,8 +301,8 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
     ind_full = np.delete(ind_full, rm_ii)
 
     if fnout != False:
-        clustered_arr = np.concatenate([sig_cut, dm_cut, tt_cut, ds_cut, ind_full], axis=0)
-        print(clustered_arr.shape)
+        clustered_arr = np.concatenate([sig_cut, dm_cut, tt_cut, ds_cut, ind_full])
+        clustered_arr = clustered_arr.reshape(5, -1)
         np.savetxt(fnout, clustered_arr) 
 
     return sig_cut, dm_cut, tt_cut, ds_cut, ind_full
