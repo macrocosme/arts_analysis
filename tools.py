@@ -187,7 +187,7 @@ def read_singlepulse(fn, max_rows=None):
 def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf, 
                  t_window=0.5, max_rows=None, t_max=np.inf,
                  sig_max=np.inf, dt = 40.96, delta_nu_MHz=300./1536, 
-                 nu_GHz=1.4):
+                 nu_GHz=1.4, fnout=False):
     """ Get brightest trigger in each 10s chunk.
 
     Parameters
@@ -196,8 +196,16 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
         filename with triggers (.npy, .singlepulse, .trigger)
     sig_thresh : float
         min S/N to include
+    dm_min : 
+        minimum dispersion measure to allow 
+    dm_max : 
+        maximum dispersion measure to allow 
     t_window : float 
         Size of each time window in seconds
+    max_rows : 
+        Only read this many rows from raw trigger file 
+    fnout : str 
+        name of text file to save clustered triggers to 
 
     Returns
     -------
@@ -291,6 +299,10 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
     sig_cut = np.delete(sig_cut, rm_ii)
     ds_cut = np.delete(ds_cut, rm_ii)
     ind_full = np.delete(ind_full, rm_ii)
+
+    if fnout != False:
+        clustered_arr = np.concatenate(sig_cut, dm_cut, tt_cut, ds_cut, ind_full)
+        np.savetxt(fnout, clustered_arr) 
 
     return sig_cut, dm_cut, tt_cut, ds_cut, ind_full
 
