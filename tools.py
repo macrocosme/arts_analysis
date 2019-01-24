@@ -155,9 +155,15 @@ def read_singlepulse(fn, max_rows=None):
 
         # Check if amber has compacted, in which case 
         # there are two extra rows
-        if len(A[0]) > 7: 
-            # beam batch sample integration_step compacted_integration_steps time DM compacted_DMs SNR
-            dm, sig, tt, downsample = A[:,-3], A[:,-1], A[:, -4], A[:, 3]
+        if len(A[0]) > 7:
+            if len(A[0])==9:
+                # beam batch sample integration_step compacted_integration_steps time DM compacted_DMs SNR
+                dm, sig, tt, downsample = A[:,-3], A[:,-1], A[:, -4], A[:, 3]
+            elif len(A[0])==10:
+                dm, sig, tt, downsample = A[:,-3], A[:,-1], A[:, -5], A[:, 3]
+            else:
+                print("Error: DO NOT RECOGNIZE COLUMNS OF .trigger FILE")
+                return 
         else:
             # beam batch sample integration_step time DM SNR
             dm, sig, tt, downsample = A[:,-2], A[:,-1], A[:, -3], A[:, 3]
