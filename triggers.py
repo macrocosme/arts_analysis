@@ -50,18 +50,14 @@ def get_single_trigger(fn_fil, fn_trig, row=0, ntime_plot=250):
     dm0, sig, t0, downsamp = tools.read_singlepulse(fn_trig)
     dm0, sig, t0, downsamp = dm0[row], sig[row], t0[row], downsamp[row]
 
-    downsamp = min(4096, downsamp)
-    rawdatafile = filterbank.filterbank(fn_fil)
-    dfreq_MHz = rawdatafile.header['foff']
-    mask = []
-
-    dt = rawdatafile.header['tsamp']
-    freq_up = rawdatafile.header['fch1']
-    nfreq = rawdatafile.header['nchans']
-    freq_low = freq_up + nfreq*rawdatafile.header['foff']
-    ntime_fil = (os.path.getsize(fn_fil) - 467.)/nfreq
-    tdm = np.abs(8.3*1e-6*dm0*dfreq_MHz*(freq_low/1000.)**-3)
-
+    data = fil_trigger(fn_fil, dm0, t0, sig_cut, 
+                 ndm=50, mk_plot=False, downsamp=1, 
+                 beamno='', fn_mask=None, nfreq_plot=32,
+                 ntime_plot=250,
+                 cmap='RdBu', cand_no=1, multiproc=False,
+                 rficlean=False, snr_comparison=-1,
+                 outdir='./', sig_thresh_local=7.0)
+    
     data = get_fil_data(fn_fil, t0, dm0, downsamp, freq_low, freq_up, 
                  dt=dt, ntime_plot=ntime_plot)
 
@@ -134,6 +130,88 @@ def cleandata(data, threshold=3.0):
     # replace with mean spectrum
     data.data[:, maskf] = dtmean[:, None]*np.ones(len(maskf))[None]
 #    data.data[maskt] = 0#dfmean[None]*np.ones(len(maskt))[:, None]
+
+    return data
+
+def fil_trigger(fn_fil, dm0, t0, sig_cut, 
+                 ndm=50, mk_plot=False, downsamp=1, 
+                 beamno='', fn_mask=None, nfreq_plot=32,
+                 ntime_plot=250,
+                 cmap='RdBu', cand_no=1, multiproc=False,
+                 rficlean=False, snr_comparison=-1,
+                 outdir='./', sig_thresh_local=7.0):
+    try:
+        rfimask = np.loadtxt('./zapped_channels_1400.conf')
+        rfimask = rfimask.astype(int)
+    except:
+        rfimask = []
+        print("Could not load dumb RFIMask")
+
+    SNRtools = tools.SNR_Tools()
+    downsamp = min(4096, downsamp)
+    rawdatafile = filterbank.filterbank(fn_fil)
+    dfreq_MHz = rawdatafile.header['foff']    
+    mask = []
+
+    dt = rawdatafile.header['tsamp']
+    freq_up = rawdatafile.header['fch1']
+    nfreq = rawdatafile.header['nchans']
+    freq_low = freq_up + nfreq*rawdatafile.header['foff']
+    ntime_fil = (os.path.getsize(fn_fil) - 467.)/nfreq
+    tdm = np.abs(8.3*1e-6*dm0*dfreq_MHz*(freq_low/1000.)**-3)
+
+    dm_min = max(0, dm0-40)
+    dm_max = dm0 + 40
+    dms = np.linspace(dm_min, dm_max, ndm, endpoint=True)
+
+    # make sure dm0 is in the array
+    dm_max_jj = np.argmin(abs(dms-dm0))
+    dms += (dm0-dms[dm_max_jj])
+    dms[0] = max(0, dms[0])
+
+    global t_min, t_max
+    # if smearing timescale is < 4*pulse width, 
+    # downsample before dedispersion for speed 
+    downsamp_smear = max(1, int(downsamp*dt/tdm/2.))
+    # ensure that it's not larger than pulse width
+    downsamp_smear = int(min(downsamp, downsamp_smear))
+    downsamp_res = int(downsamp//downsamp_smear)
+    downsamp = int(downsamp_res*downsamp_smear)
+    time_res = dt * downsamp
+    tplot = ntime_plot * downsamp 
+    print("Width_full:%d  Width_smear:%d  Width_res: %d" % 
+        (downsamp, downsamp_smear, downsamp_res))
+
+    start_bin = int(t0/dt - ntime_plot*downsamp//2)
+    width = abs(4.14e3 * dm0 * (freq_up**-2 - freq_low**-2))
+    chunksize = int(width/dt + ntime_plot*downsamp)
+
+    t_min, t_max = 0, ntime_plot*downsamp
+
+    if start_bin < 0:
+        extra = start_bin
+        start_bin = 0
+        t_min += extra
+        t_max += extra
+
+    t_min, t_max = int(t_min), int(t_max)
+    
+    snr_max = 0
+    
+    # Account for the pre-downsampling to speed up dedispersion
+    t_min /= downsamp_smear
+    t_max /= downsamp_smear
+    ntime = t_max-t_min
+
+    if ntime_fil < (start_bin+chunksize):
+        print("Trigger at end of file, skipping")
+        return [],[],[],[]
+
+    print("Reading in chunk: %d" % chunksize)
+    data = rawdatafile.get_spectra(start_bin, chunksize)
+
+    if rficlean is True:
+        data = cleandata(data)
 
     return data
 
@@ -246,7 +324,6 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 
     print("Reading in chunk: %d" % chunksize)
     data = rawdatafile.get_spectra(start_bin, chunksize)
-    print(data.data[rfimask].shape)# = 0.
 
     if rficlean is True:
         data = cleandata(data)
