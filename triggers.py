@@ -46,6 +46,26 @@ def multiproc_dedisp(dm):
 
     return (datacopy.data.mean(0), data_freq_time)
 
+def get_single_trigger(fn_fil, fn_trig, row=0, ntime_plot=250):
+    dm0, sig, t0, downsamp = tools.read_singlepulse(fn_trig)
+    dm0, sig, t0, downsamp = dm0[row], sig[row], t0[row], downsamp[row]
+
+    downsamp = min(4096, downsamp)
+    rawdatafile = filterbank.filterbank(fn_fil)
+    dfreq_MHz = rawdatafile.header['foff']
+    mask = []
+
+    dt = rawdatafile.header['tsamp']
+    freq_up = rawdatafile.header['fch1']
+    nfreq = rawdatafile.header['nchans']
+    freq_low = freq_up + nfreq*rawdatafile.header['foff']
+    ntime_fil = (os.path.getsize(fn_fil) - 467.)/nfreq
+    tdm = np.abs(8.3*1e-6*dm0*dfreq_MHz*(freq_low/1000.)**-3)
+
+    data = get_fil_data(fn_fil, t0, dm0, downsamp, freq_low, freq_up, 
+                 dt=dt, ntime_plot=ntime_plot)
+
+    return data
 
 def get_fil_data(fn_fil, t0, dm0, downsamp, freq_low, freq_up, 
                  dt=0.00004096, downsamp_smear=1, ntime_plot=250, nfreq=1536):
@@ -291,7 +311,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 
             if jj==dm_max_jj:
                 data_dm_max = data_copy.data[:, max(0, t_min):t_max]
-                snr_max = SNRtools.calc_snr_matchedfilter(data_dm_max.mean(0))[0] 
+                snr_max = SNRtools.calc_snr_matchedfilter(data_dm_max.mean(0), widths=[downsamp_res])[0] 
                 if t_min<0:
                     Z = np.zeros([nfreq, np.abs(t_min)])
                     data_dm_max = np.concatenate([Z, data_dm_max], axis=1)
