@@ -347,6 +347,41 @@ class SNR_Tools:
 
         return (data.max() - med) / sig
 
+    def calc_snr_matchedfilter(self, data, widths=None):
+        """ Calculate the S/N of pulse profile after 
+        trying 9 rebinnings.
+
+        Parameters
+        ----------
+        arr   : np.array
+            (ntime,) vector of pulse profile 
+
+        Returns
+        -------
+        snr : np.float 
+            S/N of pulse
+        """
+        assert len(data.shape)==1
+        
+        ntime = len(data)
+        snr_max = 0
+        data = scipy.signal.detrend(data, type='linear')
+
+        if widths is None:
+            widths = [1, 2, 4, 8, 16, 32, 64, 128]
+
+        for ii in widths:
+            mf = np.ones([ii])
+            data_mf = scipy.correlate(data, mf)
+            snr_ = self.calc_snr(data_mf)
+
+            if snr_ > snr_max:
+                snr_max = snr_
+                width_max = ii
+
+        return snr_max, width_max
+        
+
     def calc_snr_widths(self, data, widths=None):
         """ Calculate the S/N of pulse profile after 
         trying 9 rebinnings.
