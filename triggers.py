@@ -50,7 +50,7 @@ def get_single_trigger(fn_fil, fn_trig, row=0, ntime_plot=250):
     dm0, sig_cut, t0, downsamp = tools.read_singlepulse(fn_trig)
     dm0, sig_cut, t0, downsamp = dm0[row], sig_cut[row], t0[row], downsamp[row]
 
-    data = fil_trigger(fn_fil, dm0, t0, sig_cut, 
+    data, downsamp, downsamp_smear = fil_trigger(fn_fil, dm0, t0, sig_cut, 
                  ndm=50, mk_plot=False, downsamp=downsamp, 
                  beamno='', fn_mask=None, nfreq_plot=32,
                  ntime_plot=250,
@@ -58,7 +58,7 @@ def get_single_trigger(fn_fil, fn_trig, row=0, ntime_plot=250):
                  rficlean=False, snr_comparison=-1,
                  outdir='./', sig_thresh_local=7.0)
 
-    return data
+    return data, dm0, sig_cut, t0, downsamp, downsamp_smear
 
 def get_fil_data(fn_fil, t0, dm0, downsamp, freq_low, freq_up, 
                  dt=0.00004096, downsamp_smear=1, ntime_plot=250, nfreq=1536):
@@ -210,7 +210,7 @@ def fil_trigger(fn_fil, dm0, t0, sig_cut,
     if rficlean is True:
         data = cleandata(data)
 
-    return data
+    return data, downsamp, downsamp_smear
 
 def proc_trigger(fn_fil, dm0, t0, sig_cut, 
                  ndm=50, mk_plot=False, downsamp=1, 
