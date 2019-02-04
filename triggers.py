@@ -58,9 +58,6 @@ def get_single_trigger(fn_fil, fn_trig, row=0, ntime_plot=250):
                  rficlean=False, snr_comparison=-1,
                  outdir='./', sig_thresh_local=7.0)
 
-    data = get_fil_data(fn_fil, t0, dm0, downsamp, freq_low, freq_up, 
-                 dt=dt, ntime_plot=ntime_plot)
-
     return data
 
 def get_fil_data(fn_fil, t0, dm0, downsamp, freq_low, freq_up, 
