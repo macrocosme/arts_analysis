@@ -48,7 +48,7 @@ def multiproc_dedisp(dm):
 
 def get_single_trigger(fn_fil, fn_trig, row=0, ntime_plot=250):
     dm0, sig_cut, t0, downsamp = tools.read_singlepulse(fn_trig)
-    dm0, sig_cut, t0, downsamp = dm0[row], sig[row], t0[row], downsamp[row]
+    dm0, sig_cut, t0, downsamp = dm0[row], sig_cut[row], t0[row], downsamp[row]
 
     data = fil_trigger(fn_fil, dm0, t0, sig_cut, 
                  ndm=50, mk_plot=False, downsamp=downsamp, 
