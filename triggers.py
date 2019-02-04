@@ -291,6 +291,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 
             if jj==dm_max_jj:
                 data_dm_max = data_copy.data[:, max(0, t_min):t_max]
+                snr_max = SNRtools.calc_snr_matchedfilter(data_dm_max.mean(0))[0] 
                 if t_min<0:
                     Z = np.zeros([nfreq, np.abs(t_min)])
                     data_dm_max = np.concatenate([Z, data_dm_max], axis=1)
@@ -305,7 +306,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     full_freq_arr_downsamp = full_freq_arr_downsamp[:, :ntime//downsamp_res*downsamp_res\
                                    ].reshape(-1, ntime//downsamp_res, downsamp_res).mean(-1)
 
-    snr_max = SNRtools.calc_snr_mad(full_freq_arr_downsamp.mean(0))
+#    snr_max = SNRtools.calc_snr_mad(full_freq_arr_downsamp.mean(0))
     
     if snr_max < sig_thresh_local:
         print("\nSkipping trigger below local threshold %.2f:" % sig_thresh_local)
@@ -325,7 +326,6 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
                  S/N$_{compare}$:%.1f \nDM:%d  t:%.1fs  width:%d" %\
                  (beamno, sig_cut, snr_max, snr_comparison, \
                     dms[dm_max_jj], t0, downsamp)
-
 
     if not os.path.isdir('%s/plots' % outdir):
         os.system('mkdir -p %s/plots' % outdir)
@@ -523,11 +523,13 @@ if __name__=='__main__':
         sig_cut, dm_cut, tt_cut, ds_cut, ind_full = par_1[0], par_1[1], \
                                 par_1[2], par_1[3], par_1[4]
     else:
-        sig_cut, dm_cut, tt_cut, ds_cut, ind_full = tools.get_triggers(fn_sp, 
-                                                         sig_thresh=options.sig_thresh,
+        print(fn_sp, options.sig_thresh, options.dm_min, options.dm_max, options.sig_max)
+        
+        sig_cut, dm_cut, tt_cut, ds_cut, ind_full = tools.get_triggers(fn_sp, sig_thresh=options.sig_thresh,
                                                          dm_min=options.dm_min,
                                                          dm_max=options.dm_max,
-                                                         sig_max=options.sig_max, t_window=0.5)
+                                                         sig_max=options.sig_max, 
+                                                         t_window=0.5)
 
     if options.descending_snr:
         sig_index = np.argsort(sig_cut)[::-1]

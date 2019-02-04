@@ -229,15 +229,14 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
     ntrig_orig = len(dm)
 
     bad_sig_ind = np.where((sig < sig_thresh) | (sig > sig_max))[0]
-
     sig = np.delete(sig, bad_sig_ind)
     tt = np.delete(tt, bad_sig_ind)
     dm = np.delete(dm, bad_sig_ind)
     downsample = np.delete(downsample, bad_sig_ind)
-
     sig_cut, dm_cut, tt_cut, ds_cut = [],[],[],[]
     
     if len(tt)==0:
+        print("Returning None: time array is empty")
         return 
 
     tduration = tt.max() - tt.min()
@@ -368,7 +367,7 @@ class SNR_Tools:
         data = scipy.signal.detrend(data, type='linear')
 
         if widths is None:
-            widths = [1, 2, 4, 8, 16, 32, 64, 128]
+            widths = [1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500]
 
         for ii in widths:
             mf = np.ones([ii])
