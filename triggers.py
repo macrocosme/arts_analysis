@@ -47,17 +47,17 @@ def multiproc_dedisp(dm):
     return (datacopy.data.mean(0), data_freq_time)
 
 def get_single_trigger(fn_fil, fn_trig, row=0, ntime_plot=250):
-    dm0, sig, t0, downsamp = tools.read_singlepulse(fn_trig)
-    dm0, sig, t0, downsamp = dm0[row], sig[row], t0[row], downsamp[row]
+    dm0, sig_cut, t0, downsamp = tools.read_singlepulse(fn_trig)
+    dm0, sig_cut, t0, downsamp = dm0[row], sig[row], t0[row], downsamp[row]
 
     data = fil_trigger(fn_fil, dm0, t0, sig_cut, 
-                 ndm=50, mk_plot=False, downsamp=1, 
+                 ndm=50, mk_plot=False, downsamp=downsamp, 
                  beamno='', fn_mask=None, nfreq_plot=32,
                  ntime_plot=250,
                  cmap='RdBu', cand_no=1, multiproc=False,
                  rficlean=False, snr_comparison=-1,
                  outdir='./', sig_thresh_local=7.0)
-    
+
     data = get_fil_data(fn_fil, t0, dm0, downsamp, freq_low, freq_up, 
                  dt=dt, ntime_plot=ntime_plot)
 
