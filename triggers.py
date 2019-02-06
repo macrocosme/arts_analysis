@@ -136,7 +136,7 @@ def fil_trigger(fn_fil, dm0, t0, sig_cut,
                  ntime_plot=250,
                  cmap='RdBu', cand_no=1, multiproc=False,
                  rficlean=False, snr_comparison=-1,
-                 outdir='./', sig_thresh_local=7.0):
+                 outdir='./', sig_thresh_local=5.0):
     try:
         rfimask = np.loadtxt('./zapped_channels_1400.conf')
         rfimask = rfimask.astype(int)
@@ -218,7 +218,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
                  ntime_plot=250,
                  cmap='RdBu', cand_no=1, multiproc=False,
                  rficlean=False, snr_comparison=-1,
-                 outdir='./', sig_thresh_local=7.0):
+                 outdir='./', sig_thresh_local=5.0):
     """ Locate data within filterbank file (fn_fi)
     at some time t0, and dedisperse to dm0, generating 
     plots 
