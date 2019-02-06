@@ -33,7 +33,6 @@ def plot_two_panel(data_freq_time, params, times=None, cb=None, prob=None,
     ax1.set_ylabel('S/N', labelpad=10)
     # add what a DM=0 signal would look like for ms tres
     DM0_delays = dm * 4.15E6 * (freq_low**-2 - freqs**-2)#/(delta_t*bin_width*1.e3)
-    print(delta_t, bin_width, DM0_delays.max())
     ax2.plot(DM0_delays, freqs, c='r', lw='2', alpha=0.5)
     # scaling: std = 1, median=0
     extent = [times[0], times[-1], freq_low, freq_up]
