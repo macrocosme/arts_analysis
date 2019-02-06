@@ -5,18 +5,18 @@ import time
 import numpy as np
 import scipy
 import matplotlib as mpl
-mpl.use('Agg')
+mpl.use('Agg', warn=False)
 import matplotlib.pyplot as plt
 import h5py
 import glob
 import copy
 import optparse
+import logging 
 
 from pypulsar.formats import filterbank
 
 import tools
 import plotter 
-
 
 def get_mask(rfimask, startsamp, N):
     """Return an array of boolean values to act as a mask
@@ -53,7 +53,7 @@ def get_single_trigger(fn_fil, fn_trig, row=0, ntime_plot=250):
     data, downsamp, downsamp_smear = fil_trigger(fn_fil, dm0, t0, sig_cut, 
                  ndm=50, mk_plot=False, downsamp=downsamp, 
                  beamno='', fn_mask=None, nfreq_plot=32,
-                 ntime_plot=250,
+                 ntime_plot=ntime_plot,
                  cmap='RdBu', cand_no=1, multiproc=False,
                  rficlean=False, snr_comparison=-1,
                  outdir='./', sig_thresh_local=7.0)
@@ -85,10 +85,10 @@ def get_fil_data(fn_fil, t0, dm0, downsamp, freq_low, freq_up,
     ntime = t_max-t_min
 
     if ntime_fil < (start_bin+chunksize):
-        print("Trigger at end of file, skipping")
+        logging.info("Trigger at end of file, skipping")
         return [],[],[],[]
 
-    print("Reading in chunk: %d" % chunksize)
+    logging.info("Reading in chunk: %d" % chunksize)
     data = reader.read_fil_data(fn, start=start_bin, stop=chunksize)[0]
 #    data = rawdatafile.get_spectra(start_bin, chunksize)
 
@@ -109,7 +109,7 @@ def cleandata(data, threshold=3.0):
     -------
     cleaned filterbank object
     """
-    print("Cleaning RFI")
+    logging.info("Cleaning RFI")
     dtmean = np.mean(data.data, axis=-1)
     dfmean = np.mean(data.data, axis=0)
     stdevf = np.std(dfmean)
@@ -142,7 +142,7 @@ def fil_trigger(fn_fil, dm0, t0, sig_cut,
         rfimask = rfimask.astype(int)
     except:
         rfimask = []
-        print("Could not load dumb RFIMask")
+        logging.info("Could not load dumb RFIMask")
 
     SNRtools = tools.SNR_Tools()
     downsamp = min(4096, downsamp)
@@ -176,8 +176,8 @@ def fil_trigger(fn_fil, dm0, t0, sig_cut,
     downsamp = int(downsamp_res*downsamp_smear)
     time_res = dt * downsamp
     tplot = ntime_plot * downsamp 
-    print("Width_full:%d  Width_smear:%d  Width_res: %d" % 
-        (downsamp, downsamp_smear, downsamp_res))
+#    print("Width_full:%d  Width_smear:%d  Width_res: %d" % 
+#        (downsamp, downsamp_smear, downsamp_res))
 
     start_bin = int(t0/dt - ntime_plot*downsamp//2)
     width = abs(4.14e3 * dm0 * (freq_up**-2 - freq_low**-2))
@@ -201,10 +201,10 @@ def fil_trigger(fn_fil, dm0, t0, sig_cut,
     ntime = t_max-t_min
 
     if ntime_fil < (start_bin+chunksize):
-        print("Trigger at end of file, skipping")
+        logging.info("Trigger at end of file, skipping")
         return [],[],[],[]
 
-    print("Reading in chunk: %d" % chunksize)
+    logging.info("Reading in chunk: %d" % chunksize)
     data = rawdatafile.get_spectra(start_bin, chunksize)
 
     if rficlean is True:
@@ -257,7 +257,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         rfimask = rfimask.astype(int)
     except:
         rfimask = []
-        print("Could not load dumb RFIMask")
+        logging.warning("Could not load dumb RFIMask")
 
     SNRtools = tools.SNR_Tools()
     downsamp = min(4096, downsamp)
@@ -291,8 +291,10 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     downsamp = int(downsamp_res*downsamp_smear)
     time_res = dt * downsamp
     tplot = ntime_plot * downsamp 
-    print("Width_full:%d  Width_smear:%d  Width_res: %d" % 
-        (downsamp, downsamp_smear, downsamp_res))
+    logging.info("Width_full:%d  Width_smear:%d  Width_res: %d" % 
+                 (downsamp, downsamp_smear, downsamp_res))
+#    print("Width_full:%d  Width_smear:%d  Width_res: %d" % 
+#        (downsamp, downsamp_smear, downsamp_res))
 
     start_bin = int(t0/dt - ntime_plot*downsamp//2)
     width = abs(4.14e3 * dm0 * (freq_up**-2 - freq_low**-2))
@@ -316,10 +318,10 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     ntime = t_max-t_min
 
     if ntime_fil < (start_bin+chunksize):
-        print("Trigger at end of file, skipping")
+        logging.info("Trigger at end of file, skipping")
+#        print("Trigger at end of file, skipping")
         return [],[],[],[]
 
-    print("Reading in chunk: %d" % chunksize)
     data = rawdatafile.get_spectra(start_bin, chunksize)
 
     if rficlean is True:
@@ -345,7 +347,6 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 
         ndm_ = min(min(nproc, ndm), 10)
 
-        print("\nDedispersing in Parallel with %d proc\nAssuming 50GB of memory" % ndm_)
         for kk in range(ndm//ndm_):
             dms_ = dms[ndm_*kk:ndm_*(kk+1)]
             datacopy = copy.deepcopy(data)
@@ -367,8 +368,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 
             del ddm, df
     else:
-        print("\nDedispersing Serially\n")
-#        tbeg = time.time()
+        logging.info("\nDedispersing Serially\n")
+        #print("\nDedispersing Serially\n")
         for jj, dm_ in enumerate(dms):
             tcopy = time.time()
             data_copy = copy.deepcopy(data)
@@ -379,9 +380,10 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 
             full_arr[jj, np.abs(min(0, t_min)):] = copy.copy(dm_arr)
 
-            print("Dedispersing to dm=%0.1f at t=%0.1fsec with width=%.1f S/N=%.1f" % 
-                        (dm_, t0, downsamp, sig_cut))
-            print("dedisp:", -t0_dm+time.time())
+            logging.info("Dedispersing to dm=%0.1f at t=%0.1fsec with width=%.1f S/N=%.1f" %                         
+                         (dm_, t0, downsamp, sig_cut))
+#            print("Dedispersing to dm=%0.1f at t=%0.1fsec with width=%.1f S/N=%.1f" % 
+#                        (dm_, t0, downsamp, sig_cut))
 
             if jj==dm_max_jj:
                 data_dm_max = data_copy.data[:, max(0, t_min):t_max]
@@ -403,8 +405,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 #    snr_max = SNRtools.calc_snr_mad(full_freq_arr_downsamp.mean(0))
     
     if snr_max < sig_thresh_local:
-        print("\nSkipping trigger below local threshold %.2f:" % sig_thresh_local)
-        print("snr_local=%.2f  snr_trigger=%.2f\n" % (snr_max, sig_cut))
+        logging.info("\nSkipping trigger below local threshold %.2f:" % sig_thresh_local)
+        logging.info("snr_local=%.2f  snr_trigger=%.2f\n" % (snr_max, sig_cut))
         return [],[],[],[]
 
     times = np.linspace(0, ntime_plot*downsamp*dt, len(full_freq_arr_downsamp[0]))
@@ -429,7 +431,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 
     params = sig_cut, dms[dm_max_jj], downsamp, t0, dt
     if mk_plot is True:
-        print(fn_fig_out)
+        logging.info(fn_fig_out)
         if ndm==1:
             plotter.plot_two_panel(full_freq_arr_downsamp, params, prob=None, 
                                    freq_low=freq_low, freq_up=freq_up, 
@@ -475,7 +477,7 @@ def h5_writer(data_freq_time, data_dm_time,
     f.attrs.create('beamno', data=beamno)
     f.close()
 
-    print("Wrote to file %s" % fnout)
+    logging.info("Wrote to file %s" % fnout)
 
 def file_reader(fn, ftype='hdf5'):
     if ftype is 'hdf5':
@@ -584,6 +586,9 @@ if __name__=='__main__':
     parser.add_option('--descending_snr', dest='descending_snr', action='store_true', \
                         help="Process from highest to lowest S/N if True (default False)", default=False)
 
+    logging.basicConfig(format='%(asctime)s %(message)s', 
+                    level=logging.WARN, filename='./test.log')
+
     start_time = time.time()
 
     options, args = parser.parse_args()
@@ -617,8 +622,6 @@ if __name__=='__main__':
         sig_cut, dm_cut, tt_cut, ds_cut, ind_full = par_1[0], par_1[1], \
                                 par_1[2], par_1[3], par_1[4]
     else:
-        print(fn_sp, options.sig_thresh, options.dm_min, options.dm_max, options.sig_max)
-        
         sig_cut, dm_cut, tt_cut, ds_cut, ind_full = tools.get_triggers(fn_sp, sig_thresh=options.sig_thresh,
                                                          dm_min=options.dm_min,
                                                          dm_max=options.dm_max,
@@ -634,12 +637,10 @@ if __name__=='__main__':
         ind_full = ind_full[sig_index]
 
     ntrig_grouped = len(sig_cut)
-    print("-----------------------------")
-    print("Grouped down to %d triggers" % ntrig_grouped)
-    print("----------------------------- \n")
+    logging.info("-----------------------------\nGrouped down to %d triggers" % ntrig_grouped)
 
-    print("DMs: %s" % dm_cut)
-    print("S/N: %s" % sig_cut)
+    logging.info("DMs: %s" % dm_cut)
+    logging.info("S/N: %s" % sig_cut)
 
     grouped_triggers = np.empty([ntrig_grouped, 4])
     grouped_triggers[:,0] = sig_cut
@@ -654,13 +655,14 @@ if __name__=='__main__':
     nfreq_plot = options.nfreq_plot
     ntime_plot = options.ntime_plot
 
+    skipped_counter = 0
     for ii, t0 in enumerate(tt_cut[:options.ntrig]):
         try:
             snr_comparison = snr_comparison_arr[ii]
         except:
             snr_comparison=-1
 
-        print("\nStarting DM=%0.2f S/N=%0.2f width=%d time=%f" % (dm_cut[ii], sig_cut[ii], ds_cut[ii], t0))
+        logging.info("\nStarting DM=%0.2f S/N=%0.2f width=%d time=%f" % (dm_cut[ii], sig_cut[ii], ds_cut[ii], t0))
         data_dm_time, data_freq_time, time_res, params = proc_trigger(\
                                         fn_fil, dm_cut[ii], t0, sig_cut[ii],
                                         mk_plot=options.mk_plot, ndm=options.ndm, 
@@ -674,6 +676,7 @@ if __name__=='__main__':
                                         beamno=options.beamno, sig_thresh_local=options.sig_thresh_local)
 
         if len(data_dm_time)==0:
+            skipped_counter += 1
             continue
 
         basedir = options.outdir + '/data/'
@@ -700,28 +703,25 @@ if __name__=='__main__':
                 data_freq_time_full.append(data_freq_time)
                 params_full.append(params)
         else:
-            print('Not saving data')
+            logging.info('Not saving data')
 
         time_elapsed = time.time() - start_time
 
         if time_elapsed > options.time_limit:
-            print("Exceeded time limit. Breaking loop.")
+            logging.info("Exceeded time limit. Breaking loop.")
             break
 
-    if len(data_dm_time_full)==0:
-        print("\nFound no triggers to concat\n")
-        exit()
-
     if options.save_data == 'concat':
-        print(len(data_dm_time_full), data_dm_time_full[0].shape)
+        if len(data_dm_time_full)==0:
+            print("\nFound no triggers to concat\n")
+            exit()
+
         if len(data_dm_time_full)==1:
             data_dm_time_full = np.array(data_dm_time_full)
             data_freq_time_full = np.array(data_freq_time_full)
         else:
             data_dm_time_full = np.concatenate(data_dm_time_full, axis=0)
             data_freq_time_full = np.concatenate(data_freq_time_full, axis=0)
-
-        print(data_dm_time_full.shape)
         
         data_dm_time_full = data_dm_time_full.reshape(-1,ndm,ntime_plot)
         data_freq_time_full = data_freq_time_full.reshape(-1,nfreq_plot,ntime_plot)
@@ -732,10 +732,12 @@ if __name__=='__main__':
         f.create_dataset('data_freq_time', data=data_freq_time_full)
         f.create_dataset('data_dm_time', data=data_dm_time_full)
         f.create_dataset('params', data=params_full)
+        f.create_dataset('ntriggers_skipped', data=[skipped_counter])
         f.close()
 
-        print('Saved all triggers to %s' % fnout)
+        logging.info('Saved all triggers to %s' % fnout)
 
+    logging.warning("Skipped %d out of %d triggers" % (skipped_counter, ii))
     exit()
 
 

@@ -328,7 +328,7 @@ class SNR_Tools:
 
         return 1.4826*mad, med
 
-    def calc_snr(self, data):
+    def calc_snr_presto(self, data):
         """ Calculate S/N of 1D input array (data)
         after excluding 0.05 at tails
         """
@@ -338,6 +338,25 @@ class SNR_Tools:
         stds = 1.148*np.sqrt((std_chunk[ntime_r//40:-ntime_r//40]**2.0).sum() /
                               (0.95*ntime_r))
         snr_ = std_chunk[-1] / stds 
+
+        return snr_
+
+    def calc_snr_amber(self, data, thresh=3.):
+        sig = np.std(data)
+        dmax = (data.copy()).max()
+        dmed = np.median(data)
+        N = len(data)
+
+        # remove outliers 4 times until there 
+        # are no events above threshold*sigma
+        for ii in range(4):
+            ind = np.where(np.abs(data-dmed)<thresh*sig)[0]
+            sig = np.std(data[ind])
+            dmed = np.median(data[ind])
+            data = data[ind]
+            N = len(data)
+
+        snr_ = (dmax - dmed)/(1.048*sig)
 
         return snr_
 
@@ -364,7 +383,7 @@ class SNR_Tools:
         
         ntime = len(data)
         snr_max = 0
-        data = scipy.signal.detrend(data, type='linear')
+#        data = scipy.signal.detrend(data, type='linear')
 
         if widths is None:
             widths = [1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500]
@@ -372,7 +391,7 @@ class SNR_Tools:
         for ii in widths:
             mf = np.ones([ii])
             data_mf = scipy.correlate(data, mf)
-            snr_ = self.calc_snr(data_mf)
+            snr_ = self.calc_snr_amber(data_mf)
 
             if snr_ > snr_max:
                 snr_max = snr_
@@ -480,8 +499,6 @@ class SNR_Tools:
         ind_missed = []
         ind_matched = []
 
-
-        print("t_diff   t_0   t_1   dm_0   dm_1  snr_1   snr_2")
         for ii in range(len(snr_1)):
 
             tdiff = np.abs(t_1[ii] - t_2)
