@@ -383,6 +383,7 @@ class SNR_Tools:
         
         ntime = len(data)
         snr_max = 0
+        width_max = 0
 #        data = scipy.signal.detrend(data, type='linear')
 
         if widths is None:

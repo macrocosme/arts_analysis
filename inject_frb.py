@@ -8,6 +8,7 @@ import glob
 import scipy
 import optparse
 import random
+import copy
 
 try:
     import matplotlib.pyplot as plt
@@ -30,7 +31,7 @@ def test_writer():
 
     for ii in range(146):
         data_filobj, freq, delta_t, header = reader.read_fil_data(fn_fil,
-                                 start=ii*chunksize, stop=chunksize)
+                                start=ii*chunksize, stop=chunksize)
         data = data_filobj.data
 
         if ii==0:
@@ -46,7 +47,7 @@ def test_writer():
 def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1, 
                          NFREQ=1536, NTIME=2**15, rfi_clean=False,
                          dm=250.0, freq=(1550, 1250), dt=0.00004096,
-                         chunksize=5e4, calc_snr=True, start=0, 
+                         chunksize=2e4, calc_snr=True, start=0, 
                          freq_ref=1400., subtract_zero=False, clipping=None):
     """ Inject an FRB in each chunk of data 
         at random times. Default params are for Apertif data.
@@ -87,13 +88,15 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
     --------
     None 
     """
+    SNRTools = tools.SNR_Tools()
+    freq_arr, dt, header = reader.read_fil_data(fn_fil, start=0, stop=1)[1:]
 
     if type(dm) is not tuple:
         max_dm = dm
     else:
         max_dm = max(dm)
 
-    t_delay_max = abs(4.14e3*max_dm*(freq[0]**-2 - freq[1]**-2))
+    t_delay_max = abs(4.14e3*max_dm*(freq_arr[0]**-2 - freq_arr[-1]**-2))
     t_delay_max_pix = int(t_delay_max / dt)
 
     # ensure that dispersion sweep is not too large 
@@ -118,15 +121,19 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
     f_params_out.write('# DM      Sigma      Time (s)     Sample    Downfact\n')
     f_params_out.close()
 
+    kk = 0
     for ii in xrange(N_FRB):
+        np.random.seed(np.random.randint(12312312))
         # drop FRB in random location in data chunk
         offset = random.randint(0.1*chunksize, (1-f_edge)*chunksize)
         data_filobj, freq_arr, delta_t, header = reader.read_fil_data(fn_fil, 
-                                            start=start+chunksize*ii, stop=chunksize)
+                                            start=start+chunksize*(ii-kk), stop=chunksize)
 
         if ii==0:
             fn_rfi_clean = reader.write_to_fil(np.zeros([NFREQ, 0]), 
                                             header, fn_fil_out)
+            if calc_snr is True:
+                dummy_filobj = copy.copy(data_filobj)
 
         data = data_filobj.data
         # injected pulse time in seconds since start of file
@@ -140,12 +147,19 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
         data_event = (data[:, offset:offset+NTIME]).astype(np.float)
 
+        dm = np.random.uniform(50., 1000.)
+
+        #hack
+        if ii==7:
+            z = 1.
+        else:
+            z=1e-15
+
         data_event, params = simulate_frb.gen_simulated_frb(NFREQ=NFREQ, 
                                                NTIME=NTIME, sim=True, 
-#                                               fluence=3000*(1+0.1*ii),
-                                               fluence=(150+10*ii, 500+10*ii),
-                                               spec_ind=0, width=(delta_t, delta_t*100),#delta_t*512,#(delta_t, delta_t*100), 
-                                               dm=dm+ii*10, scat_factor=(-4, -3.5), 
+                                               fluence=(z*1, z*1000),
+                                               spec_ind=0, width=(delta_t, delta_t*500), 
+                                               dm=dm, scat_factor=(-4, -3.5), 
                                                background_noise=data_event, 
                                                delta_t=delta_t, plot_burst=False, 
                                                freq=(freq_arr[0], freq_arr[-1]), 
@@ -156,7 +170,9 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
         print("%d/%d Injecting with DM:%d width: %.2f offset: %d" % 
                                 (ii, N_FRB, dm_, params[2], offset))
-        
+
+        data_event[data_event>255] = 255
+        data_event = data_event.astype(np.uint8)
         data[:, offset:offset+NTIME] = data_event
 
         #params_full_arr.append(params)
@@ -168,6 +184,38 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         # by the dispersion delay between the reference and 
         # upper frequency
         t0 -= t_delay_mid #hack
+        
+        if calc_snr is True:
+            data_filobj.data = copy.copy(data)
+#            dummy_filobj.data = data
+#            dummy_filobj.dedisperse(150.0)
+            data_filobj.dedisperse(dm_)
+            end_t = abs(4.15e3*dm_*(freq[0]**-2 - freq[1]**-2))
+            end_pix = int(end_t / dt)
+            end_pix_ds = int(end_t / dt / downsamp)
+
+#            data_rb = dummy_filobj.data
+            data_rb = data_filobj.data
+            data_rb = data_rb[:, :-end_pix].mean(0)
+
+            snr_max, width_max = SNRTools.calc_snr_matchedfilter(data_rb,
+                                        widths=[1, 5, 25, 50, 100, 500, 1000, 2500])
+
+            if snr_max <= 0.0:
+                print("S/N <= 0: Not writing to file")
+                kk += 1
+                continue
+                
+            print("S/N: %.2f width_used: %.3f width_tru: %.3f DM: %.1f" 
+                  % (snr_max, width_max, width/delta_t, dm_))
+#            np.save('data_%.2fwidth_used:%.3fwidth_tru:%.3fDM:%.1f' 
+#                    % (snr_max, width_max, width/delta_t, dm_), data_rb)
+
+            t0_ind = np.argmax(data_filobj.data.mean(0)) + chunksize*ii
+            t0 = t0_ind*delta_t #huge hack
+        else:
+            snr_max = 10.0
+            width_max = int(width/dt)
 
         if rfi_clean is True:
             data = rfi_test.apply_rfi_filters(data.astype(np.float32), delta_t)
@@ -191,33 +239,6 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         elif ii>=0:
             fil_obj = reader.filterbank.FilterbankFile(fn_fil_out, mode='readwrite')
             fil_obj.append_spectra(data.transpose())
-
-        if calc_snr is True:
-            data_filobj.data = data
-            data_filobj.dedisperse(dm_)
-            print('t0, t0_ind, offset, np.argmax(data_filobj.data.mean(0))')
-            print(t0, t0_ind, offset, np.argmax(data_filobj.data.mean(0)))
-            end_t = abs(4.15e3*dm_*(freq[0]**-2 - freq[1]**-2))
-            end_pix = int(end_t / dt)
-            end_pix_ds = int(end_t / dt / downsamp)
-
-            data_rb = (data_filobj.data).copy()
-            data_rb = data_rb[:, :-end_pix].mean(0)
-            data_rb -= np.median(data_rb)
-
-            SNRTools = tools.SNR_Tools()
-            print("calculating S/N")
-            snr_max, width_max = SNRTools.calc_snr_widths(data_rb,
-                                                          widths=2**np.arange(12))
-
-#            snr_max2, width_max2 = tools.calc_snr_widths(data_rb,
-#                                         )
-            print("S/N: %.2f width_used: %.3f width_tru: %.3f DM: %.1f" % (snr_max, width_max, width/delta_t, dm_))
-            t0_ind = np.argmax(data_filobj.data.mean(0)) + chunksize*ii
-            t0 = t0_ind*delta_t #huge hack
-        else:
-            snr_max = 10.0
-            width_max = int(width/dt)
 
         f_params_out = open(fn_params_out, 'a+')
         f_params_out.write('%2f   %2f   %5f   %7d   %d\n' % 
