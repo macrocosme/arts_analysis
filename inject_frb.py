@@ -43,12 +43,34 @@ def test_writer():
 
         print('wrote %d' % ii)
 
+def inject_in_filterbank_gaussian(data_fil_obj, header, fn_fil_out, N_FRB, chunksize=250000):
+    print(header)
+    NFREQ = header['nchans']
+
+    for ii in range(N_FRB):
+        if ii==0:
+            fn_rfi_clean = reader.write_to_fil(np.zeros([NFREQ, 0]), 
+                                            header, fn_fil_out)
+
+        print("%d gaussian chunks" % ii)
+        #data = data_fil_obj.data*0.0
+        data = (np.random.normal(120, 10, NFREQ*chunksize)).astype(np.uint8)
+        data = data.reshape(NFREQ, chunksize)
+
+        if ii<0:
+            fn_rfi_clean = reader.write_to_fil(data.transpose(), header, fn_fil_out)
+        elif ii>=0:
+            fil_obj = reader.filterbank.FilterbankFile(fn_fil_out, mode='readwrite')
+            fil_obj.append_spectra(data.transpose())
+
+        continue
 
 def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1, 
                          NFREQ=1536, NTIME=2**15, rfi_clean=False,
                          dm=250.0, freq=(1550, 1250), dt=0.00004096,
-                         chunksize=2e4, calc_snr=True, start=0, 
-                         freq_ref=1400., subtract_zero=False, clipping=None):
+                         chunksize=100000, calc_snr=True, start=0, 
+                         freq_ref=1400., subtract_zero=False, clipping=None, 
+                         gaussian=True):
     """ Inject an FRB in each chunk of data 
         at random times. Default params are for Apertif data.
 
@@ -89,8 +111,8 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
     None 
     """
     SNRTools = tools.SNR_Tools()
-    freq_arr, dt, header = reader.read_fil_data(fn_fil, start=0, stop=1)[1:]
-
+    data_fil_obj_skel, freq_arr, dt, header = reader.read_fil_data(fn_fil, start=0, stop=1)
+    print(header)
     if type(dm) is not tuple:
         max_dm = dm
     else:
@@ -103,6 +125,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
     # for chunksize
     f_edge = 0.3    
 
+    print(chunksize/(t_delay_max_pix/f_edge))
     while chunksize <= t_delay_max_pix/f_edge:
         chunksize *= 2
         NTIME *= 2
@@ -121,13 +144,17 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
     f_params_out.write('# DM      Sigma      Time (s)     Sample    Downfact\n')
     f_params_out.close()
 
+    if gaussian==True:
+        fn_fil_out = fn_fil_out.strip('.fil') + '_gaussian.fil'
+        inject_in_filterbank_gaussian(data_fil_obj_skel, header, fn_fil_out, N_FRB)
+
     kk = 0
     for ii in xrange(N_FRB):
         np.random.seed(np.random.randint(12312312))
         # drop FRB in random location in data chunk
         offset = random.randint(0.1*chunksize, (1-f_edge)*chunksize)
         data_filobj, freq_arr, delta_t, header = reader.read_fil_data(fn_fil, 
-                                            start=start+chunksize*(ii-kk), stop=chunksize)
+                                            start=start+chunksize*(ii-kk), stop=chunksize)            
 
         if ii==0:
             fn_rfi_clean = reader.write_to_fil(np.zeros([NFREQ, 0]), 
@@ -147,18 +174,12 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
         data_event = (data[:, offset:offset+NTIME]).astype(np.float)
 
-        dm = np.random.uniform(50., 1000.)
-
-        #hack
-        if ii==7:
-            z = 1.
-        else:
-            z=1e-15
+        dm = np.random.uniform(25., 100.)
 
         data_event, params = simulate_frb.gen_simulated_frb(NFREQ=NFREQ, 
                                                NTIME=NTIME, sim=True, 
-                                               fluence=(z*1, z*1000),
-                                               spec_ind=0, width=(delta_t, delta_t*500), 
+                                               fluence=(1, 1000),
+                                               spec_ind=0, width=(delta_t, delta_t*50), 
                                                dm=dm, scat_factor=(-4, -3.5), 
                                                background_noise=data_event, 
                                                delta_t=delta_t, plot_burst=False, 
@@ -168,12 +189,13 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         dm_ = params[0]
         params.append(offset)
 
-        print("%d/%d Injecting with DM:%d width: %.2f offset: %d" % 
-                                (ii, N_FRB, dm_, params[2], offset))
+        print("%d/%d Injecting with DM:%d width_samp: %.2f offset: %d" % 
+                                (ii, N_FRB, dm_, np.int(params[2]/dt), offset))
 
         data_event[data_event>255] = 255
         data_event = data_event.astype(np.uint8)
         data[:, offset:offset+NTIME] = data_event
+        np.save('d%d' % dm, data_event)
 
         #params_full_arr.append(params)
         width = params[2]
@@ -201,8 +223,9 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             snr_max, width_max = SNRTools.calc_snr_matchedfilter(data_rb,
                                         widths=[1, 5, 25, 50, 100, 500, 1000, 2500])
 
-            if snr_max <= 0.0:
-                print("S/N <= 0: Not writing to file")
+            np.save('snr%d' % snr_max, data_rb)
+            if snr_max <= 0.:
+                print("S/N <= 6: Not writing to file")
                 kk += 1
                 continue
                 
@@ -284,6 +307,9 @@ if __name__=='__main__':
     
     parser.add_option('--dm_list', type='string', action='callback', callback=foo_callback)
 
+    parser.add_option('--gaussian', dest='gaussian', action='store_false',
+                        help="write only Gaussian data to fil files", default=False)
+
 
     options, args = parser.parse_args()
     fn_fil = args[0]
@@ -303,7 +329,8 @@ if __name__=='__main__':
         inject_in_filterbank(fn_fil, fn_fil_out, N_FRB=options.nfrb,
                                                         NTIME=2**15, rfi_clean=options.rfi_clean,
                                                         calc_snr=options.calc_snr, start=0,
-                                                        dm=float(options.dm_list[0]))
+                                                        dm=float(options.dm_list[0]), 
+                                                        gaussian=options.gaussian)
         exit()
 
     import multiprocessing

@@ -136,11 +136,8 @@ class Event(object):
         freq_mid = freq[len(freq)//2]
 
         scint_amp = self.scintillation(freq)
-        self._fluence /= np.sqrt(NFREQ)
-#        stds_perchan = np.std(data)#*np.sqrt(NFREQ)
-        SNRTools = tools.SNR_Tools()
-        stds_perchan, med = SNRTools.sigma_from_mad(data.flatten())
-
+        stds_perchan = np.std(data.mean(0))#*np.sqrt(NFREQ)
+        
         for ii, f in enumerate(freq):
             # Do not add FRB to missing channels
             if data[ii].sum()==0:
@@ -162,24 +159,20 @@ class Event(object):
 
             val = pp.copy()
             val /= val.max()
-            val *= self._fluence
-
-#            val *= (100.0 / stds_perchan) # hack
-            val /= (width_ / delta_t) 
-            val = val * (f / self._f_ref) ** self._spec_ind 
+#            val *= (100.0/stds_perchan) # hack
+#            val *= self._fluence
+            val *= (1*np.std(data[ii]))
+            val /= (width_/delta_t)
+            #val = val * (f / self._f_ref) ** self._spec_ind 
 
             if scintillate is True:
                 val = (0.1 + scint_amp[ii]) * val 
                 
             data[ii] += val
-
-#            data[ii, tpix] += 5*np.std(data[ii])
             
             if f == freq_mid:
                 width_eff = width_
-
-        np.save('testie', data)
-
+        np.save('test.npy', data)
         return width_eff
 
     def add_to_data_sigmas(self, delta_t, freq, data, snr, 
@@ -278,6 +271,7 @@ class EventSimulator():
         self.width = width
         self.freq_low = freq[0]
         self.freq_up = freq[1]
+        np.random.seed(np.random.randint(12312292))
 
         if hasattr(dm, '__iter__') and len(dm) == 2:
             self._dm = tuple(dm)
@@ -314,7 +308,7 @@ class EventSimulator():
         dm = uniform_range(*self._dm)
         fluence = uniform_range(*self._fluence)**(-2/3.)
         # Convert to Jy ms from Jy s
-        fluence *= 1e3*self._fluence[0]**(-2/3.)
+        fluence *= self._fluence[1]**(2/3.)
         spec_ind = uniform_range(*self._spec_ind)
         disp_ind = uniform_range(*self._disp_ind)
         # turn this into a log uniform dist. Note not *that* many 
@@ -322,9 +316,9 @@ class EventSimulator():
         # knob down.
         scat_factor = np.exp(np.random.uniform(*self._scat_factor))
         # change width from uniform to lognormal
-        width = np.random.lognormal(np.log(self._width[0]), self._width[1])
+        #width = np.random.lognormal(np.log(self._width[0]), self._width[1])
         width = np.random.uniform(self._width[0], self._width[1])
-        width = max(min(width, 1000*self._width[0]), 0.5*self._width[0])
+        #width = max(min(width, 1000*self._width[0]), 0.5*self._width[0])
         return dm, fluence, width, spec_ind, disp_ind, scat_factor
 
 def uniform_range(min_, max_):
@@ -390,8 +384,9 @@ def gen_simulated_frb(NFREQ=16, NTIME=250, sim=True, fluence=(0.03,0.3),
                         width=width, spec_ind=spec_ind)
     # Realize event parameters for a single FRB
     dm, fluence, width, spec_ind, disp_ind, scat_factor = ES.draw_event_parameters()
+
     # Create event class with those parameters 
-    E = Event(t_ref, FREQ_REF, dm, 10e-4*fluence, 
+    E = Event(t_ref, FREQ_REF, dm, fluence, 
               width, spec_ind, disp_ind, scat_factor)
 
     # Add FRB to data array 
