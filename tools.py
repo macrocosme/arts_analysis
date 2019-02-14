@@ -667,12 +667,19 @@ if __name__=='__main__':
     fn_2 = args[1]
 
     try:
-        par_1, par_2, par_match_arr, ind_missed, ind_matched = SNRTools.compare_snr(fn_1, fn_2, 
+        par_1a, par_2a, par_match_arra, ind_misseda, ind_matcheda = SNRTools.compare_snr(fn_1, fn_2, 
                                         dm_min=options.dm_min, 
                                         dm_max=options.dm_max, save_data=False,
                                         sig_thresh=options.sig_thresh, 
                                         t_window=options.t_window, 
                                         max_rows=None, t_max=options.t_max)
+
+        par_1b, par_2b, par_match_arrb, ind_missedb, ind_matchedb = SNRTools.compare_snr(fn_2, fn_1, 
+                                        dm_min=options.dm_min, 
+                                        dm_max=options.dm_max, save_data=False,
+                                        sig_thresh=options.sig_thresh, 
+                                        t_window=options.t_window, 
+                                        max_rows=None, t_max=options.t_max)                                       
     except TypeError:
         print("No matches, exiting")
         exit()
@@ -690,7 +697,22 @@ if __name__=='__main__':
     if options.mk_plot is True:
         import matplotlib.pyplot as plt
         import plotter 
-        plotter.plot_comparison(par_1, par_2, par_match_arr, ind_missed, 
+        plotter.plot_comparison(par_1a, par_2a, par_match_arra, ind_misseda, 
                                 suptitle=options.title, figname=options.figname)
+        plotter.plot_comparison(par_1b, par_2b, par_match_arrb, ind_missedb, 
+                                suptitle=options.title, figname=options.figname)
+        plt.show()
 #        SNRTools.plot_comparison(par_1, par_2, par_match_arr, ind_missed, figname=figname)
+
+
+
+
+
+
+
+
+
+
+
+
 
