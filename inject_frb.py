@@ -16,7 +16,7 @@ except:
     plt = None
     pass
 
-import simulate_frb
+import simulate_frb2
 import reader
 import tools
 #import rfi_test
@@ -67,10 +67,10 @@ def inject_in_filterbank_gaussian(data_fil_obj, header, fn_fil_out, N_FRB, chunk
 
 def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1, 
                          NFREQ=1536, NTIME=2**15, rfi_clean=False,
-                         dm=250.0, freq=(1550, 1250), dt=0.00004096,
-                         chunksize=100000, calc_snr=True, start=0, 
+                         dm=1000.0, freq=(1550, 1250), dt=0.00004096,
+                         chunksize=75000, calc_snr=True, start=0, 
                          freq_ref=1400., subtract_zero=False, clipping=None, 
-                         gaussian=True):
+                         gaussian=False):
     """ Inject an FRB in each chunk of data 
         at random times. Default params are for Apertif data.
 
@@ -125,11 +125,10 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
     # for chunksize
     f_edge = 0.3    
 
-    print(chunksize/(t_delay_max_pix/f_edge))
     while chunksize <= t_delay_max_pix/f_edge:
         chunksize *= 2
         NTIME *= 2
-        print('Increasing to NTIME:%d, chunksize:%d' % (NTIME, chunksize))
+        print('Increasing to NTIME:%d, chunksize:%d for dm:%d' % (NTIME, chunksize, dm))
 
     ii=0
     params_full_arr = []
@@ -150,11 +149,13 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
     kk = 0
     for ii in xrange(N_FRB):
+        dm = np.random.uniform(10., 2000.)
+
         np.random.seed(np.random.randint(12312312))
         # drop FRB in random location in data chunk
-        offset = random.randint(0.1*chunksize, (1-f_edge)*chunksize)
+        offset = random.randint(np.int(0.1*chunksize), np.int((1-f_edge)*chunksize))
         data_filobj, freq_arr, delta_t, header = reader.read_fil_data(fn_fil, 
-                                            start=start+chunksize*(ii-kk), stop=chunksize)            
+                                                                      start=start+chunksize*(ii-kk), stop=chunksize)
 
         if ii==0:
             fn_rfi_clean = reader.write_to_fil(np.zeros([NFREQ, 0]), 
@@ -165,8 +166,8 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         data = data_filobj.data
         # injected pulse time in seconds since start of file
 
-        t0_ind = offset+NTIME//2+chunksize*ii
-        t0_ind = start + chunksize*ii + offset   # hack because needs to agree with presto  
+        t0_ind = offset+NTIME//2+chunksize*ii 
+#        t0_ind = start + chunksize*ii + offset   # hack because needs to agree with presto  
         t0 = t0_ind*delta_t 
 
         if len(data)==0:
@@ -174,12 +175,12 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
 
         data_event = (data[:, offset:offset+NTIME]).astype(np.float)
 
-        dm = np.random.uniform(25., 100.)
-
-        data_event, params = simulate_frb.gen_simulated_frb(NFREQ=NFREQ, 
+        flu = np.random.uniform(1, 1000)**(-2/3.)
+        flu *= 1000**(2/3.)
+        
+        data_event, params = simulate_frb2.gen_simulated_frb(NFREQ=NFREQ, 
                                                NTIME=NTIME, sim=True, 
-                                               fluence=(1, 1000),
-                                               spec_ind=0, width=(delta_t, delta_t*50), 
+                                               fluence=1000*flu+0.75*dm, spec_ind=0, width=(10*delta_t, 1.), 
                                                dm=dm, scat_factor=(-4, -3.5), 
                                                background_noise=data_event, 
                                                delta_t=delta_t, plot_burst=False, 
@@ -189,13 +190,13 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         dm_ = params[0]
         params.append(offset)
 
-        print("%d/%d Injecting with DM:%d width_samp: %.2f offset: %d" % 
-                                (ii, N_FRB, dm_, np.int(params[2]/dt), offset))
+        print("%d/%d Injecting with DM:%d width_samp: %.3f offset: %d" % 
+                                (ii, N_FRB, dm_, params[2]/dt, offset))
 
-        data_event[data_event>255] = 255
-        data_event = data_event.astype(np.uint8)
+#        data_event[data_event>255] = 255
+#        data_event = data_event.astype(np.uint8)
         data[:, offset:offset+NTIME] = data_event
-        np.save('d%d' % dm, data_event)
+#        np.save('d%d' % dm, data_event)
 
         #params_full_arr.append(params)
         width = params[2]
@@ -206,7 +207,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         # by the dispersion delay between the reference and 
         # upper frequency
         t0 -= t_delay_mid #hack
-        
+
         if calc_snr is True:
             data_filobj.data = copy.copy(data)
 #            dummy_filobj.data = data
@@ -223,9 +224,9 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
             snr_max, width_max = SNRTools.calc_snr_matchedfilter(data_rb,
                                         widths=[1, 5, 25, 50, 100, 500, 1000, 2500])
 
-            np.save('snr%d' % snr_max, data_rb)
-            if snr_max <= 0.:
-                print("S/N <= 6: Not writing to file")
+            local_thresh = 0.
+            if snr_max <= local_thresh:
+                print("S/N <= %d: Not writing to file" % local_thresh)
                 kk += 1
                 continue
                 
