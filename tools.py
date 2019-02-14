@@ -685,10 +685,10 @@ if __name__=='__main__':
         exit()
         
 
-    print('\nFound %d common trigger(s)' % par_match_arr.shape[1])
+    print('\nFound %d common trigger(s)' % par_match_arra.shape[1])
 
-    snr_1 = par_match_arr[0, :, 0]
-    snr_2 = par_match_arr[0, :, 1]
+    snr_1 = par_match_arra[0, :, 0]
+    snr_2 = par_match_arra[0, :, 1]
 
     print('\nFile 1 has %f times higher S/N than file 2\n' % np.mean(snr_1/snr_2))
 
