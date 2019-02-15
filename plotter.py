@@ -165,8 +165,10 @@ def mk_histograms(params, fnout='summary_hist.pdf',
 
 def plot_comparison(par_1, par_2, par_match_arr, 
                     ind_missed, figname='./test.pdf', 
-                    suptitle='file 2 vs. file 1.'):
+                    algo1='algo1', algo2='algo2'):
     fig = plt.figure(figsize=(12,14))
+
+    suptitle = "%s vs. %s" % (algo1, algo2)
 
     snr_1, snr_2 = par_1[0], par_2[0]
     dm_1, dm_2 = par_1[1], par_2[1]
@@ -187,8 +189,8 @@ def plot_comparison(par_1, par_2, par_match_arr,
     plt.plot(snr_1_match, snr_2_match, '.')
     plt.plot(snr_1, snr_1, color='k')
     plt.loglog()
-    plt.xlabel('file 1 S/N', fontsize=10)
-    plt.ylabel('file 2 S/N', fontsize=10)        
+    plt.xlabel('%s S/N' % algo1, fontsize=10)
+    plt.ylabel('%s S/N' % algo2, fontsize=10)        
     plt.legend(['Missed', 'Matched', 'Equal S/N'], fontsize=10)
 
     fig.add_subplot(334)
@@ -200,29 +202,33 @@ def plot_comparison(par_1, par_2, par_match_arr,
     plt.legend(['Missed','Detected','Equal S/N'], fontsize=10)
 
     plt.subplot(332)
-    plt.hist(dm_1, log=True, alpha=0.5, bins=30)
-    plt.hist(dm_2, log=True, alpha=0.5, bins=30)
+    plt.hist(dm_1, log=True, alpha=1.0, bins=30, color='grey')
+    plt.hist(dm_2, log=True, alpha=0.8, bins=30, color='k')
+    plt.hist(dm_1[ind_missed], log=True, alpha=1.0, bins=30, color='C1')
     plt.xlabel('DM [pc cm**-3]', fontsize=10)
-    plt.legend(['file 1','file 2'], fontsize=10)
+    plt.legend([algo1, algo2, 'Missed'], fontsize=10)
 
     plt.subplot(333)
-    plt.hist(snr_1, alpha=0.5, log=True, bins=30)
-    plt.hist(snr_2, alpha=0.5, log=True, bins=30)
-    plt.hist(snr_1[ind_missed], alpha=0.5, log=True, bins=30)
+    plt.hist(np.log10(snr_1), alpha=0.3, log=True, bins=30, color='k')
+    plt.hist(np.log10(snr_2), alpha=0.8, log=True, bins=30, color='k')
+    plt.hist(np.log10(snr_1[ind_missed]), alpha=1.0, log=True, bins=30, color='C1')
     plt.xlabel('S/N', fontsize=10)
+    plt.legend([algo1, algo2, 'Missed'], fontsize=10)
 
     plt.subplot(335)
 #    plt.hist(t_1, alpha=0.5, log=True, bins=30)
 #    plt.hist(t_2, alpha=0.5, log=True, bins=30)
-    plt.plot(t_1, np.log10(.1+dm_1), '.', alpha=0.5)
-    plt.plot(t_2, np.log10(.1+dm_2), '.', alpha=0.5)    
+    plt.plot(t_1, np.log10(.1+dm_1), 'o', alpha=0.3, color='k')
+    plt.plot(t_2, np.log10(.1+dm_2), '.', alpha=0.8, color='k')    
     plt.xlabel('Time [sec]', fontsize=10)
     plt.ylabel('log10(DM)', fontsize=10)
 
     plt.subplot(336)
-    plt.hist(np.log2(width_1), alpha=0.5, bins=8, log=True)
-    plt.hist(np.log2(width_2), alpha=0.5, bins=8, log=True)
-    plt.xlabel('log2(Width) [samples]', fontsize=10)
+    plt.hist(np.log10(width_1), alpha=0.3, bins=8, log=True, color='k')
+    plt.hist(np.log10(width_2), alpha=0.8, bins=8, log=True, color='k')
+    plt.hist(np.log10(width_1[ind_missed]), alpha=1., bins=8, log=True, color='C1')
+    plt.xlabel('log10(Width) [samples]', fontsize=10)
+    plt.legend([algo1, algo2, 'Missed'], fontsize=10)
 
     # fig.add_subplot(337)
     # plt.hist(width_1[ind_missed], bins=50, alpha=0.3, normed=True, color='C3')
@@ -231,21 +237,21 @@ def plot_comparison(par_1, par_2, par_match_arr,
     # plt.xlabel('Width [samples]', fontsize=12)
 
     fig.add_subplot(325)
-    plt.plot(np.log2(width_1), np.log10(snr_1), '.', color='C3')
-    plt.plot(np.log2(width_1_match), np.log10(snr_2_match),'.')
+    plt.plot(np.log10(width_1), np.log10(snr_1), 'o', color='k', alpha=0.3)
+    plt.plot(np.log10(width_1_match), np.log10(snr_2_match),'.', alpha=0.8, color='k')
 #    plt.plot(width_1_match, snr_2_match,'.')
-    plt.xlabel('log2(Width) [samples]', fontsize=10)
+    plt.xlabel('log10(Width) [samples]', fontsize=10)
     plt.ylabel('log10(S/N)', fontsize=10)
-    plt.legend(['file 1 all', 'Matched'], fontsize=10)
+    plt.legend(['%s all' % algo1, 'Matched'], fontsize=10)
     plt.grid()
 
     fig.add_subplot(326)
-    plt.plot(np.log2(width_1), np.log10(0.1+dm_1),'.',color='C3')
-    plt.plot(np.log2(width_1_match), np.log10(0.1+dm_2_match),'.')
+    plt.plot(np.log10(width_1), np.log10(0.1+dm_1),'o',color='k', alpha=0.3)
+    plt.plot(np.log10(width_1_match), np.log10(0.1+dm_2_match),'.', alpha=0.8, color='k')
     #plt.plot(np.log2(width_1_match), np.log10(0.1+dm_2_match),'.')
-    plt.xlabel('log2(Width) [samples]', fontsize=10)
+    plt.xlabel('log10(Width) [samples]', fontsize=10)
     plt.ylabel('log10(DM)', fontsize=10)
-    plt.legend(['file 1 all', 'Matched'], fontsize=10)
+    plt.legend(['%s all' % algo1, 'Matched'], fontsize=10)
     plt.grid()
 
     snr_ratio = np.mean(snr_1_match / snr_2_match)
@@ -253,8 +259,11 @@ def plot_comparison(par_1, par_2, par_match_arr,
 
     suptitle += ('   avg S/N$_1$/S/N$_2$: ' + np.str(np.round(snr_ratio,2)))
     suptitle += '\n      frac$_{missed}$=%0.2f' % frac_missed
+    suptitle += '\n N$_{%s}=%d$' % (algo1, len(width_1))
+    suptitle += '\n N$_{%s}=%d$' % (algo2, len(width_2))
 
     plt.suptitle(suptitle, fontsize=15)
+#    plt.tight_layout()
     plt.show()
     plt.savefig(figname)
 

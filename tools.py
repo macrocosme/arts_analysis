@@ -662,6 +662,14 @@ if __name__=='__main__':
                         help="directory to write data to", 
                         default='comparison.pdf')
 
+    parser.add_option('--algo1', dest='algo1', type='str',
+                        help="name of first algo", 
+                        default='algorithm1')
+
+    parser.add_option('--algo2', dest='algo2', type='str',
+                        help="name of second algo", 
+                        default='algorithm2')
+
     options, args = parser.parse_args()
     fn_1 = args[0]
     fn_2 = args[1]
@@ -698,10 +706,12 @@ if __name__=='__main__':
         import matplotlib.pyplot as plt
         import plotter 
         plotter.plot_comparison(par_1a, par_2a, par_match_arra, ind_misseda, 
-                                suptitle=options.title, figname=options.figname)
+                                figname=options.figname,
+                                algo1=options.algo1, algo2=options.algo2)
         plotter.plot_comparison(par_1b, par_2b, par_match_arrb, ind_missedb, 
-                                suptitle=options.title, figname=options.figname)
-        plt.show()
+                                figname=options.figname, 
+                                algo1=options.algo2, algo2=options.algo1)
+
 #        SNRTools.plot_comparison(par_1, par_2, par_match_arr, ind_missed, figname=figname)
 
 
