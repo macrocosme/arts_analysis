@@ -163,6 +163,30 @@ def mk_histograms(params, fnout='summary_hist.pdf',
     plt.show()
     plt.savefig(fnout)
 
+def plot_against_truth(par_match_arr1, par_match_arr2, algo1='algo1', algo2='algo2'):
+
+    fig = plt.figure(figsize=(5,5))
+
+    suptitle = "%s vs. %s" % (algo1, algo2)
+
+    snr_1 = par_match_arr1[0,:,0]
+    snr_1_truth = par_match_arr1[0,:,1]
+
+    snr_2 = par_match_arr2[0,:,0]
+    snr_2_truth = par_match_arr2[0,:,1]
+
+#    snr_1, snr_2, snr_1t, snr_2t = par_1[0], par_2[0], par_1_truth[0], par_2_truth[0]
+#    dm_1, dm_2, dm_1t, dm_2t = par_1[1], par_2[1], par_1_truth[1], par_2_truth[1]
+#    t_1, t_2 = par_1[2], par_2[2]
+#    width_1, width_2 = par_1[3], par_2[3]
+
+    plt.plot(snr_1_truth, snr_1, '.', color='k')
+    plt.plot(snr_2_truth, snr_2, '.', color='grey')
+    plt.plot(snr_1_truth, snr_1_truth, '--', color='k')
+    plt.legend([algo1, algo2])
+    plt.loglog()
+    plt.show()
+
 def plot_comparison(par_1, par_2, par_match_arr, 
                     ind_missed, figname='./test.pdf', 
                     algo1='algo1', algo2='algo2'):
@@ -260,7 +284,8 @@ def plot_comparison(par_1, par_2, par_match_arr,
     suptitle += ('   avg S/N$_1$/S/N$_2$: ' + np.str(np.round(snr_ratio,2)))
     suptitle += '\n      frac$_{missed}$=%0.2f' % frac_missed
     suptitle += '\n N$_{%s}=%d$' % (algo1, len(width_1))
-    suptitle += '\n N$_{%s}=%d$' % (algo2, len(width_2))
+    suptitle += '    N$_{%s}=%d$' % (algo2, len(width_2))
+    suptitle += '    N$_{%s}=%d$' % ('missed', len(ind_missed))
 
     plt.suptitle(suptitle, fontsize=15)
 #    plt.tight_layout()
