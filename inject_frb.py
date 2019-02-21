@@ -43,7 +43,9 @@ def test_writer():
 
         print('wrote %d' % ii)
 
-def inject_in_filterbank_gaussian(data_fil_obj, header, fn_fil_out, N_FRB, chunksize=250000):
+def inject_in_filterbank_gaussian(data_fil_obj, header, 
+                                fn_fil_out, N_FRB, chunksize=100000, 
+                                simfrb=False):
     print(header)
     NFREQ = header['nchans']
 
@@ -57,10 +59,17 @@ def inject_in_filterbank_gaussian(data_fil_obj, header, fn_fil_out, N_FRB, chunk
         data = (np.random.normal(120, 10, NFREQ*chunksize)).astype(np.uint8)
         data = data.reshape(NFREQ, chunksize)
 
-        data_event, params = simulate_frb2.gen_simulated_frb(NFREQ=NFREQ,
-                                               NTIME=NTIME, sim=True,
-                                               fluence=1000*flu+0.75*dm, spec_ind=0, width=(10*d\
-                                                                                            elta_t, 1.),
+        if simfrb is True:
+            delta_t = header['tsamp'] # delta_t in seconds
+            fch1 = header['fch1']
+            foff = header['foff']
+            fch_f = fch1 + NFREQ*foff
+            freq_arr = np.linspace(fch1, fch_f, NFREQ)
+
+            data, params = simulate_frb2.gen_simulated_frb(NFREQ=NFREQ,
+                                               NTIME=chunksize, sim=True,
+                                               fluence=1000, spec_ind=0, 
+                                               width=(10*delta_t, 1),                                                                                   elta_t, 1.),
                                                dm=dm, scat_factor=(-5., -4),
                                                background_noise=data,
                                                delta_t=delta_t, plot_burst=False,
