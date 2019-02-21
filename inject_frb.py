@@ -57,6 +57,16 @@ def inject_in_filterbank_gaussian(data_fil_obj, header, fn_fil_out, N_FRB, chunk
         data = (np.random.normal(120, 10, NFREQ*chunksize)).astype(np.uint8)
         data = data.reshape(NFREQ, chunksize)
 
+        data_event, params = simulate_frb2.gen_simulated_frb(NFREQ=NFREQ,
+                                               NTIME=NTIME, sim=True,
+                                               fluence=1000*flu+0.75*dm, spec_ind=0, width=(10*d\
+                                                                                            elta_t, 1.),
+                                               dm=dm, scat_factor=(-5., -4),
+                                               background_noise=data,
+                                               delta_t=delta_t, plot_burst=False,
+                                               freq=(freq_arr[0], freq_arr[-1]),
+                                               FREQ_REF=freq_ref, scintillate=True)
+
         if ii<0:
             fn_rfi_clean = reader.write_to_fil(data.transpose(), header, fn_fil_out)
         elif ii>=0:
@@ -181,11 +191,11 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         data_event, params = simulate_frb2.gen_simulated_frb(NFREQ=NFREQ, 
                                                NTIME=NTIME, sim=True, 
                                                fluence=1000*flu+0.75*dm, spec_ind=0, width=(10*delta_t, 1.), 
-                                               dm=dm, scat_factor=(-4, -3.5), 
+                                               dm=dm, scat_factor=(-5., -0.25), 
                                                background_noise=data_event, 
                                                delta_t=delta_t, plot_burst=False, 
                                                freq=(freq_arr[0], freq_arr[-1]), 
-                                               FREQ_REF=freq_ref, scintillate=False)
+                                                             FREQ_REF=freq_ref, scintillate=True)
 
         dm_ = params[0]
         params.append(offset)
