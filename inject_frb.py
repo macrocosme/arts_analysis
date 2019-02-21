@@ -16,7 +16,7 @@ except:
     plt = None
     pass
 
-import simulate_frb2
+import simulate_frb
 import reader
 import tools
 #import rfi_test
@@ -45,7 +45,7 @@ def test_writer():
 
 def inject_in_filterbank_gaussian(data_fil_obj, header, 
                                 fn_fil_out, N_FRB, chunksize=100000, 
-                                simfrb=False):
+                                  simfrb=True):
     print(header)
     NFREQ = header['nchans']
 
@@ -56,7 +56,7 @@ def inject_in_filterbank_gaussian(data_fil_obj, header,
 
         print("%d gaussian chunks" % ii)
         #data = data_fil_obj.data*0.0
-        data = (np.random.normal(120, 10, NFREQ*chunksize)).astype(np.uint8)
+        data = (np.random.normal(120, 10, NFREQ*chunksize))#.astype(np.uint8)
         data = data.reshape(NFREQ, chunksize)
 
         if simfrb is True:
@@ -65,19 +65,20 @@ def inject_in_filterbank_gaussian(data_fil_obj, header,
             foff = header['foff']
             fch_f = fch1 + NFREQ*foff
             freq_arr = np.linspace(fch1, fch_f, NFREQ)
-
-            data, params = simulate_frb2.gen_simulated_frb(NFREQ=NFREQ,
+            dm = 100.
+            freq_ref = 1400.
+            print("Adding FRB to Gaussian data")
+            data_chunk, params = simulate_frb.gen_simulated_frb(NFREQ=NFREQ,
                                                NTIME=chunksize, sim=True,
                                                fluence=1000, spec_ind=0, 
-                                               width=(10*delta_t, 1),                                                                                   elta_t, 1.),
-                                               dm=dm, scat_factor=(-5., -4),
+                                               width=(10*delta_t, 1), dm=dm, scat_factor=(-5., -4),
                                                background_noise=data,
                                                delta_t=delta_t, plot_burst=False,
                                                freq=(freq_arr[0], freq_arr[-1]),
                                                FREQ_REF=freq_ref, scintillate=True)
 
         if ii<0:
-            fn_rfi_clean = reader.write_to_fil(data.transpose(), header, fn_fil_out)
+            fn_rfi_clean = reader.write_to_fil(data_chunk.transpose(), header, fn_fil_out)
         elif ii>=0:
             fil_obj = reader.filterbank.FilterbankFile(fn_fil_out, mode='readwrite')
             fil_obj.append_spectra(data.transpose())
@@ -197,7 +198,7 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         flu = np.random.uniform(1, 1000)**(-2/3.)
         flu *= 1000**(2/3.)
         
-        data_event, params = simulate_frb2.gen_simulated_frb(NFREQ=NFREQ, 
+        data_event, params = simulate_frb.gen_simulated_frb(NFREQ=NFREQ, 
                                                NTIME=NTIME, sim=True, 
                                                fluence=1000*flu+0.75*dm, spec_ind=0, width=(10*delta_t, 1.), 
                                                dm=dm, scat_factor=(-5., -0.25), 
@@ -350,7 +351,7 @@ if __name__=='__main__':
                                                         NTIME=2**15, rfi_clean=options.rfi_clean,
                                                         calc_snr=options.calc_snr, start=0,
                                                         dm=float(options.dm_list[0]), 
-                                                        gaussian=options.gaussian)
+                                                        gaussian=True)
         exit()
 
     import multiprocessing
@@ -360,7 +361,7 @@ if __name__=='__main__':
     Parallel(n_jobs=ncpu)(delayed(inject_in_filterbank)(fn_fil, fn_fil_out, N_FRB=options.nfrb,
                                                         NTIME=2**15, rfi_clean=options.rfi_clean,
                                                         calc_snr=options.calc_snr, start=0,
-                                                        dm=float(x)) for x in options.dm_list)
+                                                        dm=float(x), gaussian=True) for x in options.dm_list)
 
 #    params = inject_in_filterbank(fn_fil, fn_fil_out, N_FRBs=options.nfrb, 
 #                                  NTIME=2**15, rfi_clean=options.rfi_clean, 
