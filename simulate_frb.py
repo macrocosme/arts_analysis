@@ -341,7 +341,7 @@ def gen_simulated_frb(NFREQ=16, NTIME=250, sim=True, fluence=(0.03,0.3),
 
     if background_noise is None:
         # Generate background noise with unit variance
-        data = np.random.normal(0, 1, NTIME*NFREQ).reshape(NFREQ, NTIME)
+        data = np.random.normal(50, 1, NTIME*NFREQ).reshape(NFREQ, NTIME)
     else: 
         data = background_noise
 

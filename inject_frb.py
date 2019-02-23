@@ -46,7 +46,6 @@ def test_writer():
 def inject_in_filterbank_gaussian(data_fil_obj, header, 
                                 fn_fil_out, N_FRB, chunksize=100000, 
                                   simfrb=True):
-    print(header)
     NFREQ = header['nchans']
 
     for ii in range(N_FRB):
@@ -65,7 +64,7 @@ def inject_in_filterbank_gaussian(data_fil_obj, header,
             foff = header['foff']
             fch_f = fch1 + NFREQ*foff
             freq_arr = np.linspace(fch1, fch_f, NFREQ)
-            dm = 100.
+            dm = 50 + ii
             freq_ref = 1400.
             print("Adding FRB to Gaussian data")
             data_chunk, params = simulate_frb.gen_simulated_frb(NFREQ=NFREQ,
@@ -88,9 +87,9 @@ def inject_in_filterbank_gaussian(data_fil_obj, header,
 def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1, 
                          NFREQ=1536, NTIME=2**15, rfi_clean=False,
                          dm=1000.0, freq=(1550, 1250), dt=0.00004096,
-                         chunksize=75000, calc_snr=True, start=0, 
+                         chunksize=50000, calc_snr=True, start=0, 
                          freq_ref=1400., subtract_zero=False, clipping=None, 
-                         gaussian=False):
+                         gaussian=False, gaussian_noise=True):
     """ Inject an FRB in each chunk of data 
         at random times. Default params are for Apertif data.
 
@@ -193,19 +192,25 @@ def inject_in_filterbank(fn_fil, fn_out_dir, N_FRB=1,
         if len(data)==0:
             break             
 
-        data_event = (data[:, offset:offset+NTIME]).astype(np.float)
+        if gaussian_noise is True:
+            offset = 0
+            NTIME = chunksize
+            data_event = None
+            flu = 50.0
+            dm = 100.0 + ii*10.
+        else:
+            data_event = (data[:, offset:offset+NTIME]).astype(np.float)
+            flu = np.random.uniform(1, 1000)**(-2/3.)
+            flu *= 1000**(2/3.+1) + 0.75*dm
 
-        flu = np.random.uniform(1, 1000)**(-2/3.)
-        flu *= 1000**(2/3.)
-        
         data_event, params = simulate_frb.gen_simulated_frb(NFREQ=NFREQ, 
                                                NTIME=NTIME, sim=True, 
-                                               fluence=1000*flu+0.75*dm, spec_ind=0, width=(10*delta_t, 1.), 
+                                               fluence=flu, spec_ind=0, width=(10*delta_t, 1.), 
                                                dm=dm, scat_factor=(-5., -0.25), 
                                                background_noise=data_event, 
                                                delta_t=delta_t, plot_burst=False, 
                                                freq=(freq_arr[0], freq_arr[-1]), 
-                                                             FREQ_REF=freq_ref, scintillate=True)
+                                               FREQ_REF=freq_ref, scintillate=False)
 
         dm_ = params[0]
         params.append(offset)
@@ -351,7 +356,7 @@ if __name__=='__main__':
                                                         NTIME=2**15, rfi_clean=options.rfi_clean,
                                                         calc_snr=options.calc_snr, start=0,
                                                         dm=float(options.dm_list[0]), 
-                                                        gaussian=True)
+                                                        gaussian=False, gaussian_noise=True)
         exit()
 
     import multiprocessing
