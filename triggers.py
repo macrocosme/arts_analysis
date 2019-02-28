@@ -712,15 +712,16 @@ if __name__=='__main__':
             data_dm_time_full = []
             data_freq_time_full = []
             params_full = []
-        elif len(data_dm_time_full)==1:
-            data_dm_time_full = np.array(data_dm_time_full)
-            data_freq_time_full = np.array(data_freq_time_full)
         else:
-            data_dm_time_full = np.concatenate(data_dm_time_full, axis=0)
-            data_freq_time_full = np.concatenate(data_freq_time_full, axis=0)
+            if len(data_dm_time_full)==1:
+                data_dm_time_full = np.array(data_dm_time_full)
+                data_freq_time_full = np.array(data_freq_time_full)
+            else:
+                data_dm_time_full = np.concatenate(data_dm_time_full, axis=0)
+                data_freq_time_full = np.concatenate(data_freq_time_full, axis=0)
         
-        data_dm_time_full = data_dm_time_full.reshape(-1,ndm,ntime_plot)
-        data_freq_time_full = data_freq_time_full.reshape(-1,nfreq_plot,ntime_plot)
+            data_dm_time_full = data_dm_time_full.reshape(-1,ndm,ntime_plot)
+            data_freq_time_full = data_freq_time_full.reshape(-1,nfreq_plot,ntime_plot)
         
         fnout = '%s/data_full.hdf5' % basedir
 
