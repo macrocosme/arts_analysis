@@ -50,14 +50,14 @@ def get_single_trigger(fn_fil, fn_trig, row=0, ntime_plot=250):
     dm0, sig_cut, t0, downsamp = tools.read_singlepulse(fn_trig)
     dm0, sig_cut, t0, downsamp = dm0[row], sig_cut[row], t0[row], downsamp[row]
 
-    data, downsamp, downsamp_smear = fil_trigger(fn_fil, dm0, t0, sig_cut, 
+    data, downsamp, downsamp_smear  = fil_trigger(fn_fil, dm0, t0, sig_cut, 
                  ndm=50, mk_plot=False, downsamp=downsamp, 
                  beamno='', fn_mask=None, nfreq_plot=32,
                  ntime_plot=ntime_plot,
                  cmap='RdBu', cand_no=1, multiproc=False,
                  rficlean=False, snr_comparison=-1,
                  outdir='./', sig_thresh_local=7.0)
-
+ 
     return data, dm0, sig_cut, t0, downsamp, downsamp_smear
 
 def get_fil_data(fn_fil, t0, dm0, downsamp, freq_low, freq_up, 
@@ -83,10 +83,6 @@ def get_fil_data(fn_fil, t0, dm0, downsamp, freq_low, freq_up,
     t_min /= downsamp_smear
     t_max /= downsamp_smear
     ntime = t_max-t_min
-
-    if ntime_fil < (start_bin+chunksize):
-        logging.info("Trigger at end of file, skipping")
-        return [],[],[],[]
 
     logging.info("Reading in chunk: %d" % chunksize)
     data = reader.read_fil_data(fn, start=start_bin, stop=chunksize)[0]
@@ -200,11 +196,6 @@ def fil_trigger(fn_fil, dm0, t0, sig_cut,
     t_max /= downsamp_smear
     ntime = t_max-t_min
 
-    if ntime_fil < (start_bin+chunksize):
-        logging.info("Trigger at end of file, skipping")
-        return [],[],[],[]
-
-    logging.info("Reading in chunk: %d" % chunksize)
     data = rawdatafile.get_spectra(start_bin, chunksize)
 
     if rficlean is True:
@@ -323,6 +314,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         return [],[],[],[]
 
     data = rawdatafile.get_spectra(start_bin, chunksize)
+    data.data[rfimask] = 0.
 
     if rficlean is True:
         data = cleandata(data)
@@ -392,8 +384,6 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
                     Z = np.zeros([nfreq, np.abs(t_min)])
                     data_dm_max = np.concatenate([Z, data_dm_max], axis=1)
 
-#        print("Serial dedispersion in %f sec" % (time.time()-tbeg))
-
     # bin down to nfreq_plot freq channels
     full_freq_arr_downsamp = data_dm_max[:nfreq//nfreq_plot*nfreq_plot, :].reshape(\
                                    nfreq_plot, -1, ntime).mean(1)
@@ -432,6 +422,10 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     params = sig_cut, dms[dm_max_jj], downsamp, t0, dt
     if mk_plot is True:
         logging.info(fn_fig_out)
+
+        tmed = np.median(full_freq_arr_downsamp, axis=-1, keepdims=True) #hack
+        full_freq_arr_downsamp -= tmed #hack
+
         if ndm==1:
             plotter.plot_two_panel(full_freq_arr_downsamp, params, prob=None, 
                                    freq_low=freq_low, freq_up=freq_up, 
@@ -586,8 +580,9 @@ if __name__=='__main__':
     parser.add_option('--descending_snr', dest='descending_snr', action='store_true', \
                         help="Process from highest to lowest S/N if True (default False)", default=False)
 
+    logfn = time.strftime("%Y%m%d-%H%M") + '.log'
     logging.basicConfig(format='%(asctime)s %(message)s', 
-                    level=logging.WARN, filename='./test.log')
+                    level=logging.INFO, filename=logfn)
 
     start_time = time.time()
 
@@ -714,7 +709,9 @@ if __name__=='__main__':
     if options.save_data == 'concat':
         if len(data_dm_time_full)==0:
             print("\nFound no triggers to concat\n")
-            exit()
+            data_dm_time_full = []
+            data_freq_time_full = []
+            params_full = []
 
         if len(data_dm_time_full)==1:
             data_dm_time_full = np.array(data_dm_time_full)
