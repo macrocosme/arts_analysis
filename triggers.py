@@ -712,8 +712,7 @@ if __name__=='__main__':
             data_dm_time_full = []
             data_freq_time_full = []
             params_full = []
-
-        if len(data_dm_time_full)==1:
+        elif len(data_dm_time_full)==1:
             data_dm_time_full = np.array(data_dm_time_full)
             data_freq_time_full = np.array(data_freq_time_full)
         else:
