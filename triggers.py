@@ -649,6 +649,9 @@ if __name__=='__main__':
     ndm = options.ndm
     nfreq_plot = options.nfreq_plot
     ntime_plot = options.ntime_plot
+    basedir = options.outdir + '/data/'
+    if not os.path.isdir(basedir):
+        os.system('mkdir -p %s' % basedir)
 
     skipped_counter = 0
     for ii, t0 in enumerate(tt_cut[:options.ntrig]):
@@ -673,11 +676,6 @@ if __name__=='__main__':
         if len(data_dm_time)==0:
             skipped_counter += 1
             continue
-
-        basedir = options.outdir + '/data/'
-
-        if not os.path.isdir(basedir):
-            os.system('mkdir -p %s' % basedir)
 
         if options.save_data != '0':
             if options.save_data == 'hdf5':
