@@ -97,7 +97,7 @@ class CalibrationTools:
             # https://science.nrao.edu/facilities/vla/docs/manuals/oss/performance/fdscale
             return 15.4 * (freqMHz / 1500.)**-0.75 
         elif src=='3C196':
-            return 13.6 * (freqMHz / 1500.)**0.
+            return 13.6 * (freqMHz / 1500.)**-0.8
         else:
             print("Do not recognize source name")
             exit()
