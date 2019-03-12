@@ -88,7 +88,7 @@ class CalibrationTools:
 
         G = self.calc_gain()
         Tsys = G * Snu / (fractional_tsys - 1)
-        print "%s is %f Jy" % (src, Snu)
+        print "%s is %f Jy at %.1f" % (src, Snu, freq)
 
         return Tsys
 
@@ -183,7 +183,12 @@ class Plotter:
         plt.xlabel('Freq [MHz]', fontsize=15)
         plt.ylabel('Time-averaged apectrum', fontsize=15)
 
-    def plot_all(self, data, sefd, SNR, src='CasA'):
+    def plot_tsys_onoff(self, tsys_onoff):
+        plt.plot(self.freq, tsys_onoff)
+        plt.xlabel('Freq [MHz]', fontsize=15)
+        plt.ylabel('Tsys [K]', fontsize=15)        
+
+    def plot_all(self, data, sefd, SNR, tsys_onoff, src='CasA'):
         fig = plt.figure(figsize=(12,12))
 
         fig.add_subplot(231)
@@ -202,11 +207,12 @@ class Plotter:
         self.plot_snr(SNR)
         
         fig.add_subplot(236)
+        self.plot_tsys_onoff(tsys_onoff)
 
         plt.suptitle('%s Transit' % src, fontsize=30)
 
         t0 = time.time()
-        plt.savefig('./bing%f.pdf' % t0)
+        plt.savefig('./%s_cal.pdf' % src)
         plt.tight_layout()
         plt.show()
 #        plt.show()
@@ -362,7 +368,7 @@ if __name__=='__main__':
                         description="Create diagnostic plots for individual triggers")
 
     parser.add_option('--t_res', dest='t_res', type='float', \
-                      help="Time resolution in seconds (Default: .01)", default=0.01)
+                      help="Time resolution in seconds (Default: .01)", default=0.8192)
 
     parser.add_option('--IAB', dest='IAB', default=True,\
                       help="Data were taken with incoherent beamforming")
@@ -396,6 +402,6 @@ if __name__=='__main__':
     data_rb = data[:, :data.shape[1]//1*1].reshape(nfreq, -1, 1).mean(-1)
 
     Plotter = Plotter(t_res=options.t_res*100, nfreq=nfreq)
-    Plotter.plot_all(data_rb, sefd_rms, snr, src=options.src)
+    Plotter.plot_all(data_rb, sefd_rms, snr, tsys_onoff, src=options.src)
 
 
