@@ -1,3 +1,16 @@
+""" Tools for calibration flux density 
+using drift scans on Apertif. 
+
+Liam Connor 03/12/2019
+
+Example usage:
+
+If /home/arts/driftscan/3C48/CB00_*_downsamp1000.npy have 
+all TABs from CB00 for a 3C48 transit:
+
+python calibration_tools.py ~/driftscan/3C48/CB00_*_downsamp1000.npy --Ndish 8 --src 3C48 --IAB False
+"""
+
 import time
 import numpy as np
 
@@ -15,7 +28,7 @@ APERTIFparams = APERTIFparams()
 
 class CalibrationTools:
 
-    def __init__(self, t_res=0.01, freq_up=1520., 
+    def __init__(self, t_res=0.8192, freq_up=1520., 
                  freq_low=1220., bw=300.0, 
                  nfreq=1536, Ndish=10, IAB=True):
 
@@ -165,21 +178,24 @@ class Plotter:
         times = np.linspace(0, self.t_res*ntime, ntime)
         plt.plot(times, data[freq_ind])
         plt.xlabel('Time [s]', fontsize=15)
+        plt.ylabel('Power', fontsize=15)
 
     def plot_sefd(self, sefd):
         plt.plot(self.freq, sefd, '.')
         plt.xlabel('Freq [MHz]', fontsize=15)
         plt.ylabel('SEFD [Jy]', fontsize=15)
+        sefd[sefd!=sefd] = 0.
         plt.ylim(.3*np.median(sefd), 2*np.median(sefd))
 
     def plot_snr(self, SNR):
+        SNR[SNR!=SNR] = 0.
         plt.plot(self.freq, SNR, '.', color='orange')
         plt.xlabel('Freq [MHz]', fontsize=15)
         plt.ylabel('S/N', fontsize=15)
         plt.ylim(.3*np.median(SNR), 3*np.median(SNR))
 
     def plot_spectrum(self, data):
-        plt.plot(self.freq, data.mean(-1))
+        plt.plot(self.freq, data[:, -100:].mean(-1))
         plt.xlabel('Freq [MHz]', fontsize=15)
         plt.ylabel('Time-averaged apectrum', fontsize=15)
 
@@ -187,15 +203,16 @@ class Plotter:
         plt.plot(self.freq, tsys_onoff)
         plt.xlabel('Freq [MHz]', fontsize=15)
         plt.ylabel('Tsys [K]', fontsize=15)        
+        plt.semilogy()
 
-    def plot_all(self, data, sefd, SNR, tsys_onoff, src='CasA'):
-        fig = plt.figure(figsize=(12,12))
+    def plot_all(self, data, sefd, SNR, tsys_onoff, src='CasA', fn='./'):
+        fig = plt.figure(figsize=(12,8))
 
         fig.add_subplot(231)
         self.dyn_spec(data)
 
         fig.add_subplot(232)
-        self.plot_ts(data, 300)
+        self.plot_ts(data, len(data)//2)
 
         fig.add_subplot(233)
         self.plot_spectrum(data)
@@ -212,7 +229,8 @@ class Plotter:
         plt.suptitle('%s Transit' % src, fontsize=30)
 
         t0 = time.time()
-        plt.savefig('./%s_cal.pdf' % src)
+        fnout = fn.strip('.npy') + '_%s_cal.pdf' % src
+        plt.savefig(fnout)
         plt.tight_layout()
         plt.show()
 #        plt.show()
@@ -358,34 +376,9 @@ def plotter(data, outfile):
     plt.show()
     plt.savefig(outfile)
 
-
-if __name__=='__main__':
-    import optparse
-
-    parser = optparse.OptionParser(prog="inject_frb.py", \
-                        version="", \
-                        usage="%prog FN_FILTERBANK FN_FILTERBANK_OUT [OPTIONS]", \
-                        description="Create diagnostic plots for individual triggers")
-
-    parser.add_option('--t_res', dest='t_res', type='float', \
-                      help="Time resolution in seconds (Default: .01)", default=0.8192)
-
-    parser.add_option('--IAB', dest='IAB', default=True,\
-                      help="Data were taken with incoherent beamforming")
-
-    parser.add_option('--Ndish', dest='Ndish', default=10.0,\
-                      help="Number of dishes",
-                      type='float')
-
-    parser.add_option('--src', dest='src', default='CasA',\
-                      help="Name of source e.g. CasA, TauA, 3C48",
-                      type='str')
-
-    
-    options, args = parser.parse_args()
-    fn = args[0]
-
+def run_fluxcal(options, fn):
     data = np.load(fn)
+    data[data!=data] = 0.
     nt = data.shape[-1]
     data = data.reshape(-1, 4, nt).mean(1)
     nfreq = data.shape[0]
@@ -401,7 +394,33 @@ if __name__=='__main__':
     # Rebin in time by x100 before plotting
     data_rb = data[:, :data.shape[1]//1*1].reshape(nfreq, -1, 1).mean(-1)
 
-    Plotter = Plotter(t_res=options.t_res*100, nfreq=nfreq)
-    Plotter.plot_all(data_rb, sefd_rms, snr, tsys_onoff, src=options.src)
+    P = Plotter(t_res=options.t_res, nfreq=nfreq)
+    P.plot_all(data_rb, sefd_rms, snr, tsys_onoff, src=options.src, fn=fn)
 
 
+if __name__=='__main__':
+    import optparse
+
+    parser = optparse.OptionParser(prog="inject_frb.py", \
+                        version="", \
+                        usage="%prog FN_FILTERBANK FN_FILTERBANK_OUT [OPTIONS]", \
+                        description="Create diagnostic plots for individual triggers")
+
+    parser.add_option('--t_res', dest='t_res', type='float', \
+                      help="Time resolution in seconds (Default: .8192)", default=0.8192)
+
+    parser.add_option('--IAB', dest='IAB', default=True,\
+                      help="Data were taken with incoherent beamforming")
+
+    parser.add_option('--Ndish', dest='Ndish', default=10.0,\
+                      help="Number of dishes",
+                      type='float')
+
+    parser.add_option('--src', dest='src', default='CasA',\
+                      help="Name of source e.g. CasA, TauA, 3C48",
+                      type='str')
+
+    options, args = parser.parse_args()
+
+    for fn in args:
+        run_fluxcal(options, fn)
