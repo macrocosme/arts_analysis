@@ -57,10 +57,6 @@ class Downsample:
             
         return data_ds_full, dt
 
-fnfil = '/data2/output/20190311/2019-03-11-11:20:00.CasA_drift_00/filterbank/CB17_01.fil'
-D = Downsample()
-D.downsample_file(fnfil)
-
 class CalibrationTools:
 
     def __init__(self, t_res=0.8192, freq_up=1550., 
