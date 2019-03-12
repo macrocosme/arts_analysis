@@ -17,19 +17,54 @@ import numpy as np
 #import matplotlib as mpl
 #mpl.use('Agg')
 import matplotlib.pyplot as plt
-
 import argparse
 import glob
+
+import reader
 
 #import psrchive
 
 from APERTIFparams import *
 APERTIFparams = APERTIFparams()
 
+class Downsample:
+    def __init__(self, chunksize=1e6, ds=10000):
+        self.chunksize = int(chunksize)
+        self.ds = ds
+
+    def downsample(self, data):
+        nt = len(data[0])
+        data = data[:, :nt//self.ds*self.ds].reshape(-1, nt//self.ds, self.ds)
+        data = np.mean(data, axis=-1)
+        
+        return data
+    
+    def downsample_file(self, fn, ds=10000):
+        data_ds_full = []
+        for ii in xrange(500000):
+            fil_obj = reader.read_fil_data(fn, start=ii*self.chunksize, stop=self.chunksize)[0]
+            dt = fil_obj.dt
+        
+            if fil_obj.data.shape[-1] <= ds:
+                break
+            
+            data_ds = self.downsample(fil_obj.data)
+            data_ds_full.append(data_ds)
+            nfreq = data_ds.shape[0]
+
+        data_ds_full = np.concatenate(data_ds_full, axis=-1)
+        data_ds_full = data_ds_full.reshape(nfreq, -1)
+            
+        return data_ds_full, dt
+
+fnfil = '/data2/output/20190311/2019-03-11-11:20:00.CasA_drift_00/filterbank/CB17_01.fil'
+D = Downsample()
+D.downsample_file(fnfil)
+
 class CalibrationTools:
 
-    def __init__(self, t_res=0.8192, freq_up=1520., 
-                 freq_low=1220., bw=300.0, 
+    def __init__(self, t_res=0.8192, freq_up=1550., 
+                 freq_low=1250., bw=300.0, 
                  nfreq=1536, Ndish=10, IAB=True):
 
         self.chan_width = bw / nfreq * 1e6
@@ -65,6 +100,8 @@ class CalibrationTools:
         elif src=='3C48':
             # https://science.nrao.edu/facilities/vla/docs/manuals/oss/performance/fdscale
             return 15.4 * (freqMHz / 1500.)**-0.75 
+        elif src=='3C196':
+            return 13.6 * (freqMHz / 1500.)**0.
         else:
             print("Do not recognize source name")
             exit()
