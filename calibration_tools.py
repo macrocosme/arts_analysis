@@ -52,10 +52,11 @@ class Downsample:
             data_ds_full.append(data_ds)
             nfreq = data_ds.shape[0]
 
+        print("Downsampled to %f sec" % ds*dt)
         data_ds_full = np.concatenate(data_ds_full, axis=-1)
         data_ds_full = data_ds_full.reshape(nfreq, -1)
             
-        return data_ds_full, dt
+        return data_ds_full, ds*dt
 
 class CalibrationTools:
 
@@ -456,4 +457,20 @@ if __name__=='__main__':
     options, args = parser.parse_args()
 
     for fn in args:
+        if fn.split('.')[-1]=='fil':
+            D = Downsample()
+            data, dt = D.downsample_file(fn, ds=10000)
+            fnout = fn.strip('.fil') + '_downsamp%d_dt%.3f' % (ds, dt)
+            np.save(fnout, data)
+            fn = fnout 
+            
         run_fluxcal(options, fn)
+
+
+
+
+
+
+
+
+
