@@ -413,10 +413,15 @@ def run_fluxcal(options, fn):
     data = np.load(fn)
     data[data!=data] = 0.
     nt = data.shape[-1]
-    data = data.reshape(-1, 4, nt).mean(1)
+    data = data.reshape(-1, 2, nt).mean(1)
     nfreq = data.shape[0]
 
-    CalTools = CalibrationTools(t_res=options.t_res, Ndish=options.Ndish, 
+    try:
+        t_res = np.float(fn.split('dt')[-1].split('.npy')[0])
+    except:
+        t_res = options.t_res
+
+    CalTools = CalibrationTools(t_res=t_res, Ndish=options.Ndish, 
                                 IAB=options.IAB, nfreq=nfreq)
 
     tsys_rms = CalTools.tsys_rms_allfreq(data, off_samp=(0, 200), src=options.src)
@@ -424,10 +429,9 @@ def run_fluxcal(options, fn):
     sefd_rms = CalTools.tsys_to_sefd(tsys_rms)
     snr = CalTools.snr_allfreq(data, off_samp=(0, 200))
 
-    # Rebin in time by x100 before plotting
     data_rb = data[:, :data.shape[1]//1*1].reshape(nfreq, -1, 1).mean(-1)
 
-    P = Plotter(t_res=options.t_res, nfreq=nfreq)
+    P = Plotter(t_res=t_res, nfreq=nfreq)
     P.plot_all(data_rb, sefd_rms, snr, tsys_onoff, src=options.src, fn=fn)
 
 
