@@ -41,18 +41,17 @@ class Downsample:
     
     def downsample_file(self, fn, ds=10000):
         data_ds_full = []
-        for ii in xrange(500000):
+        for ii in xrange(10000000):
             fil_obj = reader.read_fil_data(fn, start=ii*self.chunksize, stop=self.chunksize)[0]
-            dt = fil_obj.dt
         
             if fil_obj.data.shape[-1] <= ds:
                 break
-            
+            dt = fil_obj.dt
             data_ds = self.downsample(fil_obj.data)
             data_ds_full.append(data_ds)
             nfreq = data_ds.shape[0]
 
-        print("Downsampled to %f sec" % ds*dt)
+        print("Downsampled to %f sec" % (ds*dt))
         data_ds_full = np.concatenate(data_ds_full, axis=-1)
         data_ds_full = data_ds_full.reshape(nfreq, -1)
             
@@ -458,11 +457,13 @@ if __name__=='__main__':
 
     for fn in args:
         if fn.split('.')[-1]=='fil':
+            print("Rebinning and saving to .npy")
+            ds = 10000
             D = Downsample()
-            data, dt = D.downsample_file(fn, ds=10000)
+            data, dt = D.downsample_file(fn, ds=ds)
             fnout = fn.strip('.fil') + '_downsamp%d_dt%.3f' % (ds, dt)
             np.save(fnout, data)
-            fn = fnout 
+            fn = fnout + '.npy'
             
         run_fluxcal(options, fn)
 
