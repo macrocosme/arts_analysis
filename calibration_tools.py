@@ -14,7 +14,8 @@ python calibration_tools.py ~/driftscan/3C48/CB00_*_downsamp1000.npy --Ndish 8 -
 import time
 import numpy as np
 
-#import matplotlib as mpl
+import matplotlib as mpl
+mpl.use('pdf')
 #mpl.use('Agg')
 import matplotlib.pyplot as plt
 import argparse
@@ -98,6 +99,8 @@ class CalibrationTools:
             return 15.4 * (freqMHz / 1500.)**-0.75 
         elif src=='3C196':
             return 13.6 * (freqMHz / 1500.)**-0.8
+        elif src=='3C286':
+            return 14.6 * (freqMHz / 1500.)**-0.7
         else:
             print("Do not recognize source name")
             exit()

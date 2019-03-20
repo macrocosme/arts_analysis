@@ -126,7 +126,7 @@ class Event(object):
         t = np.linspace(0., nt//2, nt)
 
         prof = 1 / tau_nu * np.exp(-t / tau_nu)
-        return prof / prof.max()
+        return prof #/ prof.max()
 
     def pulse_profile(self, nt, width, f, tau=100., t0=0.):
         """ Convolve the gaussian and scattering profiles 
@@ -172,7 +172,7 @@ class Event(object):
             pp = self.pulse_profile(NTIME, index_width, f, 
                                     tau=self._scat_factor, t0=tpix)
             val = pp.copy()
-            val /= (val.max()*stds)
+            #val /= (val.max()*stds)
             val *= self._fluence
             val /= (width_ / delta_t)
             val = val * (f / self._f_ref) ** self._spec_ind 
