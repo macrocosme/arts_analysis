@@ -134,7 +134,7 @@ def fil_trigger(fn_fil, dm0, t0, sig_cut,
                  rficlean=False, snr_comparison=-1,
                  outdir='./', sig_thresh_local=5.0):
     try:
-        rfimask = np.loadtxt('./zapped_channels_1400.conf')
+        rfimask = np.loadtxt('/home/arts/ARTS-obs/amber_conf/zapped_channels_1400.conf')
         rfimask = rfimask.astype(int)
     except:
         rfimask = []
@@ -244,7 +244,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     """
 
     try:
-        rfimask = np.loadtxt('./zapped_channels_1400.conf')
+        rfimask = np.loadtxt('/home/arts/ARTS-obs/amber_conf/zapped_channels_1400.conf')
         rfimask = rfimask.astype(int)
     except:
         rfimask = []
@@ -259,6 +259,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     dt = rawdatafile.header['tsamp']
     freq_up = rawdatafile.header['fch1']
     nfreq = rawdatafile.header['nchans']
+    # fix RFI mask order
+    rfimask = nfreq - rfimask
     freq_low = freq_up + nfreq*rawdatafile.header['foff']
     ntime_fil = (os.path.getsize(fn_fil) - 467.)/nfreq
     tdm = np.abs(8.3*1e-6*dm0*dfreq_MHz*(freq_low/1000.)**-3)
@@ -314,6 +316,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         return [],[],[],[]
 
     data = rawdatafile.get_spectra(start_bin, chunksize)
+    # apply dumb mask
     data.data[rfimask] = 0.
 
     if rficlean is True:
@@ -499,7 +502,7 @@ if __name__=='__main__':
 
     parser = optparse.OptionParser(prog="triggers.py", \
                         version="", \
-                        usage="%prog FN_FILTERBANK FN_TRIGGERS [OPTIONS]", \
+                        usage="%prog FN_FILTERBANK_PREFIX FN_TRIGGERS [OPTIONS]", \
                         description="Create diagnostic plots for individual triggers")
 
     parser.add_option('--sig_thresh', dest='sig_thresh', type='float', \
@@ -580,6 +583,9 @@ if __name__=='__main__':
     parser.add_option('--descending_snr', dest='descending_snr', action='store_true', \
                         help="Process from highest to lowest S/N if True (default False)", default=False)
 
+    parser.add_option('--tab', dest='tab', type=int, \
+                        help="TAB to process (0 for IAB) (default: 0)", default=0)
+
     logfn = time.strftime("%Y%m%d-%H%M") + '.log'
     logging.basicConfig(format='%(asctime)s %(message)s', 
                     level=logging.INFO, filename=logfn)
@@ -587,6 +593,11 @@ if __name__=='__main__':
     start_time = time.time()
 
     options, args = parser.parse_args()
+    if options.tab == 0:
+        options.tab_str = ""
+    else:
+        options.tab_str = "_{:02d}".format(options.tab)
+
     fn_fil = args[0]
     fn_sp = args[1]
 
@@ -621,7 +632,7 @@ if __name__=='__main__':
                                                          dm_min=options.dm_min,
                                                          dm_max=options.dm_max,
                                                          sig_max=options.sig_max, 
-                                                         t_window=0.5)
+                                                         t_window=0.5, tab=options.tab)
 
     if options.descending_snr:
         sig_index = np.argsort(sig_cut)[::-1]
@@ -643,7 +654,7 @@ if __name__=='__main__':
     grouped_triggers[:,2] = tt_cut
     grouped_triggers[:,3] = ds_cut
 
-    np.savetxt('grouped_pulses.singlepulse', 
+    np.savetxt('grouped_pulses{}.singlepulse'.format(options.tab_str),
                 grouped_triggers, fmt='%0.2f %0.1f %0.3f %0.1f')
 
     ndm = options.ndm
@@ -683,10 +694,10 @@ if __name__=='__main__':
                           dm_cut[ii], t0, sig_cut[ii], 
                           beamno=options.beamno, basedir=basedir, time_res=time_res)
             elif options.save_data == 'npy':
-                fnout_freq_time = '%s/data_snr%d_dm%d_t0%f_freq.npy'\
-                         % (basedir, sig_cut[ii], dm_cut[ii], np.round(t0, 2))
-                fnout_dm_time = '%s/data_snr%d_dm%d_t0%f_dm.npy'\
-                         % (basedir, sig_cut[ii], dm_cut[ii], np.round(t0, 2))
+                fnout_freq_time = '%s/data%s_snr%d_dm%d_t0%f_freq.npy'\
+                         % ( basedir, options.tab_str, sig_cut[ii], dm_cut[ii], np.round(t0, 2))
+                fnout_dm_time = '%s/data%s_snr%d_dm%d_t0%f_dm.npy'\
+                         % (basedir, options.tab_str, sig_cut[ii], dm_cut[ii], np.round(t0, 2))
 
                 np.save(fnout_freq_time, data_freqtime)
                 np.save(fnout_dm_time, data_dmtime)
@@ -705,7 +716,7 @@ if __name__=='__main__':
             break
 
     if options.save_data == 'concat':
-        if len(data_dm_time_full)==0:
+        if len(data_freq_time_full)==0:
             print("\nFound no triggers to concat\n")
             data_dm_time_full = []
             data_freq_time_full = []
@@ -721,7 +732,7 @@ if __name__=='__main__':
             data_dm_time_full = data_dm_time_full.reshape(-1,ndm,ntime_plot)
             data_freq_time_full = data_freq_time_full.reshape(-1,nfreq_plot,ntime_plot)
         
-        fnout = '%s/data_full.hdf5' % basedir
+        fnout = '%s/data%s_full.hdf5' % (basedir, options.tab_str)
 
         f = h5py.File(fnout, 'w')
         f.create_dataset('data_freq_time', data=data_freq_time_full)

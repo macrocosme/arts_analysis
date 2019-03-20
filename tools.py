@@ -128,7 +128,7 @@ def dm_range(dm_max, dm_min=5., frac=0.2):
 
     return dm_list
 
-def read_singlepulse(fn, max_rows=None):
+def read_singlepulse(fn, max_rows=None, beam=0):
     """ Read in text file containing single-pulse 
     candidates. Allowed formats are:
     .singlepulse = PRESTO output
@@ -138,6 +138,7 @@ def read_singlepulse(fn, max_rows=None):
 
     max_rows sets the maximum number of 
     rows to read from textfile 
+    beam is the beam number to pick in case of .trigger files
     """
 
     if fn.split('.')[-1] in ('singlepulse', 'txt'):
@@ -158,15 +159,20 @@ def read_singlepulse(fn, max_rows=None):
         if len(A[0]) > 7:
             if len(A[0])==9:
                 # beam batch sample integration_step compacted_integration_steps time DM compacted_DMs SNR
-                dm, sig, tt, downsample = A[:,-3], A[:,-1], A[:, -4], A[:, 3]
+                beamno, dm, sig, tt, downsample = A[:, 0], A[:,-3], A[:,-1], A[:, -4], A[:, 3]
             elif len(A[0])==10:
-                dm, sig, tt, downsample = A[:,-3], A[:,-1], A[:, -5], A[:, 3]
+                beamno, dm, sig, tt, downsample = A[:, 0], A[:,-3], A[:,-1], A[:, -5], A[:, 3]
             else:
                 print("Error: DO NOT RECOGNIZE COLUMNS OF .trigger FILE")
                 return 
         else:
             # beam batch sample integration_step time DM SNR
-            dm, sig, tt, downsample = A[:,-2], A[:,-1], A[:, -3], A[:, 3]
+            beamno, dm, sig, tt, downsample = A[:, 0], A[:,-2], A[:,-1], A[:, -3], A[:, 3]
+        # pick only the specified beam
+        dm = dm[beamno.astype(int) == beam]
+        sig = sig[beamno.astype(int) == beam]
+        tt = tt[beamno.astype(int) == beam]
+        downsample = downsample[beamno.astype(int) == beam]
     elif fn.split('.')[-1]=='cand':
         A = np.genfromtxt(fn, max_rows=max_rows)
 
@@ -193,7 +199,7 @@ def read_singlepulse(fn, max_rows=None):
 def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf, 
                  t_window=0.5, max_rows=None, t_max=np.inf,
                  sig_max=np.inf, dt = 40.96, delta_nu_MHz=300./1536, 
-                 nu_GHz=1.4, fnout=False):
+                 nu_GHz=1.4, fnout=False, tab=0):
     """ Get brightest trigger in each 10s chunk.
 
     Parameters
@@ -212,6 +218,8 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
         Only read this many rows from raw trigger file 
     fnout : str 
         name of text file to save clustered triggers to 
+    tab : int
+        which TAB to process (0 for IAB)
 
     Returns
     -------
@@ -225,7 +233,8 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
         downsample factor array of brightest trigger in each DM/T window 
     """
 
-    dm, sig, tt, downsample = read_singlepulse(fn, max_rows=max_rows)[:4]
+    beam_amber = max(0, tab-1)  # should be 0 for both first TAB and IAB
+    dm, sig, tt, downsample = read_singlepulse(fn, max_rows=max_rows, beam=beam_amber)[:4]
     ntrig_orig = len(dm)
 
     bad_sig_ind = np.where((sig < sig_thresh) | (sig > sig_max))[0]
