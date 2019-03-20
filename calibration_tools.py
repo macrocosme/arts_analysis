@@ -101,6 +101,10 @@ class CalibrationTools:
             return 13.6 * (freqMHz / 1500.)**-0.8
         elif src=='3C286':
             return 14.6 * (freqMHz / 1500.)**-0.7
+        elif src=='3C138':
+            return 8.25 * (freqMHz / 1500.)**-0.5
+        elif src=='3C147':
+            return 21.0 * (freqMHz / 1500.)**-0.65
         else:
             print("Do not recognize source name")
             exit()
@@ -137,6 +141,7 @@ class CalibrationTools:
 
         G = self.calc_gain()
         Tsys = G * Snu / (fractional_tsys - 1)
+
         print "%s is %f Jy at %.1f" % (src, Snu, freq)
 
         return Tsys
@@ -153,8 +158,6 @@ class CalibrationTools:
         Snu = self.source_flux(freq, src=src)
         G = self.calc_gain()
         Tsys = G * Snu * np.sqrt(self.chan_width*self.t_res) / snr
-
-        print "%s is %f Jy" % (src, Snu)
 
         return Tsys
 
