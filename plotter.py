@@ -7,7 +7,7 @@ import sys
 import numpy as np
 import h5py
 import matplotlib
-matplotlib.use('pdf')
+matplotlib.use('pdf', warn=False)
 import matplotlib.pyplot as plt
 
 def plot_two_panel(data_freq_time, params, times=None, cb=None, prob=None, 
