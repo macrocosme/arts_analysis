@@ -2,6 +2,12 @@ import numpy as np
 import glob
 import scipy.signal
 import optparse 
+try:
+    import matplotlib.pyplot as plt
+except:
+    import matplotlib as mpl
+    mpl.use('Agg', warn=False)
+
 # should there maybe be a clustering class
 # and a S/N calculation class?
 
@@ -333,7 +339,7 @@ def plot_tab_summary(fn, ntab=12):
 
     for tab in range(ntab):
         try:
-            sig_cut, dm_cut, tt_cut, ds_cut, ind_full = tools.get_triggers(fn, tab=tab)
+            sig_cut, dm_cut, tt_cut, ds_cut, ind_full = get_triggers(fn, tab=tab)
         except(TypeError):
             print("No triggers from Tab %d" % tab)
 
@@ -342,13 +348,13 @@ def plot_tab_summary(fn, ntab=12):
         else:
             yl = ''
 
-        subplot(6,4,1+tab+4*(tab//4))
+        plt.subplot(6,4,1+tab+4*(tab//4))
         plt.hist(np.log10(dm_cut), bins=30, log=True, color='k', alpha=0.5)
         plt.yticks([])
         plt.legend(['TAB %d' % tab])
         plt.ylabel(yl, fontsize=14)
 
-        subplot(6,4,1+tab+4*(tab//4)+4)
+        plt.subplot(6,4,1+tab+4*(tab//4)+4)
         plt.scatter(np.log10(dm_cut), tt_cut, np.log10(sig_cut), color='k')
         plt.yticks([])
         plt.ylabel(yl, fontsize=14)
@@ -760,11 +766,6 @@ if __name__=='__main__':
     mk_plot = True
 
     if options.mk_plot is True:
-        try:
-            import matplotlib.pyplot as plt
-        except:
-            import matplotlib as mpl
-            mpl.use('Agg', warn=False)
 
         import plotter 
         plotter.plot_comparison(par_1a, par_2a, par_match_arra, ind_misseda, 
