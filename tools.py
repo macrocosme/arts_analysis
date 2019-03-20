@@ -201,7 +201,7 @@ def read_singlepulse(fn, max_rows=None, beam=None):
 
 def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf, 
                  t_window=0.5, max_rows=None, t_max=np.inf,
-                 sig_max=np.inf, dt = 40.96, delta_nu_MHz=300./1536, 
+                 sig_max=np.inf, dt=40.96, delta_nu_MHz=300./1536, 
                  nu_GHz=1.4, fnout=False, tab=None):
     """ Get brightest trigger in each 10s chunk.
 
@@ -326,6 +326,37 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
         np.savetxt(fnout, clustered_arr) 
 
     return sig_cut, dm_cut, tt_cut, ds_cut, ind_full
+
+def plot_tab_summary(fn, ntab=12):
+    fig, axs = plt.subplots(6, 4, sharex=True, figsize=(12,10))
+    fig.subplots_adjust(hspace=0)
+
+    for tab in range(ntab):
+        try:
+            sig_cut, dm_cut, tt_cut, ds_cut, ind_full = tools.get_triggers(fn, tab=tab)
+        except(TypeError):
+            print("No triggers from Tab %d" % tab)
+
+        if (tab % 4)==0:
+            yl = 'Time'
+        else:
+            yl = ''
+
+        subplot(6,4,1+tab+4*(tab//4))
+        plt.hist(np.log10(dm_cut), bins=30, log=True, color='k', alpha=0.5)
+        plt.yticks([])
+        plt.legend(['TAB %d' % tab])
+        plt.ylabel(yl, fontsize=14)
+
+        subplot(6,4,1+tab+4*(tab//4)+4)
+        plt.scatter(np.log10(dm_cut), tt_cut, np.log10(sig_cut), color='k')
+        plt.yticks([])
+        plt.ylabel(yl, fontsize=14)
+
+        if tab > 7:
+            plt.xlabel('log10(DM)', fontsize=14)
+
+    plt.show()
 
 class SNR_Tools:
 
@@ -703,15 +734,16 @@ if __name__=='__main__':
                                         dm_max=options.dm_max, save_data=False,
                                         sig_thresh=options.sig_thresh, 
                                         t_window=options.t_window, 
-                                                                                         max_rows=None, t_max=options.t_max,
-                                                                                         tab=options.tab)
+                                        max_rows=None, t_max=options.t_max,
+                                        tab=options.tab)
 
         par_1b, par_2b, par_match_arrb, ind_missedb, ind_matchedb = SNRTools.compare_snr(fn_2, fn_1, 
                                         dm_min=options.dm_min, 
                                         dm_max=options.dm_max, save_data=False,
                                         sig_thresh=options.sig_thresh, 
                                         t_window=options.t_window, 
-                                                                                         max_rows=None, t_max=options.t_max, tab=options.tab)                                       
+                                        max_rows=None, t_max=options.t_max, 
+                                        tab=options.tab)                                       
 
     except TypeError:
         print("No matches, exiting")
