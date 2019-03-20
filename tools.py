@@ -128,7 +128,7 @@ def dm_range(dm_max, dm_min=5., frac=0.2):
 
     return dm_list
 
-def read_singlepulse(fn, max_rows=None, beam=0):
+def read_singlepulse(fn, max_rows=None, beam=None):
     """ Read in text file containing single-pulse 
     candidates. Allowed formats are:
     .singlepulse = PRESTO output
@@ -168,11 +168,14 @@ def read_singlepulse(fn, max_rows=None, beam=0):
         else:
             # beam batch sample integration_step time DM SNR
             beamno, dm, sig, tt, downsample = A[:, 0], A[:,-2], A[:,-1], A[:, -3], A[:, 3]
-        # pick only the specified beam
-        dm = dm[beamno.astype(int) == beam]
-        sig = sig[beamno.astype(int) == beam]
-        tt = tt[beamno.astype(int) == beam]
-        downsample = downsample[beamno.astype(int) == beam]
+        
+        if beam!=None:
+            # pick only the specified beam
+            dm = dm[beamno.astype(int) == beam]
+            sig = sig[beamno.astype(int) == beam]
+            tt = tt[beamno.astype(int) == beam]
+            downsample = downsample[beamno.astype(int) == beam]
+
     elif fn.split('.')[-1]=='cand':
         A = np.genfromtxt(fn, max_rows=max_rows)
 
@@ -199,7 +202,7 @@ def read_singlepulse(fn, max_rows=None, beam=0):
 def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf, 
                  t_window=0.5, max_rows=None, t_max=np.inf,
                  sig_max=np.inf, dt = 40.96, delta_nu_MHz=300./1536, 
-                 nu_GHz=1.4, fnout=False, tab=0):
+                 nu_GHz=1.4, fnout=False, tab=None):
     """ Get brightest trigger in each 10s chunk.
 
     Parameters
@@ -232,8 +235,11 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
     ds_cut : ndarray 
         downsample factor array of brightest trigger in each DM/T window 
     """
+    if tab!=None:
+        beam_amber = max(0, tab-1)  # should be 0 for both first TAB and IAB
+    else:
+        beam_amber = None
 
-    beam_amber = max(0, tab-1)  # should be 0 for both first TAB and IAB
     dm, sig, tt, downsample = read_singlepulse(fn, max_rows=max_rows, beam=beam_amber)[:4]
     ntrig_orig = len(dm)
 
@@ -454,7 +460,7 @@ class SNR_Tools:
 
     def compare_snr(self, fn_1, fn_2, dm_min=0, dm_max=np.inf, save_data=False,
                     sig_thresh=5.0, t_window=0.5, max_rows=None,
-                    t_max=np.inf):
+                    t_max=np.inf, tab=None):
         """ Read in two files with single-pulse candidates
         and compare triggers.
 
@@ -487,11 +493,11 @@ class SNR_Tools:
         """
         snr_1, dm_1, t_1, w_1, ind_full_1 = get_triggers(fn_1, sig_thresh=sig_thresh, 
                                     dm_min=dm_min, dm_max=dm_max, t_window=t_window, 
-                                    max_rows=max_rows, t_max=t_max)
+                                                         max_rows=max_rows, t_max=t_max, tab=tab)
 
         snr_2, dm_2, t_2, w_2, ind_full_2 = get_triggers(fn_2, sig_thresh=sig_thresh, 
                                     dm_min=dm_min, dm_max=dm_max, t_window=t_window, 
-                                    max_rows=max_rows, t_max=t_max)
+                                                         max_rows=max_rows, t_max=t_max, tab=tab)
 
         snr_2_reorder = []
         dm_2_reorder = []
@@ -683,6 +689,10 @@ if __name__=='__main__':
                         help="truth file", 
                         default=None)
 
+    parser.add_option('--tab', dest='tab', type=int, \
+                        help="TAB to process (0 for IAB) (default: 0)", default=0)
+
+
     options, args = parser.parse_args()
     fn_1 = args[0]
     fn_2 = args[1]
@@ -693,14 +703,15 @@ if __name__=='__main__':
                                         dm_max=options.dm_max, save_data=False,
                                         sig_thresh=options.sig_thresh, 
                                         t_window=options.t_window, 
-                                        max_rows=None, t_max=options.t_max)
+                                                                                         max_rows=None, t_max=options.t_max,
+                                                                                         tab=options.tab)
 
         par_1b, par_2b, par_match_arrb, ind_missedb, ind_matchedb = SNRTools.compare_snr(fn_2, fn_1, 
                                         dm_min=options.dm_min, 
                                         dm_max=options.dm_max, save_data=False,
                                         sig_thresh=options.sig_thresh, 
                                         t_window=options.t_window, 
-                                        max_rows=None, t_max=options.t_max)                                       
+                                                                                         max_rows=None, t_max=options.t_max, tab=options.tab)                                       
 
     except TypeError:
         print("No matches, exiting")
@@ -717,7 +728,12 @@ if __name__=='__main__':
     mk_plot = True
 
     if options.mk_plot is True:
-        import matplotlib.pyplot as plt
+        try:
+            import matplotlib.pyplot as plt
+        except:
+            import matplotlib as mpl
+            mpl.use('Agg', warn=False)
+
         import plotter 
         plotter.plot_comparison(par_1a, par_2a, par_match_arra, ind_misseda, 
                                 figname=options.figname,
@@ -732,7 +748,8 @@ if __name__=='__main__':
                                         dm_max=options.dm_max, save_data=False,
                                         sig_thresh=options.sig_thresh, 
                                         t_window=options.t_window, 
-                                        max_rows=None, t_max=options.t_max)
+                                                             max_rows=None, t_max=options.t_max, 
+                                                             tab=options.tab)
 
             par_2, par_2_truth, par_match_2, ind_missedb, ind_matched2 = \
                                         SNRTools.compare_snr(fn_2, options.truthfile, 
@@ -740,7 +757,8 @@ if __name__=='__main__':
                                         dm_max=options.dm_max, save_data=False,
                                         sig_thresh=options.sig_thresh, 
                                         t_window=options.t_window, 
-                                        max_rows=None, t_max=options.t_max)                                       
+                                                             max_rows=None, t_max=options.t_max, 
+                                                             tab=options.tab)                                       
  
             plotter.plot_against_truth(par_match_1, par_match_2)
 
