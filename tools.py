@@ -333,35 +333,83 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
 
     return sig_cut, dm_cut, tt_cut, ds_cut, ind_full
 
-def plot_tab_summary(fn, ntab=12):
+def plot_tab_summary(fn, ntab=12, suptitle=''):
     fig, axs = plt.subplots(6, 4, sharex=True, figsize=(12,10))
     fig.subplots_adjust(hspace=0)
 
+    ntot = 0
     for tab in range(ntab):
         try:
             sig_cut, dm_cut, tt_cut, ds_cut, ind_full = get_triggers(fn, tab=tab)
         except(TypeError):
             print("No triggers from Tab %d" % tab)
 
-        if (tab % 4)==0:
-            yl = 'Time'
+        subind1 = (1+tab+4*(tab//4))
+        subind2 = (1+tab+4*(tab//4)+4)
+
+        if subind1 in [1, 9, 17]:
+            yl1 = 'log frac'
+            yl2 = 'Time'
         else:
-            yl = ''
+            yl1 = ''
+            yl2 = ''
 
-        plt.subplot(6,4,1+tab+4*(tab//4))
-        plt.hist(np.log10(dm_cut), bins=30, log=True, color='k', alpha=0.5)
+        ntot += len(sig_cut)
+
+        plt.subplot(6,4,subind1)
+        plt.hist(np.log10(dm_cut), bins=30, log=True, color='C1', alpha=0.5)
+        plt.legend(['TAB %d' % tab], loc=2)
         plt.yticks([])
-        plt.legend(['TAB %d' % tab])
-        plt.ylabel(yl, fontsize=14)
+        plt.ylabel(yl1, fontsize=14)
+        plt.xlim(-1, 3.5)
 
-        plt.subplot(6,4,1+tab+4*(tab//4)+4)
+        plt.subplot(6,4,subind2)
         plt.scatter(np.log10(dm_cut), tt_cut, np.log10(sig_cut), color='k')
         plt.yticks([])
-        plt.ylabel(yl, fontsize=14)
+        plt.ylabel(yl2, fontsize=14)
+        plt.xlim(-1, 3.5)
 
         if tab > 7:
             plt.xlabel('log10(DM)', fontsize=14)
 
+    suptitle_ = suptitle + '\nTotal triggers: %d' % ntot 
+    plt.suptitle(suptitle_, fontsize=20)
+    plt.show()
+
+    fig, axs = plt.subplots(6, 4, sharex=True, figsize=(12,10))
+    fig.subplots_adjust(hspace=0)
+    ntot = 0
+    for tab in range(ntab):
+        try:
+            sig_cut, dm_cut, tt_cut, ds_cut, ind_full = get_triggers(fn, tab=tab)
+        except(TypeError):
+            print("No triggers from Tab %d" % tab)
+
+        subind1 = 1 + tab #(1+tab+4*(tab//4))
+        subind2 = 1 + tab + 12#(1+tab+4*(tab//4)+4)
+
+        ntot += len(sig_cut)
+
+        plt.subplot(6,4,subind1)
+        plt.hist(np.log2(ds_cut), bins=30, log=True, color='C0', alpha=0.5)
+        plt.legend(['TAB %d' % tab], loc=2)
+        plt.yticks([])
+        plt.ylabel(yl1, fontsize=14)
+
+        if subind1 > 8:
+            plt.xlabel('log2(Width)', fontsize=14)
+
+        plt.subplot(6,4,subind2)
+        plt.hist(np.log10(sig_cut), bins=30, log=True, color='C1', alpha=0.5)
+        plt.yticks([])
+        plt.ylabel(yl2, fontsize=14)
+        plt.legend(['TAB %d' % tab], loc=2)
+
+        if subind2 > 20:
+            plt.xlabel('log10(S/N)', fontsize=14)
+
+    suptitle_ = suptitle + '\nTotal triggers: %d' % ntot 
+    plt.suptitle(suptitle_, fontsize=20)
     plt.show()
 
 class SNR_Tools:
@@ -664,8 +712,6 @@ if __name__=='__main__':
 
     import sys
 
-    fn_1, fn_2 = sys.argv[1], sys.argv[2]
-
     SNRTools = SNR_Tools()
 
     parser = optparse.OptionParser(prog="tools.py", \
@@ -729,7 +775,7 @@ if __name__=='__main__':
     parser.add_option('--tab', dest='tab', type=int, \
                         help="TAB to process (0 for IAB) (default: 0)", default=0)
 
-
+    fn_1, fn_2 = sys.argv[1], sys.argv[2]
     options, args = parser.parse_args()
     fn_1 = args[0]
     fn_2 = args[1]
