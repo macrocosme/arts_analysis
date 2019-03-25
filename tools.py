@@ -775,7 +775,9 @@ if __name__=='__main__':
     parser.add_option('--tab', dest='tab', type=int, \
                         help="TAB to process (0 for IAB) (default: 0)", default=0)
 
-    fn_1, fn_2 = sys.argv[1], sys.argv[2]
+    parser.add_option('--plot_both', dest='plot_both', action='store_true', \
+                        help="make plot with both fn1 vs. fn2 and fn2 vs. fn1", default=False)
+
     options, args = parser.parse_args()
     fn_1 = args[0]
     fn_2 = args[1]
@@ -788,8 +790,8 @@ if __name__=='__main__':
                                         t_window=options.t_window, 
                                         max_rows=None, t_max=options.t_max,
                                         tab=options.tab)
-
-        par_1b, par_2b, par_match_arrb, ind_missedb, ind_matchedb = SNRTools.compare_snr(fn_2, fn_1, 
+        if options.plot_both is True:
+            par_1b, par_2b, par_match_arrb, ind_missedb, ind_matchedb = SNRTools.compare_snr(fn_2, fn_1, 
                                         dm_min=options.dm_min, 
                                         dm_max=options.dm_max, save_data=False,
                                         sig_thresh=options.sig_thresh, 
@@ -817,9 +819,12 @@ if __name__=='__main__':
         plotter.plot_comparison(par_1a, par_2a, par_match_arra, ind_misseda, 
                                 figname=options.figname,
                                 algo1=options.algo1, algo2=options.algo2)
-        plotter.plot_comparison(par_1b, par_2b, par_match_arrb, ind_missedb, 
+
+        if options.plot_both is True:
+            plotter.plot_comparison(par_1b, par_2b, par_match_arrb, ind_missedb, 
                                 figname=options.figname, 
                                 algo1=options.algo2, algo2=options.algo1)
+
         if options.truthfile is not None:
             par_1, par_1_truth, par_match_1, ind_misseda, ind_matched1 = \
                                         SNRTools.compare_snr(fn_1, options.truthfile, 
