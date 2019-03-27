@@ -654,15 +654,19 @@ if __name__=='__main__':
     grouped_triggers[:,2] = tt_cut
     grouped_triggers[:,3] = ds_cut
 
-    np.savetxt('grouped_pulses{}.singlepulse'.format(options.tab_str),
-                grouped_triggers, fmt='%0.2f %0.1f %0.3f %0.1f')
+    #np.savetxt('grouped_pulses{}.singlepulse'.format(options.tab_str),
+    #            grouped_triggers, fmt='%0.2f %0.1f %0.3f %0.1f')
 
     ndm = options.ndm
     nfreq_plot = options.nfreq_plot
     ntime_plot = options.ntime_plot
     basedir = options.outdir + '/data/'
+
     if not os.path.isdir(basedir):
         os.system('mkdir -p %s' % basedir)
+
+    np.savetxt(options.outdir+'/grouped_pulses{}.singlepulse'.format(options.tab_str),
+                grouped_triggers, fmt='%0.2f %0.1f %0.3f %0.1f')
 
     skipped_counter = 0
     for ii, t0 in enumerate(tt_cut[:options.ntrig]):
