@@ -696,7 +696,7 @@ if __name__=='__main__':
             if options.save_data == 'hdf5':
                 h5_writer(data_freq_time, data_dm_time, 
                           dm_cut[ii], t0, sig_cut[ii], 
-                          beamno=options.beamno, basedir=basedir, time_res=time_res)
+                          beamno=options.beamno+options.tab_str, basedir=basedir, time_res=time_res)
             elif options.save_data == 'npy':
                 fnout_freq_time = '%s/data%s_snr%d_dm%d_t0%f_freq.npy'\
                          % ( basedir, options.tab_str, sig_cut[ii], dm_cut[ii], np.round(t0, 2))
@@ -743,6 +743,7 @@ if __name__=='__main__':
         f.create_dataset('data_dm_time', data=data_dm_time_full)
         f.create_dataset('params', data=params_full)
         f.create_dataset('ntriggers_skipped', data=[skipped_counter])
+        f.create_dataset('tab', data=[np.int(options.tab)])
         f.close()
 
         logging.info('Saved all triggers to %s' % fnout)
