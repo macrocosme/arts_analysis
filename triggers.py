@@ -743,7 +743,7 @@ if __name__=='__main__':
         f.create_dataset('data_dm_time', data=data_dm_time_full)
         f.create_dataset('params', data=params_full)
         f.create_dataset('ntriggers_skipped', data=[skipped_counter])
-        f.create_dataset('tab', data=[np.int(options.tab)])
+        f.create_dataset('tab', data=np.int(options.tab)*np.ones([len(data_freq_time_full)]))
         f.close()
 
         logging.info('Saved all triggers to %s' % fnout)
