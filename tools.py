@@ -207,7 +207,7 @@ def read_singlepulse(fn, max_rows=None, beam=None):
 
 def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf, 
                  t_window=0.5, max_rows=None, t_max=np.inf,
-                 sig_max=np.inf, dt=40.96, delta_nu_MHz=300./1536, 
+                 sig_max=np.inf, dt=2*40.96, delta_nu_MHz=300./1536, 
                  nu_GHz=1.4, fnout=False, tab=None):
     """ Get brightest trigger in each 10s chunk.
 
@@ -246,6 +246,8 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
     else:
         beam_amber = None
 
+    print('fn, sig_thresh, dm_min, dm_max, t_window, max_rows, t_max, tab')
+    print(fn, sig_thresh, dm_min, dm_max, t_window, max_rows, t_max, tab)
     dm, sig, tt, downsample = read_singlepulse(fn, max_rows=max_rows, beam=beam_amber)[:4]
     ntrig_orig = len(dm)
 
@@ -721,7 +723,7 @@ if __name__=='__main__':
 
     parser.add_option('--sig_thresh', dest='sig_thresh', type='float', \
                         help="Only process events above >sig_thresh S/N" \
-                                "(Default: 8.0)", default=8.0)
+                                "(Default: 5.0)", default=5.0)
 
     parser.add_option('--save_data', dest='save_data', type='str',
                         help="save each trigger's data. 0=don't save. \
