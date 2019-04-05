@@ -176,7 +176,7 @@ def fil_trigger(fn_fil, dm0, t0, sig_cut,
 #        (downsamp, downsamp_smear, downsamp_res))
 
     start_bin = int(t0/dt - ntime_plot*downsamp//2)
-    width = abs(4.14e3 * dm0 * (freq_up**-2 - freq_low**-2))
+    width = abs(4.148e3 * dm0 * (freq_up**-2 - freq_low**-2))
     chunksize = int(width/dt + ntime_plot*downsamp)
 
     t_min, t_max = 0, ntime_plot*downsamp
@@ -359,7 +359,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
             ind_kk = range(ndm_*kk, ndm_*(kk+1))
 
             if dm_max_jj in ind_kk:
-                data_dm_max = df[ind_kk.index(dm_max_jj)]#dm_max_jj]hack
+                data_dm_max = df[ind_kk.index(dm_max_jj)]
 
             del ddm, df
     else:
@@ -426,8 +426,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     if mk_plot is True:
         logging.info(fn_fig_out)
 
-        tmed = np.median(full_freq_arr_downsamp, axis=-1, keepdims=True) #hack
-        full_freq_arr_downsamp -= tmed #hack
+        tmed = np.median(full_freq_arr_downsamp, axis=-1, keepdims=True)
+        full_freq_arr_downsamp -= tmed 
 
         if ndm==1:
             plotter.plot_two_panel(full_freq_arr_downsamp, params, prob=None, 
