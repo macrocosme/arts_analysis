@@ -335,6 +335,27 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
 
     return sig_cut, dm_cut, tt_cut, ds_cut, ind_full
 
+def add_tab_col(fdir, fnout='out'):
+    """ Take list of .trigger files for 
+    all TABs, concanetate into single .trigger
+    file with correct TAB column.
+    """
+    fl = glob.glob(fdir)
+    fl.sort()
+    trigg_arr_full = []
+    
+    ext = fl[0].split('.')[-1]
+    assert ext=='trigger', 'expected an amber output file .trigger'
+
+    for ff in fl:
+        tab = int(ff.split('CB')[-1].split('_')[1][:2])
+        trigg_arr = np.loadtxt(ff)
+        trigg_arr[:, 0] = tab
+        trigg_arr_full.append(trigg_arr)
+    
+    trigg_arr_full = np.concatenate(trigg_arr_full)
+    np.savetxt(fnout+'.'+ext, trigg_arr_full)
+
 def plot_tab_summary(fn, ntab=12, suptitle=''):
     fig, axs = plt.subplots(6, 4, sharex=True, figsize=(12,10))
     fig.subplots_adjust(hspace=0)
