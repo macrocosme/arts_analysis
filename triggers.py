@@ -60,6 +60,50 @@ def get_single_trigger(fn_fil, fn_trig, row=0, ntime_plot=250):
  
     return data, dm0, sig_cut, t0, downsamp, downsamp_smear
 
+def sys_temperature_bandpass(data):
+    """Bandpass calibrate based on system temperature.
+    The lowest noise way to flatten the bandpass. Very good if T_sys is
+    relatively constant accross the band.
+    """
+
+    T_sys = np.median(data, 1)
+    bad_chans = T_sys < 0.001 * np.median(T_sys)
+    T_sys[bad_chans] = 1
+    data /= T_sys[:,None]
+    data[bad_chans,:] = 0
+
+
+def remove_noisy_freq(data, sigma_threshold):
+    """Flag frequency channels with high variance.
+    To be effective, data should be bandpass calibrated in some way.
+    """
+
+    nfreq = data.shape[0]
+    ntime = data.shape[1]
+
+    # Calculate variances without making full data copy (as numpy does).
+    var = np.empty(nfreq, dtype=np.float64)
+    skew = np.empty(nfreq, dtype=np.float64)
+    kurt = np.empty(nfreq, dtype=np.float64)
+    for ii in range(nfreq):
+        var[ii] = np.var(data[ii,:])
+        skew[ii] = np.mean((data[ii,:] - np.mean(data[ii,:])**3))
+        kurt[ii] = np.mean((data[ii,:] - np.mean(data[ii,:])**4))
+
+    # Find the bad channels.
+    bad_chans = False
+    for ii in range(3):
+        bad_chans_var = abs(var - np.mean(var)) > sigma_threshold * np.std(var)
+        bad_chans_skew = abs(skew - np.mean(skew)) > sigma_threshold * np.std(skew)
+        bad_chans_kurt = abs(kurt - np.mean(kurt)) > sigma_threshold * np.std(kurt)
+        bad_chans = np.logical_or(bad_chans, bad_chans_var)
+        bad_chans = np.logical_or(bad_chans, bad_chans_skew)
+        bad_chans = np.logical_or(bad_chans, bad_chans_kurt)
+        var[bad_chans] = np.mean(var)
+        skew[bad_chans] = np.mean(skew)
+        kurt[bad_chans] = np.mean(kurt)
+    data[bad_chans,:] = 0
+
 def cleandata(data, threshold=3.0):
     """ Take filterbank object and mask 
     RFI time samples with average spectrum.
@@ -76,18 +120,21 @@ def cleandata(data, threshold=3.0):
     cleaned filterbank object
     """
     logging.info("Cleaning RFI")
+    sys_temperature_bandpass(data.data)
+    remove_noisy_freq(data, sigma_threshold)
+    
     dtmean = np.mean(data.data, axis=-1)
     dfmean = np.mean(data.data, axis=0)
     stdevf = np.std(dfmean)
     medf = np.median(dfmean)
-        
+    maskf = np.where(np.abs(dfmean - medf) > threshold*stdevf)[0]        
     # remove bandpass by averaging over 16 ajdacent channels 
 #    dtmean_nobandpass = dtmean - dtmean.reshape(-1, 16).mean(-1).repeat(16)
 #    stdevt = np.std(dtmean_nobandpass)
 #    medt = np.median(dtmean_nobandpass)
 
     # mask 3sigma outliers in both time and freq
-    maskf = np.where(np.abs(dfmean - medf) > threshold*stdevf)[0]
+    
 #    maskt = np.where(np.abs(dtmean - medt) > 0.0*stdevt)[0]
 
     # replace with mean spectrum
