@@ -138,7 +138,7 @@ def cleandata(data, threshold=3.0):
 
     sys_temperature_bandpass(data.data)
     #remove_noisy_freq(data.data, 3)
-    remove_noisy_channels(data, sigma_threshold=2, iters=10)
+    remove_noisy_channels(data.data, sigma_threshold=2, iters=5)
 
     dtmean = np.mean(data.data, axis=-1)
     dfmean = np.mean(data.data, axis=0)
