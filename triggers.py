@@ -60,36 +60,6 @@ def get_single_trigger(fn_fil, fn_trig, row=0, ntime_plot=250):
  
     return data, dm0, sig_cut, t0, downsamp, downsamp_smear
 
-def get_fil_data(fn_fil, t0, dm0, downsamp, freq_low, freq_up, 
-                 dt=0.00004096, downsamp_smear=1, ntime_plot=250, nfreq=1536):
-
-    start_bin = int(t0/dt - ntime_plot*downsamp//2)
-    width = abs(4.14e3 * dm0 * (freq_up**-2 - freq_low**-2))
-    chunksize = int(width/dt + ntime_plot*downsamp)
-
-    t_min, t_max = 0, ntime_plot*downsamp
-    ntime_fil = (os.path.getsize(fn_fil) - 467.)/nfreq
-    if start_bin < 0:
-        extra = start_bin
-        start_bin = 0
-        t_min += extra
-        t_max += extra
-
-    t_min, t_max = int(t_min), int(t_max)
-    
-    snr_max = 0
-    
-    # Account for the pre-downsampling to speed up dedispersion
-    t_min /= downsamp_smear
-    t_max /= downsamp_smear
-    ntime = t_max-t_min
-
-    logging.info("Reading in chunk: %d" % chunksize)
-    data = reader.read_fil_data(fn, start=start_bin, stop=chunksize)[0]
-#    data = rawdatafile.get_spectra(start_bin, chunksize)
-
-    return data
-
 def cleandata(data, threshold=3.0):
     """ Take filterbank object and mask 
     RFI time samples with average spectrum.
@@ -200,6 +170,8 @@ def fil_trigger(fn_fil, dm0, t0, sig_cut,
 
     if rficlean is True:
         data = cleandata(data)
+#        data = cleandata(data)
+#        data = cleandata(data)
 
     return data, downsamp, downsamp_smear
 
@@ -320,6 +292,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     data.data[rfimask] = 0.
 
     if rficlean is True:
+        data = cleandata(data)
+        data = cleandata(data)
         data = cleandata(data)
 
     # Downsample before dedispersion up to 1/4th 
