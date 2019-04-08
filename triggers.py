@@ -104,6 +104,20 @@ def remove_noisy_freq(data, sigma_threshold):
         kurt[bad_chans] = np.mean(kurt)
     data[bad_chans,:] = 0
 
+def remove_noisy_channels(data, sigma_threshold=2, iters=10):
+    """Flag frequency channels with high variance.
+    To be effective, data should be bandpass calibrated in some way.
+    """
+    var = np.var(data, axis=1)
+
+    for ii in range(10):
+        var[np.abs(var-np.median(var))>sigma_threshold*np.std(var)] = 0
+
+    bad_chans = np.where(var==0)[0]
+    data[bad_chans] = 0.
+
+    return data
+
 def cleandata(data, threshold=3.0):
     """ Take filterbank object and mask 
     RFI time samples with average spectrum.
@@ -120,8 +134,11 @@ def cleandata(data, threshold=3.0):
     cleaned filterbank object
     """
     logging.info("Cleaning RFI")
+
+
     sys_temperature_bandpass(data.data)
-    remove_noisy_freq(data.data, 3)
+    #remove_noisy_freq(data.data, 3)
+    remove_noisy_channels(data, sigma_threshold=2, iters=10)
 
     dtmean = np.mean(data.data, axis=-1)
     dfmean = np.mean(data.data, axis=0)
@@ -217,8 +234,8 @@ def fil_trigger(fn_fil, dm0, t0, sig_cut,
 
     if rficlean is True:
         data = cleandata(data)
-#        data = cleandata(data)
-#        data = cleandata(data)
+        data = cleandata(data)
+        data = cleandata(data)
 
     return data, downsamp, downsamp_smear
 
