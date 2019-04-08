@@ -121,8 +121,8 @@ def cleandata(data, threshold=3.0):
     """
     logging.info("Cleaning RFI")
     sys_temperature_bandpass(data.data)
-    remove_noisy_freq(data, sigma_threshold)
-    
+    remove_noisy_freq(data.data, 3)
+
     dtmean = np.mean(data.data, axis=-1)
     dfmean = np.mean(data.data, axis=0)
     stdevf = np.std(dfmean)
