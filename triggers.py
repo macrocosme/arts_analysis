@@ -461,11 +461,11 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
                      (outdir, beamno, sig_cut, dms[dm_max_jj], t0)
 
     params = sig_cut, dms[dm_max_jj], downsamp, t0, dt
+    tmed = np.median(full_freq_arr_downsamp, axis=-1, keepdims=True)
+    full_freq_arr_downsamp -= tmed 
+
     if mk_plot is True:
         logging.info(fn_fig_out)
-
-        tmed = np.median(full_freq_arr_downsamp, axis=-1, keepdims=True)
-        full_freq_arr_downsamp -= tmed 
 
         if ndm==1:
             plotter.plot_two_panel(full_freq_arr_downsamp, params, prob=None, 
@@ -631,10 +631,8 @@ if __name__=='__main__':
     start_time = time.time()
 
     options, args = parser.parse_args()
-    if options.tab == 0:
-        options.tab_str = ""
-    else:
-        options.tab_str = "_{:02d}".format(options.tab)
+
+    options.tab_str = "_{:02d}".format(options.tab)
 
     fn_fil = args[0]
     fn_sp = args[1]
