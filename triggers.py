@@ -705,6 +705,8 @@ if __name__=='__main__':
                 grouped_triggers, fmt='%0.2f %0.1f %0.3f %0.1f')
 
     skipped_counter = 0
+    ii = None 
+    
     for ii, t0 in enumerate(tt_cut[:options.ntrig]):
         try:
             snr_comparison = snr_comparison_arr[ii]
@@ -787,7 +789,7 @@ if __name__=='__main__':
         logging.warning("Skipped %d out of %d triggers" % (skipped_counter, ii))
     else:
         logging.warning("There were no triggers")
-        
+
     exit()
 
 
