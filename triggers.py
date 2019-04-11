@@ -783,8 +783,11 @@ if __name__=='__main__':
         f.close()
 
         logging.info('Saved all triggers to %s' % fnout)
-
-    logging.warning("Skipped %d out of %d triggers" % (skipped_counter, ii))
+    if ii is not None:
+        logging.warning("Skipped %d out of %d triggers" % (skipped_counter, ii))
+    else:
+        logging.warning("There were no triggers")
+        
     exit()
 
 
