@@ -136,9 +136,9 @@ def cleandata(data, threshold=3.0):
     logging.info("Cleaning RFI")
 
 
-    sys_temperature_bandpass(data.data)
+    #sys_temperature_bandpass(data.data)
     #remove_noisy_freq(data.data, 3)
-    remove_noisy_channels(data.data, sigma_threshold=2, iters=5)
+    #remove_noisy_channels(data.data, sigma_threshold=2, iters=5)
 
     dtmean = np.mean(data.data, axis=-1)
     dfmean = np.mean(data.data, axis=0)
@@ -245,7 +245,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
                  ntime_plot=250,
                  cmap='RdBu', cand_no=1, multiproc=False,
                  rficlean=False, snr_comparison=-1,
-                 outdir='./', sig_thresh_local=5.0):
+                 outdir='./', sig_thresh_local=5.0, 
+                 subtract_zerodm=False):
     """ Locate data within filterbank file (fn_fi)
     at some time t0, and dedisperse to dm0, generating 
     plots 
@@ -326,7 +327,7 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
 #        (downsamp, downsamp_smear, downsamp_res))
 
     start_bin = int(t0/dt - ntime_plot*downsamp//2)
-    width = abs(4.14e3 * dm0 * (freq_up**-2 - freq_low**-2))
+    width = abs(4.148e3 * dm0 * (freq_up**-2 - freq_low**-2))
     chunksize = int(width/dt + ntime_plot*downsamp)
 
     t_min, t_max = 0, ntime_plot*downsamp
@@ -359,6 +360,9 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         data = cleandata(data)
         data = cleandata(data)
         data = cleandata(data)
+
+    if subtract_zerodm:
+        data.data -= np.mean(data.data, axis=0)[None]
 
     # Downsample before dedispersion up to 1/4th 
     # DM smearing limit 
@@ -706,7 +710,7 @@ if __name__=='__main__':
 
     skipped_counter = 0
     ii = None 
-    
+
     for ii, t0 in enumerate(tt_cut[:options.ntrig]):
         try:
             snr_comparison = snr_comparison_arr[ii]
