@@ -242,7 +242,7 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
         downsample factor array of brightest trigger in each DM/T window 
     """
     if tab!=None:
-        beam_amber = max(0, tab-1)  # should be 0 for both first TAB and IAB
+        beam_amber = tab
     else:
         beam_amber = None
 
