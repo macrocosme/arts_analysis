@@ -582,6 +582,9 @@ if __name__=='__main__':
     parser.add_option('--rficlean', dest='rficlean', action='store_true', \
                         help="use rficlean if True (default False)", default=False)
 
+    parser.add_option('--subtract_zerodm', dest='subtract_zerodm', action='store_true', \
+                        help="use DM=0 timestream subtraction if True (default False)", default=False)
+
     parser.add_option('--nfreq_plot', dest='nfreq_plot', type='int',
                         help="make plot with this number of freq channels",
                         default=32)
@@ -728,7 +731,7 @@ if __name__=='__main__':
                                         rficlean=options.rficlean, 
                                         snr_comparison=snr_comparison, 
                                         outdir=options.outdir,
-                                        beamno=options.beamno, sig_thresh_local=options.sig_thresh_local)
+                                                                      beamno=options.beamno, sig_thresh_local=options.sig_thresh_local, subtract_zerodm=options.subtract_zerodm)
 
         if len(data_dm_time)==0:
             skipped_counter += 1
