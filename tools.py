@@ -190,6 +190,7 @@ def read_singlepulse(fn, max_rows=None, beam=None):
 
         # SNR sample_no time log_2_width DM_trial DM Members first_samp last_samp
         dm, sig, tt, log_2_downsample = A[:,5], A[:,0], A[:, 2], A[:, 3]
+        print(dm, tt)
         downsample = 2**log_2_downsample
         try:
             beamno = A[:, 9]
@@ -208,7 +209,7 @@ def read_singlepulse(fn, max_rows=None, beam=None):
 def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf, 
                  t_window=0.5, max_rows=None, t_max=np.inf,
                  sig_max=np.inf, dt=2*40.96, delta_nu_MHz=300./1536, 
-                 nu_GHz=1.4, fnout=False, tab=None):
+                 nu_GHz=1.4, fnout=False, tab=None, dm_width_filter=False):
     """ Get brightest trigger in each 10s chunk.
 
     Parameters
@@ -257,7 +258,7 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
     dm = np.delete(dm, bad_sig_ind)
     downsample = np.delete(downsample, bad_sig_ind)
     sig_cut, dm_cut, tt_cut, ds_cut = [],[],[],[]
-    
+
     if len(tt)==0:
         print("Returning None: time array is empty")
         return 
@@ -316,11 +317,13 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
     print("Grouped down to %d triggers from %d\n" % (ntrig_group, ntrig_orig))
 
     rm_ii = []
-    for ii in xrange(len(ds_cut)):        
-        tdm = 8.3 * delta_nu_MHz / nu_GHz**3 * dm_cut[ii] # microseconds
 
-        if ds_cut[ii]*dt < (0.5*(dt**2 + tdm**2)**0.5):
-            rm_ii.append(ii)
+    if dm_width_filter:
+        for ii in xrange(len(ds_cut)):        
+            tdm = 8.3 * delta_nu_MHz / nu_GHz**3 * dm_cut[ii] # microseconds#
+
+            if ds_cut[ii]*dt < (0.5*(dt**2 + tdm**2)**0.5):
+                rm_ii.append(ii)
 
     dm_cut = np.delete(dm_cut, rm_ii)
     tt_cut = np.delete(tt_cut, rm_ii)
@@ -826,7 +829,6 @@ if __name__=='__main__':
         print("No matches, exiting")
         exit()
         
-
     print('\nFound %d common trigger(s)' % par_match_arra.shape[1])
 
     snr_1 = par_match_arra[0, :, 0]
