@@ -247,9 +247,14 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
     else:
         beam_amber = None
 
-    print('fn, sig_thresh, dm_min, dm_max, t_window, max_rows, t_max, tab')
-    print(fn, sig_thresh, dm_min, dm_max, t_window, max_rows, t_max, tab)
-    dm, sig, tt, downsample = read_singlepulse(fn, max_rows=max_rows, beam=beam_amber)[:4]
+    if type(fn)==str:
+        dm, sig, tt, downsample = read_singlepulse(fn, max_rows=max_rows, beam=beam_amber)[:4]
+    elif type(fn)==np.ndarray:
+        dm, sig, tt, downsample = fn[:,0], fn[:,1], fn[:,2], fn[:,3]
+    else:
+        print("Wrong input type. Expected string or nparray")
+        return [],[],[],[],[]
+
     ntrig_orig = len(dm)
 
     bad_sig_ind = np.where((sig < sig_thresh) | (sig > sig_max))[0]
