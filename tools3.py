@@ -60,14 +60,34 @@ def get_multibeam_triggers(times, beamno, t_window=0.5):
 
     return ntrig_perbeam
 
+def dedisperse(data, dm, dt=8.192e-5, freq=(1550, 1250), freq_ref=None):
+    data = data.copy()
+    
+    nfreq, ntime = data.shape[0], data.shape[1]
+
+    freqs = np.linspace(freq[0], freq[-1], nfreq)
+
+    if freq_ref is None:
+        freq_ref = freqs.max()
+
+    tdelay = 4.148e3*dm*(freqs**-2 - freq_ref**-2)
+    ntime = len(data[0])
+
+    maxind_arr = []
+
+    for ii, f in enumerate(freqs):
+        data[ii] = np.roll(data[ii], -np.int(tdelay[ii]/dt))
+
+    return data
+
 def cleandata(data, threshold=3.0):
     """ Take filterbank object and mask 
     RFI time samples with average spectrum.
 
     Parameters:
     ----------
-    data : 
-        filterbank data object
+    data : np.ndarray
+        (nfreq, ntime) array
     threshold : float 
         units of sigma
 
@@ -79,27 +99,14 @@ def cleandata(data, threshold=3.0):
 
     assert len(data.shape)==2, "Expected (nfreq, ntime) array"
 
-    #sys_temperature_bandpass(data.data)
-    #remove_noisy_freq(data.data, 3)
-    #remove_noisy_channels(data.data, sigma_threshold=2, iters=5)
-
     dtmean = np.mean(data, axis=-1)
     dfmean = np.mean(data, axis=0)
     stdevf = np.std(dfmean)
     medf = np.median(dfmean)
     maskf = np.where(np.abs(dfmean - medf) > threshold*stdevf)[0]        
-    # remove bandpass by averaging over 16 ajdacent channels 
-#    dtmean_nobandpass = dtmean - dtmean.reshape(-1, 16).mean(-1).repeat(16)
-#    stdevt = np.std(dtmean_nobandpass)
-#    medt = np.median(dtmean_nobandpass)
-
-    # mask 3sigma outliers in both time and freq
-    
-#    maskt = np.where(np.abs(dtmean - medt) > 0.0*stdevt)[0]
 
     # replace with mean spectrum
     data[:, maskf] = dtmean[:, None]*np.ones(len(maskf))[None]
-#    data.data[maskt] = 0#dfmean[None]*np.ones(len(maskt))[:, None]
 
     return data
 

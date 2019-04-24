@@ -60,6 +60,56 @@ def get_multibeam_triggers(times, beamno, t_window=0.5):
 
     return ntrig_perbeam
 
+def dedisperse(data, dm, dt=8.192e-5, freq=(1550, 1250), freq_ref=None):
+    data = data.copy()
+    
+    nfreq, ntime = data.shape[0], data.shape[1]
+
+    freqs = np.linspace(freq[0], freq[-1], nfreq)
+
+    if freq_ref is None:
+        freq_ref = freqs.max()
+
+    tdelay = 4.148e3*dm*(freqs**-2 - freq_ref**-2)
+    ntime = len(data[0])
+
+    maxind_arr = []
+
+    for ii, f in enumerate(freqs):
+        data[ii] = np.roll(data[ii], -np.int(tdelay[ii]/dt))
+
+    return data
+
+def cleandata(data, threshold=3.0):
+    """ Take filterbank object and mask 
+    RFI time samples with average spectrum.
+
+    Parameters:
+    ----------
+    data : np.ndarray
+        (nfreq, ntime) array
+    threshold : float 
+        units of sigma
+
+    Returns:
+    -------
+    cleaned filterbank object
+    """
+    logging.info("Cleaning RFI")
+
+    assert len(data.shape)==2, "Expected (nfreq, ntime) array"
+
+    dtmean = np.mean(data, axis=-1)
+    dfmean = np.mean(data, axis=0)
+    stdevf = np.std(dfmean)
+    medf = np.median(dfmean)
+    maskf = np.where(np.abs(dfmean - medf) > threshold*stdevf)[0]        
+
+    # replace with mean spectrum
+    data[:, maskf] = dtmean[:, None]*np.ones(len(maskf))[None]
+
+    return data
+
 def group_dm_time_beam(fdir, fnout=None, trigname='cand'):
     """ Go through all compound beams (CB) in 
     directory fdir, group in time/DM, then 
