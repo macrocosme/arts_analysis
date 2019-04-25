@@ -225,7 +225,7 @@ def read_singlepulse(fn, max_rows=None, beam=None):
             # beam batch sample integration_step time DM SNR
             beamno, dm, sig, tt, downsample = A[:, 0], A[:,-2], A[:,-1], A[:, -3], A[:, 3]
         
-        if beam!=None:
+        if beam is not None:
             # pick only the specified beam
             dm = dm[beamno.astype(int) == beam]
             sig = sig[beamno.astype(int) == beam]
@@ -292,7 +292,7 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
     ds_cut : ndarray 
         downsample factor array of brightest trigger in each DM/T window 
     """
-    if tab!=None:
+    if tab is not None:
         beam_amber = tab
     else:
         beam_amber = None
