@@ -264,8 +264,9 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
 
     Parameters
     ----------
-    fn : str 
-        filename with triggers (.npy, .singlepulse, .trigger)
+    fn : str or np.ndarray 
+        filename with triggers (.npy, .singlepulse, .trigger) or 
+        direct numpy array
     sig_thresh : float
         min S/N to include
     dm_min : 
