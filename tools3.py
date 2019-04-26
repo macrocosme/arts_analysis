@@ -133,7 +133,7 @@ def group_dm_time_beam(fdir, fnout=None, trigname='cand'):
                          t_window=0.5, 
                          max_rows=None)
         except IndexError:
-            print("Skipping CB%d" % CB)
+            print(("Skipping CB%d" % CB))
             continue
 
         beamno = np.ones([len(dm_cut)])*CB
@@ -240,7 +240,7 @@ def read_singlepulse(fn, max_rows=None, beam=None):
 
         # SNR sample_no time log_2_width DM_trial DM Members first_samp last_samp
         dm, sig, tt, log_2_downsample = A[:,5], A[:,0], A[:, 2], A[:, 3]
-        print(dm, tt)
+        print((dm, tt))
         downsample = 2**log_2_downsample
         try:
             beamno = A[:, 9]
@@ -264,8 +264,9 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
 
     Parameters
     ----------
-    fn : str 
-        filename with triggers (.npy, .singlepulse, .trigger)
+    fn : str or np.ndarray 
+        filename with triggers (.npy, .singlepulse, .trigger) or 
+        direct numpy array
     sig_thresh : float
         min S/N to include
     dm_min : 
@@ -332,15 +333,15 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
 #    dm_list = dm_range(dm_max, dm_min=dm_min)
     dm_list = dm_range(1.1*dm.max(), dm_min=0.9*dm.min())
 
-    print("\nGrouping in window of %.2f sec" % np.round(t_window,2))
-    print("DMs:", dm_list)
+    print(("\nGrouping in window of %.2f sec" % np.round(t_window,2)))
+    print(("DMs:", dm_list))
 
     tt_start = tt.min() - .5*t_window
     ind_full = []
 
     # might wanna make this a search in (dm,t,width) cubes
     for dms in dm_list:
-        for ii in xrange(ntime + 2):
+        for ii in range(ntime + 2):
             try:    
                 # step through windows of t_window seconds, starting from tt.min()
                 # and find max S/N trigger in each DM/time box
@@ -369,12 +370,12 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
 
     ntrig_group = len(dm_cut)
 
-    print("Grouped down to %d triggers from %d\n" % (ntrig_group, ntrig_orig))
+    print(("Grouped down to %d triggers from %d\n" % (ntrig_group, ntrig_orig)))
 
     rm_ii = []
 
     if dm_width_filter:
-        for ii in xrange(len(ds_cut)):        
+        for ii in range(len(ds_cut)):        
             tdm = 8.3 * delta_nu_MHz / nu_GHz**3 * dm_cut[ii] # microseconds#
 
             if ds_cut[ii]*dt < (0.5*(dt**2 + tdm**2)**0.5):
@@ -423,7 +424,7 @@ def plot_tab_summary(fn, ntab=12, suptitle=''):
         try:
             sig_cut, dm_cut, tt_cut, ds_cut, ind_full = get_triggers(fn, tab=tab)
         except(TypeError):
-            print("No triggers from Tab %d" % tab)
+            print(("No triggers from Tab %d" % tab))
 
         subind1 = (1+tab+4*(tab//4))
         subind2 = (1+tab+4*(tab//4)+4)
@@ -464,7 +465,7 @@ def plot_tab_summary(fn, ntab=12, suptitle=''):
         try:
             sig_cut, dm_cut, tt_cut, ds_cut, ind_full = get_triggers(fn, tab=tab)
         except(TypeError):
-            print("No triggers from Tab %d" % tab)
+            print(("No triggers from Tab %d" % tab))
 
         subind1 = 1 + tab #(1+tab+4*(tab//4))
         subind2 = 1 + tab + 12#(1+tab+4*(tab//4)+4)
@@ -698,7 +699,7 @@ class SNR_Tools:
             # check for triggers that are within 1.0 seconds and 20% in dm
             if (tdiff[ind]<1.0) and (np.abs(dm_1[ii]-dm_2[ind])/dm_1[ii])<0.2:
                 pparams = (tdiff[ind], t_1[ii], t_2[ind], dm_1[ii], dm_2[ind], snr_1[ii], snr_2[ind], w_1[ii], w_2[ind])
-                print("%1.4f  %5.1f  %5.1f  %5.1f  %5.1f %5.1f  %5.1f %5.1f  %5.1f" % pparams)
+                print(("%1.4f  %5.1f  %5.1f  %5.1f  %5.1f %5.1f  %5.1f %5.1f  %5.1f" % pparams))
 
                 params_match = np.array([snr_1[ii], snr_2[ind], 
                                          dm_1[ii], dm_2[ind],
@@ -884,12 +885,12 @@ if __name__=='__main__':
         print("No matches, exiting")
         exit()
         
-    print('\nFound %d common trigger(s)' % par_match_arra.shape[1])
+    print(('\nFound %d common trigger(s)' % par_match_arra.shape[1]))
 
     snr_1 = par_match_arra[0, :, 0]
     snr_2 = par_match_arra[0, :, 1]
 
-    print('\nFile 1 has %f times higher S/N than file 2\n' % np.mean(snr_1/snr_2))
+    print(('\nFile 1 has %f times higher S/N than file 2\n' % np.mean(snr_1/snr_2)))
 
     mk_plot = True
 

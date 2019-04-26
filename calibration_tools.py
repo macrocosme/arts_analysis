@@ -1,22 +1,67 @@
+""" Tools for calibration flux density 
+using drift scans on Apertif. 
+
+Liam Connor 03/12/2019
+
+Example usage:
+
+If /home/arts/driftscan/3C48/CB00_*_downsamp1000.npy have 
+all TABs from CB00 for a 3C48 transit:
+
+python calibration_tools.py ~/driftscan/3C48/CB00_*_downsamp1000.npy --Ndish 8 --src 3C48 --IAB False
+"""
+
 import time
 import numpy as np
 
-#import matplotlib as mpl
+import matplotlib as mpl
+mpl.use('pdf')
 #mpl.use('Agg')
 import matplotlib.pyplot as plt
-
 import argparse
 import glob
+
+import reader
 
 #import psrchive
 
 from APERTIFparams import *
 APERTIFparams = APERTIFparams()
 
+class Downsample:
+    def __init__(self, chunksize=1e6, ds=10000):
+        self.chunksize = int(chunksize)
+        self.ds = ds
+
+    def downsample(self, data):
+        nt = len(data[0])
+        data = data[:, :nt//self.ds*self.ds].reshape(-1, nt//self.ds, self.ds)
+        data = np.mean(data, axis=-1)
+        
+        return data
+    
+    def downsample_file(self, fn, ds=10000):
+        data_ds_full = []
+        for ii in xrange(10000000):
+            fil_obj = reader.read_fil_data(fn, start=ii*self.chunksize, stop=self.chunksize)[0]
+        
+            if fil_obj.data.shape[-1] <= ds:
+                break
+            dt = fil_obj.dt
+            data_ds = self.downsample(fil_obj.data)
+            data_ds_full.append(data_ds)
+            nfreq = data_ds.shape[0]
+
+        print("Downsampled to %f sec" % (ds*dt))
+        data_ds_full = np.concatenate(data_ds_full, axis=-1)
+        data_ds_full = data_ds_full.reshape(nfreq, -1)
+            
+        return data_ds_full, ds*dt
+
 class CalibrationTools:
 
-    def __init__(self, t_res=0.01, freq_up=1520., 
-                 freq_low=1220., bw=300.0, 
+    def __init__(self, t_res=0.8192, freq_up=1550., 
+                 freq_low=1250., bw=300.0, 
                  nfreq=1536, Ndish=10, IAB=True):
 
         self.chan_width = bw / nfreq * 1e6
@@ -52,6 +97,14 @@ class CalibrationTools:
         elif src=='3C48':
             # https://science.nrao.edu/facilities/vla/docs/manuals/oss/performance/fdscale
             return 15.4 * (freqMHz / 1500.)**-0.75 
+        elif src=='3C196':
+            return 13.6 * (freqMHz / 1500.)**-0.8
+        elif src=='3C286':
+            return 14.6 * (freqMHz / 1500.)**-0.7
+        elif src=='3C138':
+            return 8.25 * (freqMHz / 1500.)**-0.5
+        elif src=='3C147':
+            return 21.0 * (freqMHz / 1500.)**-0.65
         else:
             print("Do not recognize source name")
             exit()
@@ -88,6 +141,7 @@ class CalibrationTools:
 
         G = self.calc_gain()
         Tsys = G * Snu / (fractional_tsys - 1)
+
         print "%s is %f Jy at %.1f" % (src, Snu, freq)
 
         return Tsys
@@ -104,8 +158,6 @@ class CalibrationTools:
         Snu = self.source_flux(freq, src=src)
         G = self.calc_gain()
         Tsys = G * Snu * np.sqrt(self.chan_width*self.t_res) / snr
-
-        print "%s is %f Jy" % (src, Snu)
 
         return Tsys
 
@@ -165,21 +217,24 @@ class Plotter:
         times = np.linspace(0, self.t_res*ntime, ntime)
         plt.plot(times, data[freq_ind])
         plt.xlabel('Time [s]', fontsize=15)
+        plt.ylabel('Power', fontsize=15)
 
     def plot_sefd(self, sefd):
         plt.plot(self.freq, sefd, '.')
         plt.xlabel('Freq [MHz]', fontsize=15)
         plt.ylabel('SEFD [Jy]', fontsize=15)
+        sefd[sefd!=sefd] = 0.
         plt.ylim(.3*np.median(sefd), 2*np.median(sefd))
 
     def plot_snr(self, SNR):
+        SNR[SNR!=SNR] = 0.
         plt.plot(self.freq, SNR, '.', color='orange')
         plt.xlabel('Freq [MHz]', fontsize=15)
         plt.ylabel('S/N', fontsize=15)
         plt.ylim(.3*np.median(SNR), 3*np.median(SNR))
 
     def plot_spectrum(self, data):
-        plt.plot(self.freq, data.mean(-1))
+        plt.plot(self.freq, data[:, -100:].mean(-1))
         plt.xlabel('Freq [MHz]', fontsize=15)
         plt.ylabel('Time-averaged apectrum', fontsize=15)
 
@@ -187,15 +242,16 @@ class Plotter:
         plt.plot(self.freq, tsys_onoff)
         plt.xlabel('Freq [MHz]', fontsize=15)
         plt.ylabel('Tsys [K]', fontsize=15)        
+        plt.semilogy()
 
-    def plot_all(self, data, sefd, SNR, tsys_onoff, src='CasA'):
-        fig = plt.figure(figsize=(12,12))
+    def plot_all(self, data, sefd, SNR, tsys_onoff, src='CasA', fn='./'):
+        fig = plt.figure(figsize=(12,8))
 
         fig.add_subplot(231)
         self.dyn_spec(data)
 
         fig.add_subplot(232)
-        self.plot_ts(data, 300)
+        self.plot_ts(data, len(data)//2)
 
         fig.add_subplot(233)
         self.plot_spectrum(data)
@@ -212,7 +268,8 @@ class Plotter:
         plt.suptitle('%s Transit' % src, fontsize=30)
 
         t0 = time.time()
-        plt.savefig('./%s_cal.pdf' % src)
+        fnout = fn.strip('.npy') + '_%s_cal.pdf' % src
+        plt.savefig(fnout)
         plt.tight_layout()
         plt.show()
 #        plt.show()
@@ -358,6 +415,31 @@ def plotter(data, outfile):
     plt.show()
     plt.savefig(outfile)
 
+def run_fluxcal(options, fn):
+    data = np.load(fn)
+    data[data!=data] = 0.
+    nt = data.shape[-1]
+    data = data.reshape(-1, 2, nt).mean(1)
+    nfreq = data.shape[0]
+
+    try:
+        t_res = np.float(fn.split('dt')[-1].split('.npy')[0])
+    except:
+        t_res = options.t_res
+
+    CalTools = CalibrationTools(t_res=t_res, Ndish=options.Ndish, 
+                                IAB=options.IAB, nfreq=nfreq)
+
+    tsys_rms = CalTools.tsys_rms_allfreq(data, off_samp=(0, 200), src=options.src)
+    tsys_onoff = CalTools.tsys_onoff_allfreq(data, off_samp=(0, 200), src=options.src)
+    sefd_rms = CalTools.tsys_to_sefd(tsys_rms)
+    snr = CalTools.snr_allfreq(data, off_samp=(0, 200))
+
+    data_rb = data[:, :data.shape[1]//1*1].reshape(nfreq, -1, 1).mean(-1)
+
+    P = Plotter(t_res=t_res, nfreq=nfreq)
+    P.plot_all(data_rb, sefd_rms, snr, tsys_onoff, src=options.src, fn=fn)
+
 
 if __name__=='__main__':
     import optparse
@@ -368,7 +450,7 @@ if __name__=='__main__':
                         description="Create diagnostic plots for individual triggers")
 
     parser.add_option('--t_res', dest='t_res', type='float', \
-                      help="Time resolution in seconds (Default: .01)", default=0.8192)
+                      help="Time resolution in seconds (Default: .8192)", default=0.8192)
 
     parser.add_option('--IAB', dest='IAB', default=True,\
                       help="Data were taken with incoherent beamforming")
@@ -381,27 +463,25 @@ if __name__=='__main__':
                       help="Name of source e.g. CasA, TauA, 3C48",
                       type='str')
 
-    
     options, args = parser.parse_args()
-    fn = args[0]
 
-    data = np.load(fn)
-    nt = data.shape[-1]
-    data = data.reshape(-1, 4, nt).mean(1)
-    nfreq = data.shape[0]
+    for fn in args:
+        if fn.split('.')[-1]=='fil':
+            print("Rebinning and saving to .npy")
+            ds = 10000
+            D = Downsample()
+            data, dt = D.downsample_file(fn, ds=ds)
+            fnout = fn.strip('.fil') + '_downsamp%d_dt%.3f' % (ds, dt)
+            np.save(fnout, data)
+            fn = fnout + '.npy'
+            
+        run_fluxcal(options, fn)
 
-    CalTools = CalibrationTools(t_res=options.t_res, Ndish=options.Ndish, 
-                                IAB=options.IAB, nfreq=nfreq)
 
-    tsys_rms = CalTools.tsys_rms_allfreq(data, off_samp=(0, 200), src=options.src)
-    tsys_onoff = CalTools.tsys_onoff_allfreq(data, off_samp=(0, 200), src=options.src)
-    sefd_rms = CalTools.tsys_to_sefd(tsys_rms)
-    snr = CalTools.snr_allfreq(data, off_samp=(0, 200))
 
-    # Rebin in time by x100 before plotting
-    data_rb = data[:, :data.shape[1]//1*1].reshape(nfreq, -1, 1).mean(-1)
 
-    Plotter = Plotter(t_res=options.t_res*100, nfreq=nfreq)
-    Plotter.plot_all(data_rb, sefd_rms, snr, tsys_onoff, src=options.src)
+
+
+
 
 

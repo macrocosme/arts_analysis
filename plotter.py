@@ -7,7 +7,7 @@ import sys
 import numpy as np
 import h5py
 import matplotlib
-matplotlib.use('pdf')
+matplotlib.use('pdf', warn=False)
 import matplotlib.pyplot as plt
 
 def plot_two_panel(data_freq_time, params, times=None, cb=None, prob=None, 
@@ -226,16 +226,16 @@ def plot_comparison(par_1, par_2, par_match_arr,
     plt.legend(['Missed','Detected','Equal S/N'], fontsize=10)
 
     plt.subplot(332)
-    plt.hist(dm_1, log=True, alpha=1.0, bins=30, color='grey')
-    plt.hist(dm_2, log=True, alpha=0.8, bins=30, color='k')
-    plt.hist(dm_1[ind_missed], log=True, alpha=1.0, bins=30, color='C1')
+    plt.hist(dm_1, log=True, alpha=0.8, bins=30, color='k', histtype='step', linestyle='--')
+    plt.hist(dm_2, log=True, alpha=1., bins=30, color='k', histtype='step')
+    plt.hist(dm_1[ind_missed], log=True, alpha=0.3, bins=30, color='C1')
     plt.xlabel('DM [pc cm**-3]', fontsize=10)
     plt.legend([algo1, algo2, 'Missed'], fontsize=10)
 
     plt.subplot(333)
-    plt.hist(np.log10(snr_1), alpha=0.3, log=True, bins=30, color='k')
-    plt.hist(np.log10(snr_2), alpha=0.8, log=True, bins=30, color='k')
-    plt.hist(np.log10(snr_1[ind_missed]), alpha=1.0, log=True, bins=30, color='C1')
+    plt.hist(np.log10(snr_1), alpha=0.8, log=True, bins=30, color='k', histtype='step', linestyle='--')
+    plt.hist(np.log10(snr_2), alpha=1, log=True, bins=30, color='k', histtype='step')
+    plt.hist(np.log10(snr_1[ind_missed]), alpha=0.3, log=True, bins=30, color='C1')
     plt.xlabel('S/N', fontsize=10)
     plt.legend([algo1, algo2, 'Missed'], fontsize=10)
 
@@ -248,9 +248,9 @@ def plot_comparison(par_1, par_2, par_match_arr,
     plt.ylabel('log10(DM)', fontsize=10)
 
     plt.subplot(336)
-    plt.hist(np.log10(width_1), alpha=0.3, bins=8, log=True, color='k')
-    plt.hist(np.log10(width_2), alpha=0.8, bins=8, log=True, color='k')
-    plt.hist(np.log10(width_1[ind_missed]), alpha=1., bins=8, log=True, color='C1')
+    plt.hist(np.log10(width_1), alpha=0.8, bins=8, log=True, color='k', histtype='step', linestyle='--')
+    plt.hist(np.log10(width_2), alpha=1., bins=8, log=True, color='k', histtype='step')
+    plt.hist(np.log10(width_1[ind_missed]), alpha=0.3, bins=8, log=True, color='C1')
     plt.xlabel('log10(Width) [samples]', fontsize=10)
     plt.legend([algo1, algo2, 'Missed'], fontsize=10)
 

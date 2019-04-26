@@ -1,3 +1,7 @@
+""" Tools to estimate pulsar S/N observed 
+with Apertif.
+"""
+
 import numpy as np
 
 from APERTIFparams import *
