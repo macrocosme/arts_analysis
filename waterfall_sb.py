@@ -1,4 +1,5 @@
 import optparse
+import numpy as np
 
 import triggers_liam as triggers
 
@@ -16,11 +17,8 @@ if __name__=='__main__':
                       help="Mask file produced by rfifind. (Default: No Mask).",
                       default=None)
 
-    parser.add_option('--save_data', dest='save_data', type='str',
-                      help="save each trigger's data. 0=don't save. \
-                      hdf5 = save to hdf5. npy=save to npy. concat to \
-                      save all triggers into one file",
-                      default='hdf5')
+    parser.add_option('--save_data', dest='save_data', action='store_true',
+                      help="save trigger data (default: false)")
 
     parser.add_option('--rficlean', dest='rficlean', action='store_true',
                       help="use rficlean if True (default False)", default=False)
@@ -111,13 +109,13 @@ if __name__=='__main__':
         triggers.mpl.use('TkAgg', warn=False)
         import matplotlib.pyplot as plt
         reload(plt)
-        sbs = [options.sb]
+        sbs = [int(options.sb)]
     
     for sb in sbs:
         print('Plotting SB %d' % sb)
-        x = triggers.proc_trigger(fn_fil, options.dm, t0, -1,
+        '''x = triggers.proc_trigger(fn_fil, options.dm, t0, -1,
                  ndm=options.ndm, mk_plot=True, downsamp=downsamp,
-                 beamno='', fn_mask=None, nfreq_plot=options.nfreq_plot,
+                 beamno=options.beamno, fn_mask=None, nfreq_plot=options.nfreq_plot,
                  ntime_plot=options.ntime_plot,
                  cmap='RdBu', cand_no=1, multiproc=False,
                  rficlean=False, snr_comparison=-1,
@@ -125,4 +123,18 @@ if __name__=='__main__':
                  subtract_zerodm=False,
                  threshold_time=3.25, threshold_frequency=2.75, bin_size=32,
                  n_iter_time=3, n_iter_frequency=3, clean_type='time', freq=1370,
-                 sb_generator=sb_generator, sb=sb)
+                 sb_generator=sb_generator, sb=sb)'''
+        x = triggers.proc_trigger(fn_fil, options.dm, t0, -1,
+                 ndm=options.ndm, mk_plot=True, downsamp=downsamp,
+                 beamno=options.beamno, fn_mask=None, nfreq_plot=options.nfreq_plot,
+                 ntime_plot=options.ntime_plot,
+                 cmap='RdBu', cand_no=1, multiproc=False,
+                 rficlean=False, snr_comparison=-1,
+                 outdir=options.outdir, sig_thresh_local=0.0,
+                 subtract_zerodm=False,
+                 threshold_time=options.threshold_time, threshold_frequency=options.threshold_frequency,
+                 bin_size=options.bin_size, n_iter_time=options.n_iter_time, n_iter_frequency=options.n_iter_frequency,
+                 clean_type=options.clean_type, freq=1370, sb_generator=sb_generator, sb=sb)
+        data = x[1]
+        if options.save_data:
+            np.save('./test_data', data)

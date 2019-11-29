@@ -60,8 +60,8 @@ class Downsample:
 
 class CalibrationTools:
 
-    def __init__(self, t_res=0.8192, freq_up=1550., 
-                 freq_low=1250., bw=300.0, 
+    def __init__(self, t_res=0.8192, freq_up=1520., 
+                 freq_low=1220., bw=300.0, 
                  nfreq=1536, Ndish=10, IAB=True):
 
         self.chan_width = bw / nfreq * 1e6

@@ -11,10 +11,12 @@ except:
 # should there maybe be a clustering class
 # and a S/N calculation class?
 
+
 class AnalyseTriggers:
 
     def __init__(self):
         pass 
+
 
 def combine_all_beams(fdir, fnout=None):
 
@@ -44,6 +46,7 @@ def combine_all_beams(fdir, fnout=None):
 
     return data_all
 
+
 def get_multibeam_triggers(times, beamno, t_window=0.5):
     CB_list = set(beamno)
     nbins = int((times.max()-times.min())/t_window)
@@ -59,6 +62,7 @@ def get_multibeam_triggers(times, beamno, t_window=0.5):
         ntrig_perbeam += vals
 
     return ntrig_perbeam
+
 
 def dedisperse(data, dm, dt=8.192e-5, freq=(1550, 1250), freq_ref=None):
     data = data.copy()
@@ -79,6 +83,28 @@ def dedisperse(data, dm, dt=8.192e-5, freq=(1550, 1250), freq_ref=None):
         data[ii] = np.roll(data[ii], -np.int(tdelay[ii]/dt))
 
     return data
+
+
+def dm_transform(data, freq, dt=8.192e-5, dm_max=10, dm_min=-10, ndm=50, freq_ref=None):
+    """ Transform freq/time data to dm/time data.
+    """
+
+    if len(freq)<3:
+        NFREQ = data.shape[0]
+        freq = np.linspace(freq[0], freq[1], NFREQ) 
+
+    dms = np.linspace(dm_min, dm_max, ndm)
+    ntime = data.shape[-1]
+
+    data_full = np.zeros([ndm, ntime])
+    times = np.linspace(-0.5*ntime*dt, 0.5*ntime*dt, ntime)
+
+    for ii, dm in enumerate(dms):
+        data_full[ii] = np.mean(dedisperse(data, dm, freq=(freq[0], freq[-1]), 
+                               freq_ref=freq_ref), axis=0)
+
+    return data_full, dms, times
+
 
 def cleandata(data, threshold=3.0):
     """ Take filterbank object and mask 
@@ -109,6 +135,7 @@ def cleandata(data, threshold=3.0):
     data[:, maskf] = dtmean[:, None]*np.ones(len(maskf))[None]
 
     return data
+
 
 def group_dm_time_beam(fdir, fnout=None, trigname='cand'):
     """ Go through all compound beams (CB) in 
@@ -150,6 +177,7 @@ def group_dm_time_beam(fdir, fnout=None, trigname='cand'):
 
     return times_full, beamno_full, dm_full, ntrig_pb
 
+
 def dm_range(dm_max, dm_min=5., frac=0.2):
     """ Generate list of DM-windows in which 
     to search for single pulse groups. 
@@ -184,6 +212,7 @@ def dm_range(dm_max, dm_min=5., frac=0.2):
 
     return dm_list
 
+
 def read_singlepulse(fn, max_rows=None, beam=None):
     """ Read in text file containing single-pulse 
     candidates. Allowed formats are:
@@ -200,24 +229,24 @@ def read_singlepulse(fn, max_rows=None, beam=None):
     if fn.split('.')[-1] in ('singlepulse', 'txt'):
         A = np.genfromtxt(fn, max_rows=max_rows)
 
-        if len(A.shape)==1:
+        if len(A.shape) == 1:
             A = A[None]
 
         dm, sig, tt, downsample = A[:,0], A[:,1], A[:,2], A[:,4]
-    elif fn.split('.')[-1]=='trigger':
+    elif fn.split('.')[-1] == 'trigger':
         A = np.genfromtxt(fn, max_rows=max_rows)
 
-        if len(A.shape)==1:
+        if len(A.shape) == 1:
             A = A[None]
 
         # Check if amber has compacted, in which case 
         # there are two extra rows
         if len(A[0]) > 7:
-            if len(A[0])==9:
+            if len(A[0])==8:
                 # beam batch sample integration_step compacted_integration_steps time DM compacted_DMs SNR
-                beamno, dm, sig, tt, downsample = A[:, 0], A[:,-3], A[:,-1], A[:, -4], A[:, 3]
+                beamno, dm, sig, tt, downsample = A[:, 0], A[:, -3], A[:, -1], A[:, -4], A[:, 3]
             elif len(A[0])==10:
-                beamno, dm, sig, tt, downsample = A[:, 0], A[:,-3], A[:,-1], A[:, -5], A[:, 3]
+                beamno, dm, sig, tt, downsample = A[:, 0], A[:, -3], A[:, -1], A[:, -5], A[:, 3]
             else:
                 print("Error: DO NOT RECOGNIZE COLUMNS OF .trigger FILE")
                 return 
@@ -225,41 +254,54 @@ def read_singlepulse(fn, max_rows=None, beam=None):
             # beam batch sample integration_step time DM SNR
             beamno, dm, sig, tt, downsample = A[:, 0], A[:,-2], A[:,-1], A[:, -3], A[:, 3]
         
-        if beam is not None:
-            # pick only the specified beam
-            dm = dm[beamno.astype(int) == beam]
-            sig = sig[beamno.astype(int) == beam]
-            tt = tt[beamno.astype(int) == beam]
-            downsample = downsample[beamno.astype(int) == beam]
+        if beam is not None and beam != 'all':
+                # pick only the specified beam
+                dm = dm[beamno.astype(int) == beam]
+                sig = sig[beamno.astype(int) == beam]
+                tt = tt[beamno.astype(int) == beam]
+                downsample = downsample[beamno.astype(int) == beam]
 
-    elif fn.split('.')[-1]=='cand':
+    elif fn.split('.')[-1] == 'cand':
         A = np.genfromtxt(fn, max_rows=max_rows)
 
-        if len(A.shape)==1:
+        if len(A.shape) == 1:
             A = A[None]
-
+        
         # SNR sample_no time log_2_width DM_trial DM Members first_samp last_samp
         dm, sig, tt, log_2_downsample = A[:,5], A[:,0], A[:, 2], A[:, 3]
-        print(dm, tt)
         downsample = 2**log_2_downsample
         try:
             beamno = A[:, 9]
             return dm, sig, tt, downsample, beamno
         except:
             pass
+    elif fn.split('.')[-1]=='fredda':
+        A = np.genfromtxt(fn, max_rows=max_rows)
+
+        if len(A.shape)==1:
+            A = A[None]
+        
+        dm, sig, tt, downsample = A[:,5], A[:,0], A[:, 2], A[:, 3]
     else:
         print("Didn't recognize singlepulse file")
         return 
 
-    if len(A)==0:
-        return 0, 0, 0, 0
+    if len(A) == 0:
+        if beam == 'all':
+            return 0, 0, 0, 0, 0
+        else:
+            return 0, 0, 0, 0
 
-    return dm, sig, tt, downsample
+    if beam == 'all':
+        return dm, sig, tt, downsample, beamno
+    else:
+        return dm, sig, tt, downsample
+
 
 def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf, 
                  t_window=0.5, max_rows=None, t_max=np.inf,
                  sig_max=np.inf, dt=2*40.96, delta_nu_MHz=300./1536, 
-                 nu_GHz=1.4, fnout=False, tab=None, dm_width_filter=False):
+                 nu_GHz=1.4, fnout=False, tab=None, read_beam=False, dm_width_filter=False):
     """ Get brightest trigger in each 10s chunk.
 
     Parameters
@@ -280,6 +322,9 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
         name of text file to save clustered triggers to 
     tab : int
         which TAB to process (0 for IAB)
+    read_beam: bool
+        read and return beam number (default: False)
+        all beams are read if this is true
 
     Returns
     -------
@@ -290,20 +335,30 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
     tt_cut : ndarray
         Arrival times of brightest trigger in each DM/T window 
     ds_cut : ndarray 
-        downsample factor array of brightest trigger in each DM/T window 
+        downsample factor array of brightest trigger in each DM/T window
+    beam_cut: ndarray
+        beam array of brightest trigger in each DM/T windows (only if read_beam is True)
     """
     if tab is not None:
         beam_amber = tab
+    elif read_beam:
+        beam_amber = 'all'
     else:
         beam_amber = None
 
-    if type(fn)==str:
-        dm, sig, tt, downsample = read_singlepulse(fn, max_rows=max_rows, beam=beam_amber)[:4]
-    elif type(fn)==np.ndarray:
-        dm, sig, tt, downsample = fn[:,0], fn[:,1], fn[:,2], fn[:,3]
+    if type(fn) == str:
+        if read_beam:
+            dm, sig, tt, downsample, beam = read_singlepulse(fn, max_rows=max_rows, beam=beam_amber)[:5]
+        else:
+            dm, sig, tt, downsample = read_singlepulse(fn, max_rows=max_rows, beam=beam_amber)[:4]
+    elif type(fn) == np.ndarray:
+        dm, sig, tt, downsample = fn[:, 0], fn[:, 1], fn[:, 2], fn[:, 3]
     else:
-        print("Wrong input type. Expected string or nparray")
-        return [],[],[],[],[]
+        print("Wrong input type. Expected string or ndarray")
+        if read_beam:
+            return [], [], [], [], [], []
+        else:
+            return [], [], [], [], []
 
     ntrig_orig = len(dm)
 
@@ -312,9 +367,12 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
     tt = np.delete(tt, bad_sig_ind)
     dm = np.delete(dm, bad_sig_ind)
     downsample = np.delete(downsample, bad_sig_ind)
-    sig_cut, dm_cut, tt_cut, ds_cut = [],[],[],[]
+    sig_cut, dm_cut, tt_cut, ds_cut = [], [], [], []
+    if read_beam:
+        beam = np.delete(beam, bad_sig_ind)
+        beam_cut = []
 
-    if len(tt)==0:
+    if len(tt) == 0:
         print("Returning None: time array is empty")
         return 
 
@@ -323,7 +381,7 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
 
     # Make dm windows between 90% of the lowest trigger and 
     # 10% of the largest trigger
-    if dm_min==0:
+    if dm_min == 0:
         dm_min = 0.9*dm.min()
     if dm_max > 1.1*dm.max():
         dm_max = 1.1*dm.max()
@@ -351,6 +409,8 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
                 dm_cut.append(dm[ind_maxsnr])
                 tt_cut.append(tt[ind_maxsnr])
                 ds_cut.append(downsample[ind_maxsnr])
+                if read_beam:
+                    beam_cut.append(beam[ind_maxsnr])
                 ind_full.append(ind_maxsnr)
             except:
                 continue
@@ -366,6 +426,8 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
     sig_cut = np.array(sig_cut)[ind]
     tt_cut = tt_cut[ind]
     ds_cut = np.array(ds_cut)[ind]
+    if read_beam:
+        beam_cut = np.array(beam_cut)[ind]
 
     ntrig_group = len(dm_cut)
 
@@ -384,14 +446,24 @@ def get_triggers(fn, sig_thresh=5.0, dm_min=0, dm_max=np.inf,
     tt_cut = np.delete(tt_cut, rm_ii)
     sig_cut = np.delete(sig_cut, rm_ii)
     ds_cut = np.delete(ds_cut, rm_ii)
+    if read_beam:
+        beam_cut = np.delete(beam_cut, rm_ii)
     ind_full = np.delete(ind_full, rm_ii)
 
-    if fnout != False:
-        clustered_arr = np.concatenate([sig_cut, dm_cut, tt_cut, ds_cut, ind_full])
-        clustered_arr = clustered_arr.reshape(5, -1)
+    if fnout:
+        if read_beam:
+            clustered_arr = np.concatenate([sig_cut, dm_cut, tt_cut, ds_cut, beam_cut, ind_full])
+            clustered_arr = clustered_arr.reshape(6, -1)
+        else:
+            clustered_arr = np.concatenate([sig_cut, dm_cut, tt_cut, ds_cut, ind_full])
+            clustered_arr = clustered_arr.reshape(5, -1)
         np.savetxt(fnout, clustered_arr) 
 
-    return sig_cut, dm_cut, tt_cut, ds_cut, ind_full
+    if read_beam:
+        return sig_cut, dm_cut, tt_cut, ds_cut, beam_cut, ind_full
+    else:
+        return sig_cut, dm_cut, tt_cut, ds_cut, ind_full
+
 
 def add_tab_col(fdir, fnout='out'):
     """ Take list of .trigger files for 
@@ -413,6 +485,7 @@ def add_tab_col(fdir, fnout='out'):
     
     trigg_arr_full = np.concatenate(trigg_arr_full)
     np.savetxt(fnout+'.'+ext, trigg_arr_full)
+
 
 def plot_tab_summary(fn, ntab=12, suptitle=''):
     fig, axs = plt.subplots(6, 4, sharex=True, figsize=(12,10))
@@ -493,6 +566,7 @@ def plot_tab_summary(fn, ntab=12, suptitle=''):
     plt.suptitle(suptitle_, fontsize=20)
     plt.show()
 
+
 class SNR_Tools:
 
     def __init__(self):
@@ -546,7 +620,7 @@ class SNR_Tools:
 
         return (data.max() - med) / sig
 
-    def calc_snr_matchedfilter(self, data, widths=None):
+    def calc_snr_matchedfilter(self, data, widths=None, true_filter=None):
         """ Calculate the S/N of pulse profile after 
         trying 9 rebinnings.
 
@@ -571,7 +645,10 @@ class SNR_Tools:
             widths = [1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500]
 
         for ii in widths:
-            mf = np.ones([ii])
+            if true_filter is None:
+                mf = np.ones([ii])
+            else:
+                mf = true_filter
             data_mf = scipy.correlate(data, mf)
             snr_ = self.calc_snr_amber(data_mf)
 
@@ -626,7 +703,7 @@ class SNR_Tools:
 
     def compare_snr(self, fn_1, fn_2, dm_min=0, dm_max=np.inf, save_data=False,
                     sig_thresh=5.0, t_window=0.5, max_rows=None,
-                    t_max=np.inf, tab=None):
+                    t_max=np.inf, tab=None, freq_ref_1=1400., freq_ref_2=1400.):
         """ Read in two files with single-pulse candidates
         and compare triggers.
 
@@ -664,6 +741,9 @@ class SNR_Tools:
         snr_2, dm_2, t_2, w_2, ind_full_2 = get_triggers(fn_2, sig_thresh=sig_thresh, 
                                     dm_min=dm_min, dm_max=dm_max, t_window=t_window, 
                                                          max_rows=max_rows, t_max=t_max, tab=tab)
+
+        # adjust arrival times to have same ref freq after dedispersion
+        t_1 += 4148*dm_1*(freq_ref_2**-2 - freq_ref_1**-2)
 
         snr_2_reorder = []
         dm_2_reorder = []
@@ -799,65 +879,55 @@ if __name__=='__main__':
                         version="", \
                         usage="%prog fn1 fn2 [OPTIONS]", \
                         description="Compare to single-pulse trigger files")
-
     parser.add_option('--sig_thresh', dest='sig_thresh', type='float', \
                         help="Only process events above >sig_thresh S/N" \
                                 "(Default: 5.0)", default=5.0)
-
     parser.add_option('--save_data', dest='save_data', type='str',
                         help="save each trigger's data. 0=don't save. \
                         hdf5 = save to hdf5. npy=save to npy. concat to \
                         save all triggers into one file",
                         default='hdf5')
-
     parser.add_option('--mk_plot', dest='mk_plot', action='store_true', \
                         help="make plot if True (default False)", default=False)
-
     parser.add_option('--dm_min', dest='dm_min', type='float',
                         help="", 
                         default=0.0)
-
     parser.add_option('--dm_max', dest='dm_max', type='float',
                         help="", 
                         default=np.inf)
-
     parser.add_option('--t_max', dest='t_max', type='float',
                         help="Only process first t_max seconds", 
                         default=np.inf)
-
     parser.add_option('--t_window', dest='t_window', type='float',
                         help="", 
                         default=0.1)
-
     parser.add_option('--outdir', dest='outdir', type='str',
                         help="directory to write data to", 
                         default='./data/')
-
     parser.add_option('--title', dest='title', type='str',
                         help="directory to write data to", 
                         default='file1 vs. file2')
-
     parser.add_option('--figname', dest='figname', type='str',
                         help="directory to write data to", 
                         default='comparison.pdf')
-
     parser.add_option('--algo1', dest='algo1', type='str',
                         help="name of first algo", 
                         default='algorithm1')
-
     parser.add_option('--algo2', dest='algo2', type='str',
                         help="name of second algo", 
                         default='algorithm2')
-
     parser.add_option('--truthfile', dest='truthfile', type='str',
                         help="truth file", 
                         default=None)
-
     parser.add_option('--tab', dest='tab', type=int, \
                         help="TAB to process (0 for IAB) (default: 0)", default=0)
-
     parser.add_option('--plot_both', dest='plot_both', action='store_true', \
                         help="make plot with both fn1 vs. fn2 and fn2 vs. fn1", default=False)
+    parser.add_option('--freq_ref_1', dest='freq_ref_1', type=float, \
+                        help="Reference frequency of fn1", default=1400.)
+    parser.add_option('--freq_ref_2', dest='freq_ref_2', type=float, \
+                        help="Reference frequency of fn2", default=1400.)
+
 
     options, args = parser.parse_args()
     fn_1 = args[0]
@@ -870,7 +940,7 @@ if __name__=='__main__':
                                         sig_thresh=options.sig_thresh, 
                                         t_window=options.t_window, 
                                         max_rows=None, t_max=options.t_max,
-                                        tab=options.tab)
+                                                                                         tab=options.tab, freq_ref_1=options.freq_ref_1, freq_ref_2=options.freq_ref_2)
         if options.plot_both is True:
             par_1b, par_2b, par_match_arrb, ind_missedb, ind_matchedb = SNRTools.compare_snr(fn_2, fn_1, 
                                         dm_min=options.dm_min, 
@@ -878,7 +948,7 @@ if __name__=='__main__':
                                         sig_thresh=options.sig_thresh, 
                                         t_window=options.t_window, 
                                         max_rows=None, t_max=options.t_max, 
-                                        tab=options.tab)                                       
+                                                                                             tab=options.tab, freq_ref_1=options.freq_ref_2, freq_ref_2=options.freq_ref_1)                                       
 
     except TypeError:
         print("No matches, exiting")

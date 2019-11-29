@@ -58,21 +58,6 @@ def multiproc_dedisp(dm):
     return (datacopy.data.mean(0), data_freq_time)
 
 
-def get_single_trigger(fn_fil, fn_trig, row=0, ntime_plot=250):
-    dm0, sig_cut, t0, downsamp = tools.read_singlepulse(fn_trig)
-    dm0, sig_cut, t0, downsamp = dm0[row], sig_cut[row], t0[row], downsamp[row]
-
-    data, downsamp, downsamp_smear  = fil_trigger(fn_fil, dm0, t0, sig_cut,
-                 ndm=50, mk_plot=False, downsamp=downsamp,
-                 beamno='', fn_mask=None, nfreq_plot=32,
-                 ntime_plot=ntime_plot,
-                 cmap='RdBu', cand_no=1, multiproc=False,
-                 rficlean=False, snr_comparison=-1,
-                 outdir='./', sig_thresh_local=7.0)
-
-    return data, dm0, sig_cut, t0, downsamp, downsamp_smear
-
-
 def sys_temperature_bandpass(data):
     """Bandpass calibrate based on system temperature.
     The lowest noise way to flatten the bandpass. Very good if T_sys is
@@ -141,7 +126,7 @@ def cleandata(data, threshold_time=3.25, threshold_frequency=2.75, bin_size=32,
     Parameters:
     ----------
     data :
-        filterbank data object
+        data array (nfreq, ntime)
     threshold_time : float
         units of sigma
     threshold_frequency : float
@@ -154,128 +139,53 @@ def cleandata(data, threshold_time=3.25, threshold_frequency=2.75, bin_size=32,
         Number of iteration for frequency cleaning
     clean_type : str
         type of cleaning to be done.
-        Accepted values: 'time', 'frequency', 'both'
+        Accepted values: 'time', 'frequency', 'both', 'perchannel'
 
     Returns:
     -------
     cleaned filterbank object
     """
-    if clean_type not in ['time', 'both', 'frequency']:
-        logging.info("Not RFI cleaning. Expected time, both or frequency as clean_type")
+    if clean_type not in ['time', 'both', 'frequency', 'perchannel']:
+        logging.info("Not RFI cleaning. Expected time, both, perchannel or frequency as clean_type")
         return data
         
     logging.info("Cleaning RFI")
 
-    dtmean = np.mean(data.data, axis=-1)
+    dtmean = np.mean(data, axis=-1)
     # Clean in time
     #sys_temperature_bandpass(data.data)
     #remove_noisy_freq(data.data, 3)
     #remove_noisy_channels(data.data, sigma_threshold=2, iters=5)
     if clean_type in ['time', 'both']:
         for i in range(n_iter_time):
-            dfmean = np.mean(data.data, axis=0)
-
-            # ('data.data', (1536, 265149), 'dfmean', (265149,), 'dtmean', (1536,))
-
+            dfmean = np.mean(data, axis=0)
             stdevf = np.std(dfmean)
             medf = np.median(dfmean)
             maskf = np.where(np.abs(dfmean - medf) > threshold_time*stdevf)[0]
-
             # replace with mean spectrum
-            data.data[:, maskf] = dtmean[:, None]*np.ones(len(maskf))[None]
+            data[:, maskf] = dtmean[:, None]*np.ones(len(maskf))[None]
+
+    if clean_type=='perchannel':
+        for ii in range(n_iter_time):
+            dtmean = np.mean(data, axis=1, keepdims=True)
+            dtsig = np.std(data, axis=1)
+            for nu in range(data.shape[0]):
+                d = dtmean[nu]
+                sig = dtsig[nu]
+                maskpc = np.where(np.abs(data[nu]-d)>threshold_time*sig)[0]
+                data[nu][maskpc] = d
 
     # Clean in frequency
     # remove bandpass by averaging over bin_size ajdacent channels
     if clean_type in ['frequency', 'both']:
         for ii in range(n_iter_frequency):
-            dtmean_nobandpass = data.data.mean(1) - dtmean.reshape(-1, bin_size).mean(-1).repeat(bin_size)
+            dtmean_nobandpass = data.mean(1) - dtmean.reshape(-1, bin_size).mean(-1).repeat(bin_size)
             stdevt = np.std(dtmean_nobandpass)
             medt = np.median(dtmean_nobandpass)
             maskt = np.abs(dtmean_nobandpass - medt) > threshold_frequency*stdevt
-            data.data[maskt] = np.median(dtmean)#dtmean.reshape(-1, bin_size).mean(-1).repeat(bin_size)[maskt]
+            data[maskt] = np.median(dtmean)#dtmean.reshape(-1, bin_size).mean(-1).repeat(bin_size)[maskt]
 
     return data
-
-
-def fil_trigger(fn_fil, dm0, t0, sig_cut,
-                 ndm=50, mk_plot=False, downsamp=1,
-                 beamno='', fn_mask=None, nfreq_plot=32,
-                 ntime_plot=250,
-                 cmap='RdBu', cand_no=1, multiproc=False,
-                 rficlean=False, snr_comparison=-1,
-                 outdir='./', sig_thresh_local=5.0,
-                 threshold_time=3.25, threshold_frequency=2.75, bin_size=32,
-                 n_iter_time=3, n_iter_frequency=3, clean_type='time'):
-    try:
-        rfimask = np.loadtxt('/home/arts/ARTS-obs/amber_conf/zapped_channels_1400.conf')
-        rfimask = rfimask.astype(int)
-    except:
-        rfimask = []
-        logging.info("Could not load dumb RFIMask")
-
-    SNRtools = tools.SNR_Tools()
-    downsamp = min(4096, downsamp)
-    rawdatafile = filterbank.filterbank(fn_fil)
-    dfreq_MHz = rawdatafile.header['foff']
-    mask = []
-
-    dt = rawdatafile.header['tsamp']
-    freq_up = rawdatafile.header['fch1']
-    nfreq = rawdatafile.header['nchans']
-    freq_low = freq_up + nfreq*rawdatafile.header['foff']
-    ntime_fil = (os.path.getsize(fn_fil) - 467.)/nfreq
-    tdm = np.abs(8.3*1e-6*dm0*dfreq_MHz*(freq_low/1000.)**-3)
-
-    dm_min = max(0, dm0-40)
-    dm_max = dm0 + 40
-    dms = np.linspace(dm_min, dm_max, ndm, endpoint=True)
-
-    # make sure dm0 is in the array
-    dm_max_jj = np.argmin(abs(dms-dm0))
-    dms += (dm0-dms[dm_max_jj])
-    dms[0] = max(0, dms[0])
-
-    global t_min, t_max
-    # if smearing timescale is < 4*pulse width,
-    # downsample before dedispersion for speed
-    downsamp_smear = max(1, int(downsamp*dt/tdm/2.))
-    # ensure that it's not larger than pulse width
-    downsamp_smear = int(min(downsamp, downsamp_smear))
-    downsamp_res = int(downsamp//downsamp_smear)
-    downsamp = int(downsamp_res*downsamp_smear)
-    time_res = dt * downsamp
-    tplot = ntime_plot * downsamp
-#    print("Width_full:%d  Width_smear:%d  Width_res: %d" %
-#        (downsamp, downsamp_smear, downsamp_res))
-
-    start_bin = int(t0/dt - ntime_plot*downsamp//2)
-    width = abs(4.148e3 * dm0 * (freq_up**-2 - freq_low**-2))
-    chunksize = int(width/dt + ntime_plot*downsamp)
-
-    t_min, t_max = 0, ntime_plot*downsamp
-
-    if start_bin < 0:
-        extra = start_bin
-        start_bin = 0
-        t_min += extra
-        t_max += extra
-
-    t_min, t_max = int(t_min), int(t_max)
-
-    snr_max = 0
-
-    # Account for the pre-downsampling to speed up dedispersion
-    t_min /= downsamp_smear
-    t_max /= downsamp_smear
-    ntime = t_max-t_min
-
-    data = rawdatafile.get_spectra(start_bin, chunksize)
-
-    if rficlean is True:
-        data = cleandata(data, threshold_time, threshold_frequency, \
-                         bin_size, n_iter_time, n_iter_frequency, clean_type)
-
-    return data, downsamp, downsamp_smear
 
 def load_tab_data(fname, start_bin, chunksize, out=None, tab=None):
     f = filterbank.filterbank(fname)
@@ -441,17 +351,19 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
                                starttime=start_bin*rawdatafile.tsamp, dm=0)
     else:
         data = rawdatafile.get_spectra(start_bin, chunksize)
+
     rawdatafile.close()
     # apply dumb mask
     data.data[rfimask] = 0.
 
     if rficlean is True:
-        data = cleandata(data, threshold_time, threshold_frequency, bin_size, \
+        data.data = cleandata(data.data, threshold_time, threshold_frequency, bin_size, \
                          n_iter_time, n_iter_frequency, clean_type)
 
     if subtract_zerodm:
         data.data -= np.mean(data.data, axis=0, keepdims=True)
 
+    freq_ref = 0.5*(freq_up+freq_low)
     # Downsample before dedispersion up to 1/4th
     # DM smearing limit
     data.downsample(downsamp_smear)
@@ -478,8 +390,8 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
             data_dm_max = np.concatenate([Z, data_dm_max], axis=1)
 
         # scale max DM by pulse width, 5 units for each ms 
-        dm_max_trans = 10. + 5*time_res/0.001
-        dm_min_trans = -10. - 5*time_res/0.001
+        dm_max_trans = 10. + 5*time_res/0.001 + 10*dm0/1000.
+        dm_min_trans = -10. - 5*time_res/0.001 - 10*dm0/1000.
 
         if dm0+dm_min_trans<=0:
             dm_min_trans = 0.
@@ -488,12 +400,10 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
         else:
             dm_center = 0.
 
-        freq_ref = 0.5*(freq_up+freq_low)
         full_arr, dms, times = RTproc.dm_transform(data_dm_max, 
                                                     (freq_up, freq_low), dt=dt*downsamp_smear, 
                                                        dm_max=dm_max_trans, dm_min=dm_min_trans, freq_ref=freq_ref,ndm=ndm, dm0=dm_center)
         dms += dm0
-#        np.save('softie', full_arr_)
 
         for jj, dm_ in enumerate(dms):
             continue
@@ -540,15 +450,20 @@ def proc_trigger(fn_fil, dm0, t0, sig_cut,
     suptitle = " CB:%s  S/N$_{pipe}$:%.1f  S/N$_{presto}$:%.1f\
                  S/N$_{compare}$:%.1f \nDM:%d  t:%.1fs  width:%d" %\
                  (beamno, sig_cut, snr_max, snr_comparison,
-                    dms[dm_max_jj], t0, downsamp)
+                    dm0, t0, downsamp)
 
     if not os.path.isdir('%s/plots' % outdir):
         os.system('mkdir -p %s/plots' % outdir)
 
-    fn_fig_out = '%s/plots/CB%s_snr%d_dm%d_t0%d.pdf' % \
-                     (outdir, beamno, sig_cut, dms[dm_max_jj], t0)
+    if sb is None:
+        sbname = -1
+    else:
+        sbname = sb
 
-    params = sig_cut, dms[dm_max_jj], downsamp, t0, dt
+    fn_fig_out = '%s/plots/CB%s_snr%d_dm%d_t0%d_sb%d.pdf' % \
+                     (outdir, beamno, sig_cut, dm0, t0, sbname)
+
+    params = sig_cut, dm0, downsamp, t0, dt
     tmed = np.median(full_freq_arr_downsamp, axis=-1, keepdims=True)
     full_freq_arr_downsamp -= tmed
 
@@ -626,8 +541,8 @@ def file_reader(fn, ftype='hdf5'):
 
 if __name__=='__main__':
     # Example usage
-    # python triggers.py /data/09/filterbank/20171107/2017.11.07-01:27:36.B0531+21/CB21.fil\
-    #     CB21_2017.11.07-01:27:36.B0531+21.trigger --sig_thresh 12.0 --mk_plot False
+    # The following would generate synthesized beams, rfi clean the data, and plot each trigger
+    # python /home/arts/ARTS-obs/external/arts-analysis/triggers_liam.py --rficlean --sig_thresh_local 3 --time_limit 18000 --descending_snr --beamno 00 --dm_min 20 --dm_max 5000 --sig_thresh 30.0 --ndm 64 --save_data concat --nfreq_plot 32 --ntime_plot 64 --cmap viridis --outdir=/data2/output/20190711/2019-07-11-04:03:00.FRB190709/triggers --clean_type time --synthesized_beams --sbmin 0 --sbmax 35 --central_freq 1370 /data2/output/20190711/2019-07-11-04:03:00.FRB190709/filterbank/CB00 /data2/output/20190711/2019-07-11-04:03:00.FRB190709/amber/CB00.trigger
 
     parser = optparse.OptionParser(prog="triggers.py",
                                    version="",
@@ -669,7 +584,7 @@ if __name__=='__main__':
     parser.add_option('--rficlean', dest='rficlean', action='store_true',
                       help="use rficlean if True (default False)", default=False)
 
-    parser.add_option('--threshold_time', dest='threshold_time', action='store_true',
+    parser.add_option('--threshold_time', dest='threshold_time', type=float,
                       help="If rficlean is True, defines threshold for time-domain clean (default 3.25)",
                       default=3.25)
 
@@ -681,17 +596,17 @@ if __name__=='__main__':
                       help="If rficlean is True, defines bin size for bandpass removal (default 32)",
                       default=32)
 
-    parser.add_option('--n_iter_time', dest='n_iter_time', action='store_true',
+    parser.add_option('--n_iter_time', dest='n_iter_time', type=int,
                       help="If rficlean is True, defines number of iteration for time-domain clean (default 3)",
                       default=3)
 
-    parser.add_option('--n_iter_frequency', dest='n_iter_frequency', action='store_true',
+    parser.add_option('--n_iter_frequency', dest='n_iter_frequency', type=int,
                       help="If rficlean is True, defines number of iteration for frequency-domain clean (default 3)",
                       default=3)
 
     parser.add_option('--clean_type', dest='clean_type',
                       help="If rficlean is True, defines type of clean (default 'time')",
-                      choices=['time', 'freqency', 'both'], default='time')
+                      choices=['time', 'freqency', 'both', 'perchannel'], default='time')
 
     parser.add_option('--subtract_zerodm', dest='subtract_zerodm', action='store_true',
                       help="use DM=0 timestream subtraction if True (default False)", default=False)
@@ -873,9 +788,6 @@ if __name__=='__main__':
     skipped_counter = 0
     ii = None
 
-#    tt_cut += 4148*dm_cut*(-1400**-2 + 1549.78**-2)
-#    ds_cut = (ds_cut/8.192e-5).astype(int) # hack
-
     # Initalize SB generator
     if options.sb:
         sb_generator = SBGenerator.from_science_case(science_case=4)
@@ -891,11 +803,11 @@ if __name__=='__main__':
 
         if options.sb:
             sb = int(sb_cut[ii])
-            logging.info("\nStarting DM=%0.2f S/N=%0.2f width=%d time=%f sb=%d" % (dm_cut[ii], sig_cut[ii], ds_cut[ii],
+            logging.info("\n%d/%d\nStarting DM=%0.2f S/N=%0.2f width=%d time=%f sb=%d" % (ii+1, len(tt_cut[:options.ntrig]), dm_cut[ii], sig_cut[ii], ds_cut[ii],
                                                                                    t0, sb))
         else:
             sb = None
-            logging.info("\nStarting DM=%0.2f S/N=%0.2f width=%d time=%f" % (dm_cut[ii], sig_cut[ii], ds_cut[ii], t0))
+            logging.info("\n%d/%d\nStarting DM=%0.2f S/N=%0.2f width=%d time=%f" % (ii+1, len(tt_cut[:options.ntrig]), dm_cut[ii], sig_cut[ii], ds_cut[ii], t0))
 
         data_dm_time, data_freq_time, time_res, params = proc_trigger(
                                         fn_fil, dm_cut[ii], t0, sig_cut[ii],
@@ -925,9 +837,24 @@ if __name__=='__main__':
 
         if options.save_data != '0':
             if options.save_data == 'hdf5':
-                h5_writer(data_freq_time, data_dm_time,
-                          dm_cut[ii], t0, sig_cut[ii],
-                          beamno=options.beamno+options.tab_str, basedir=basedir, time_res=time_res)
+                if options.sb:
+                    fnout = '{}/data_sb{:02d}_{:02d}_full.hdf5'.format(basedir, options.sbmin, options.sbmax)
+                else:
+                    fnout = '%s/data%s_full.hdf5' % (basedir, options.tab_str)
+                
+                f = h5py.File(fnout, 'w')
+                f.create_dataset('data_freq_time', data=data_freq_time_full)
+                f.create_dataset('data_dm_time', data=data_dm_time_full)
+                f.create_dataset('params', data=params_full)
+                f.create_dataset('ntriggers_skipped', data=[skipped_counter])
+                if options.tab is not None:
+                    f.create_dataset('tab', data=np.int(options.tab)*np.ones([len(data_freq_time_full)]))
+                elif options.sb:
+                    f.create_dataset('sb', data=data_sb_full)
+                f.close()
+#                h5_writer(data_freq_time, data_dm_time,
+#                          dm_cut[ii], t0, sig_cut[ii],
+#                          beamno=options.tab_str, basedir=basedir, time_res=time_res)
             elif options.save_data == 'npy':
                 fnout_freq_time = '%s/data%s_snr%d_dm%d_t0%f_freq.npy'\
                          % ( basedir, options.tab_str, sig_cut[ii], dm_cut[ii], np.round(t0, 2))

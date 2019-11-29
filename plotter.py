@@ -37,7 +37,7 @@ def plot_two_panel(data_freq_time, params, times=None, cb=None, prob=None,
     # scaling: std = 1, median=0
     extent = [times[0], times[-1], freq_low, freq_up]
 
-    ax2.imshow(data_freq_time, cmap='viridis', vmin=-3, vmax=3, 
+    ax2.imshow(data_freq_time, cmap='viridis', vmin=-1.5, vmax=2.5, 
                interpolation='nearest', aspect='auto', 
                origin='upper', extent=extent)
 
@@ -291,6 +291,85 @@ def plot_comparison(par_1, par_2, par_match_arr,
 #    plt.tight_layout()
     plt.show()
     plt.savefig(figname)
+
+def plot_beam_snr(snr_arr, nrow=6, ncol=7, nsb=71, 
+                  fn_fig_out=None, CBs=True, plot_title=''):
+    fig = plt.figure(figsize=(8,8))
+
+    counter = 0
+    beam_map_snr = np.zeros([nrow, ncol, nsb])
+
+    for ii in range(nrow):
+        if ii in [1,2,3]:
+            cols = range(1,ncol)
+        else:
+            cols = range(ncol)
+
+        for jj in cols:
+            for sb in range(nsb):
+                counter +=1 
+                beam_map_snr[ii,jj,sb] = snr_arr[nsb:][-counter]
+
+    beam_map_snr = beam_map_snr.reshape(nrow, -1)
+    beam0 = snr_arr[:nsb]
+
+    if nsb==1:
+        beam_map_snr = beam_map_snr.repeat(71, axis=1)
+        nsb = 71
+        beam0 = beam0.repeat(2*71).reshape(2, 71)
+    else:
+        beam0 = beam0.repeat(2).reshape(71,2).transpose()
+
+    beam_map_snr = beam_map_snr.repeat(2, axis=0)
+#    nrow *= 2
+
+    for xvl in range(ncol+2):
+        if xvl==4:
+            plt.axvline(nsb*xvl, c='C1', alpha=0.6, ymin=0, ymax=2.5/6)
+            plt.axvline(nsb*xvl, c='C1', alpha=0.6, ymin=3.5/6., ymax=1)
+            plt.axvline(nsb*xvl+0.5*nsb, c='C1', alpha=0.6, ymin=2.5/6, ymax=3.5/6)
+            plt.axvline(nsb*xvl-0.5*nsb, c='C1', alpha=0.6, ymin=2.5/6, ymax=3.5/6)
+        else:
+            plt.axvline(nsb*xvl+0.5, c='C1', alpha=0.6)
+
+    for xhl in range(-1, nrow+1):
+        if xhl==2:
+            plt.axhline(2*xhl+1.5, c='C1', alpha=0.6, xmin=0, xmax=3.5/7.)
+            plt.axhline(2*xhl+1.5, c='C1', alpha=0.6, xmin=4.5/7., xmax=1.)
+            plt.axhline(2*xhl+0.5, c='C1', alpha=0.6, xmin=3.5/7., xmax=4.5/7.)
+            plt.axhline(2*xhl+2.5, c='C1', alpha=0.6, xmin=3.5/7., xmax=4.5/7.)
+        else:
+            plt.axhline(2*xhl+1.5, c='C1', alpha=0.6)
+
+    plt.imshow(beam_map_snr, aspect='auto', cmap='Greys', vmin=0.)#, extent=[0,5,0,6*71])
+    plt.colorbar()
+    plt.xlim(-1, nsb*ncol+1)
+    plt.axis('off')
+
+    counter = 0
+    for ii in range(nrow):
+        if ii in [1,2,3]:
+            cols = range(1,ncol)
+        else:
+            cols = range(ncol)
+        for jj in cols:
+            counter += 1
+            plt.text(nsb*jj + nsb/3., 2*ii-0.1, "CB%0.2d" % (40 - counter), 
+                    color='C0', alpha=0.75)
+
+    plt.text(nsb*ncol/2. + nsb/4., nrow-1, "CB00",
+                    color='C0', alpha=0.75)
+
+    beam_map_snr[nrow-1:nrow+1, ncol//2*nsb+nsb//2:ncol//2*nsb+3*nsb//2] = beam0
+    plt.imshow(beam_map_snr, aspect='auto', cmap='Greys', vmin=0.)#, extent=[0,5,0,6*71])
+
+    plt.suptitle(plot_title, fontsize=18)
+    plt.tight_layout()
+    
+    if fn_fig_out is not None:
+        plt.savefig(fn_fig_out)
+    plt.show()
+
 
 if __name__ == '__main__':
 #     # input hdf5 file
